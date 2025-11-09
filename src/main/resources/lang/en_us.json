@@ -1,0 +1,4 @@
+{
+  "kingdoms.pigeon.fail.player_not_found": "&7Could not find player &3%player%",
+  "kingdoms.pigeon.fail.send_to_self": "&7Cannot send a letter to yourself"
+}
