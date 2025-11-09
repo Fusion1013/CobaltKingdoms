@@ -48,7 +48,7 @@ public class PigeonEvents implements Listener {
             event.setNewBookMeta(event.getPreviousBookMeta());
             event.setSigning(false);
             LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), sendingPlayer, "kingdoms.pigeon.fail.send_to_self");
-            // return;
+             return;
         }
 
         // Remove item from player inventory
@@ -58,7 +58,7 @@ public class PigeonEvents implements Listener {
 
     private void sendLetter(Player senderPlayer, Player receiverPlayer, BookMeta content) {
         Location senderPlayerLocation = senderPlayer.getLocation();
-        Location senderParrotTarget = senderPlayerLocation.clone().add(5, 3, 5);
+        Location senderParrotTarget = senderPlayerLocation.clone().add(10, 6, 10);
 
         // Send two parrots
         sendPigeon(senderPlayerLocation, senderParrotTarget);
