@@ -12,8 +12,11 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import se.fusion1013.cobaltCore.locale.LocaleManager;
+import se.fusion1013.cobaltCore.util.ItemUtil;
 import se.fusion1013.cobaltCore.util.StringPlaceholders;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
+
+import java.util.HashMap;
 
 public class PigeonEvents implements Listener {
 
@@ -48,7 +51,7 @@ public class PigeonEvents implements Listener {
             event.setNewBookMeta(event.getPreviousBookMeta());
             event.setSigning(false);
             LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), sendingPlayer, "kingdoms.pigeon.fail.send_to_self");
-             return;
+            // return;
         }
 
         // Remove item from player inventory
@@ -81,7 +84,12 @@ public class PigeonEvents implements Listener {
 
         // Give the player the letter
         Bukkit.getScheduler().runTaskLater(CobaltKingdoms.getInstance(), () -> {
-            player.getInventory().addItem(letter);
+            HashMap<Integer, ItemStack> leftover = player.getInventory().addItem(letter);
+            if (!leftover.isEmpty()) {
+                leftover.values().forEach(item -> {
+                    player.getWorld().dropItemNaturally(player.getLocation(), item);
+                });
+            }
             player.playSound(receiverPlayerLocation, Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
         }, 5 * 20L);
     }
