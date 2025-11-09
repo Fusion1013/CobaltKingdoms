@@ -51,7 +51,7 @@ public class PigeonEvents implements Listener {
             event.setNewBookMeta(event.getPreviousBookMeta());
             event.setSigning(false);
             LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), sendingPlayer, "kingdoms.pigeon.fail.send_to_self");
-            // return;
+            return;
         }
 
         // Remove item from player inventory
