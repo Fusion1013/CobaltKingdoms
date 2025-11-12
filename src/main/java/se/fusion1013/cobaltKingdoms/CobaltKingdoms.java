@@ -4,12 +4,17 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import se.fusion1013.cobaltCore.CobaltCore;
 import se.fusion1013.cobaltCore.CobaltPlugin;
+import se.fusion1013.cobaltKingdoms.commands.kingdom.KingdomCommand;
+import se.fusion1013.cobaltKingdoms.commands.StatusCommand;
+import se.fusion1013.cobaltKingdoms.database.KingdomDataManager;
 import se.fusion1013.cobaltKingdoms.events.PortalEvents;
 import se.fusion1013.cobaltKingdoms.events.VillagerEvents;
 import se.fusion1013.cobaltKingdoms.items.KingdomItems;
+import se.fusion1013.cobaltKingdoms.kingdom.KingdomManager;
 import se.fusion1013.cobaltKingdoms.pigeon.PigeonEvents;
+import se.fusion1013.cobaltKingdoms.player.PlayerManager;
 
-public final class CobaltKingdoms extends JavaPlugin implements CobaltPlugin {
+public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin {
 
     private static CobaltKingdoms INSTANCE;
 
@@ -34,6 +39,22 @@ public final class CobaltKingdoms extends JavaPlugin implements CobaltPlugin {
         Bukkit.getPluginManager().registerEvents(new PigeonEvents(), this);
         Bukkit.getPluginManager().registerEvents(new PortalEvents(), this);
         Bukkit.getPluginManager().registerEvents(new VillagerEvents(), this);
+        Bukkit.getPluginManager().registerEvents(CobaltCore.getInstance().getManager(this, KingdomManager.class), this);
+        Bukkit.getPluginManager().registerEvents(CobaltCore.getInstance().getManager(this, PlayerManager.class), this);
+    }
+
+    @Override
+    public void reloadManagers() {
+        CobaltPlugin.super.reloadManagers();
+        CobaltCore.getInstance().getManager(this, KingdomDataManager.class);
+        CobaltCore.getInstance().getManager(this, KingdomManager.class);
+    }
+
+    @Override
+    public void registerCommands() {
+        CobaltPlugin.super.registerCommands();
+        KingdomCommand.register();
+        StatusCommand.register();
     }
 
     public static CobaltKingdoms getInstance() {
@@ -43,5 +64,10 @@ public final class CobaltKingdoms extends JavaPlugin implements CobaltPlugin {
     @Override
     public String getInternalName() {
         return "CobaltKingdoms";
+    }
+
+    @Override
+    public String getPrefix() {
+        return "prefix.kingdoms";
     }
 }
