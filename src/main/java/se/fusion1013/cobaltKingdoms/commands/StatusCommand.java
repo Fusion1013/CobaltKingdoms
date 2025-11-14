@@ -2,6 +2,8 @@ package se.fusion1013.cobaltKingdoms.commands;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.MultiLiteralArgument;
+import dev.jorel.commandapi.executors.CommandArguments;
+import org.bukkit.entity.Player;
 import se.fusion1013.cobaltCore.CobaltCore;
 import se.fusion1013.cobaltCore.locale.LocaleManager;
 import se.fusion1013.cobaltCore.util.StringPlaceholders;
@@ -13,6 +15,7 @@ import java.util.Arrays;
 
 public class StatusCommand {
 
+    private static final PlayerManager PLAYER_MANAGER = CobaltCore.getInstance().getManager(CobaltKingdoms.getInstance(), PlayerManager.class);
     private static final LocaleManager LOCALE = CobaltCore.getInstance().getManager(CobaltCore.getInstance(), LocaleManager.class);
 
     public static void register() {
@@ -20,20 +23,40 @@ public class StatusCommand {
         new CommandAPICommand("status")
                 .withPermission("cobalt.kingdoms.command.status")
                 .withArguments(new MultiLiteralArgument("status", values))
+                .executesPlayer(StatusCommand::updatePlayerStatus).register();
+
+        new CommandAPICommand("afk")
+                .withPermission("cobalt.kingdoms.command.status")
                 .executesPlayer((sender, args) -> {
-                    PlayerManager playerManager = CobaltCore.getInstance().getManager(CobaltKingdoms.getInstance(), PlayerManager.class);
-
-                    String statusName = (String) args.get("status");
-                    PlayerStatus status = PlayerStatus.valueOf(statusName);
-
-                    playerManager.setPlayerStatus(sender.getUniqueId(), status);
-
-                    StringPlaceholders placeholders = StringPlaceholders.builder()
-                            .addPlaceholder("status", status.name())
-                            .build();
-                    LOCALE.sendMessage(CobaltKingdoms.getInstance(), sender, "kingdoms.commands.status.change", placeholders);
-
+                    updateStatus(sender, PlayerStatus.AFK);
                 }).register();
+
+        new CommandAPICommand("ic")
+                .withPermission("cobalt.kingdoms.command.status")
+                .executesPlayer((sender, args) -> {
+                    updateStatus(sender, PlayerStatus.IN_CHARACTER);
+                }).register();
+
+        new CommandAPICommand("ooc")
+                .withPermission("cobalt.kingdoms.command.status")
+                .executesPlayer((sender, args) -> {
+                    updateStatus(sender, PlayerStatus.OUT_OF_CHARACTER);
+                }).register();
+    }
+
+    private static void updatePlayerStatus(Player sender, CommandArguments args) {
+        String statusName = (String) args.get("status");
+        PlayerStatus status = PlayerStatus.valueOf(statusName);
+        updateStatus(sender, status);
+    }
+
+    private static void updateStatus(Player sender, PlayerStatus newPlayerStatus) {
+        PLAYER_MANAGER.setPlayerStatus(sender.getUniqueId(), newPlayerStatus);
+
+        StringPlaceholders placeholders = StringPlaceholders.builder()
+                .addPlaceholder("status", newPlayerStatus.name())
+                .build();
+        LOCALE.sendMessage(CobaltKingdoms.getInstance(), sender, "kingdoms.commands.status.change", placeholders);
     }
 
 }
