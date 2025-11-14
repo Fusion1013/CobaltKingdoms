@@ -13,6 +13,7 @@ import se.fusion1013.cobaltKingdoms.Response;
 import se.fusion1013.cobaltKingdoms.ResponseType;
 import se.fusion1013.cobaltKingdoms.kingdom.KingdomInfo;
 import se.fusion1013.cobaltKingdoms.kingdom.KingdomManager;
+import se.fusion1013.cobaltKingdoms.kingdom.KingdomPermission;
 
 public class KingdomKickCommand {
 
@@ -21,7 +22,7 @@ public class KingdomKickCommand {
 
     public static CommandAPICommand register() {
         return new CommandAPICommand("kick")
-                .withPermission("cobalt.kingdom.commands.kingdom.create")
+                .withPermission("cobalt.kingdom.commands.kingdom.kick")
                 .withArguments(new EntitySelectorArgument.OnePlayer("player"))
                 .executesPlayer((sender, args) -> {
 
@@ -49,7 +50,14 @@ public class KingdomKickCommand {
                             .addPlaceholder("kick_kingdom", kickPlayerKingdom.name())
                             .addPlaceholder("kick_player", kickPlayer.getName())
                             .addPlaceholder("sender_player", sender.getName())
+                            .addPlaceholder("permission", KingdomPermission.KICK.key())
                             .build();
+
+                    boolean hasPermission = KINGDOM_MANAGER.hasPermission(sender.getUniqueId(), KingdomPermission.KICK);
+                    if (!hasPermission) {
+                        LOCALE.sendMessage(CobaltKingdoms.getInstance(), sender, "kingdoms.commands.kingdom.permission_denied", placeholders);
+                        return;
+                    }
 
                     if (!senderKingdom.name().equalsIgnoreCase(kickPlayerKingdom.name())) {
                         LOCALE.sendMessage(CobaltKingdoms.getInstance(), sender, "kingdoms.commands.kingdom.kick.fail_not_in_kingdom", placeholders);
