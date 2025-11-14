@@ -46,10 +46,16 @@ public class KingdomInviteCommand {
                     if (receiverPlayer == null) {
                         LOCALE.sendMessage(CobaltKingdoms.getInstance(), sender, "kingdoms.commands.kingdom.invite.sender_fail", placeholders);
                         return;
-                    } else {
-                        LOCALE.sendMessage(CobaltKingdoms.getInstance(), receiverPlayer, "kingdoms.commands.kingdom.invite.receiver_message", placeholders);
-                        receiverPlayer.playSound(receiverPlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
                     }
+
+                    KingdomInfo receiverPlayerKingdomInfo = KINGDOM_MANAGER.getPlayerKingdomInfo(receiverPlayer.getUniqueId());
+                    if (receiverPlayerKingdomInfo != null) {
+                        LOCALE.sendMessage(CobaltKingdoms.getInstance(), sender, "kingdoms.commands.kingdom.invite.fail_already_in_kingdom", placeholders);
+                        return;
+                    }
+
+                    LOCALE.sendMessage(CobaltKingdoms.getInstance(), receiverPlayer, "kingdoms.commands.kingdom.invite.receiver_message", placeholders);
+                    receiverPlayer.playSound(receiverPlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
                     LOCALE.sendMessage(CobaltKingdoms.getInstance(), sender, "kingdoms.commands.kingdom.invite.sender_succeed", placeholders);
 
                     AcceptCommand.setPendingAcceptRequest(receiverPlayer, s -> {
