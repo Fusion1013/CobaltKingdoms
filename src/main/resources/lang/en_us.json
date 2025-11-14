@@ -17,7 +17,7 @@
 
   "kingdoms.commands.kingdom.invite.sender_fail": "&7Failed to invite player &3%receiver% &7to &3%kingdom%",
   "kingdoms.commands.kingdom.invite.sender_succeed": "&7Invited &3%receiver% &7to &3%kingdom%",
-  "kingdoms.commands.kingdom.invite.player_joined": "&3%sender% &7joined &3%kingdom%",
+  "kingdoms.commands.kingdom.invite.player_joined": "&3%receiver% &7joined &3%kingdom%",
   "kingdoms.commands.kingdom.invite.receiver_message": "&3%sender% &7invited you to join kingdom &3%kingdom%&7. Type &3/accept &7to accept the invite",
   "kingdoms.commands.kingdom.invite.receiver_succeed": "&7Joined kingdom &3%kingdom%",
   "kingdoms.commands.kingdom.invite.receiver_fail": "&7Failed to join kingdom &3%kingdom%",

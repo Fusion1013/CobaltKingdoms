@@ -14,6 +14,7 @@ import se.fusion1013.cobaltCore.util.StringPlaceholders;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.kingdom.KingdomInfo;
 import se.fusion1013.cobaltKingdoms.kingdom.KingdomManager;
+import se.fusion1013.cobaltKingdoms.kingdom.KingdomPermission;
 
 public class KingdomInviteCommand {
 
@@ -33,7 +34,14 @@ public class KingdomInviteCommand {
                             .addPlaceholder("receiver", receiverPlayer == null ? "?" : receiverPlayer.getName())
                             .addPlaceholder("kingdom", kingdomName)
                             .addPlaceholder("sender", sender.getName())
+                            .addPlaceholder("permission", KingdomPermission.INVITE)
                             .build();
+
+                    boolean hasPermission = KINGDOM_MANAGER.hasPermission(sender.getUniqueId(), KingdomPermission.INVITE);
+                    if (!hasPermission) {
+                        LOCALE.sendMessage(CobaltKingdoms.getInstance(), sender, "kingdoms.commands.kingdom.permission_denied", placeholders);
+                        return;
+                    }
 
                     if (receiverPlayer == null) {
                         LOCALE.sendMessage(CobaltKingdoms.getInstance(), sender, "kingdoms.commands.kingdom.invite.sender_fail", placeholders);
@@ -52,6 +60,7 @@ public class KingdomInviteCommand {
                             kingdomInfo.members().forEach(m -> {
                                 Player memberPlayer = Bukkit.getPlayer(m);
                                 if (memberPlayer == null || !memberPlayer.isOnline()) return;
+                                if (m == receiverPlayer.getUniqueId()) return;
                                 LOCALE.sendMessage(CobaltKingdoms.getInstance(), memberPlayer, "kingdoms.commands.kingdom.invite.player_joined", placeholders);
                                 memberPlayer.playSound(memberPlayer.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
                             });
