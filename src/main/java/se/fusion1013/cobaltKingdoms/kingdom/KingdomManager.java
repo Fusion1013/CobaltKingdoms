@@ -44,10 +44,19 @@ public class KingdomManager extends Manager<CobaltKingdoms> implements Listener 
         KingdomData kingdomData = getKingdomData(kingdomName);
         if (kingdomData == null) return new Response(ResponseType.FAIL, "Could not find kingdom with that name");
 
+        resetPlayerColorPrefix(kingdomData.getMembers());
+
         KINGDOMS.remove(kingdomData.getId());
         IKingdomDao kingdomDao = DataManager.getInstance().getDao(IKingdomDao.class);
         kingdomDao.deleteKingdom(kingdomData.getId());
+
         return new Response(ResponseType.OK, "Removed kingdom");
+    }
+
+    private static void resetPlayerColorPrefix(List<UUID> players) {
+        PlayerManager playerManager = CobaltCore.getInstance().getManager(CobaltKingdoms.getInstance(), PlayerManager.class);
+        players.forEach(k -> playerManager.setColorPrefix(k, ""));
+        players.forEach(playerManager::updatePlayerTabVisual);
     }
 
     public Response createKingdom(String kingdomName, UUID owner) {
