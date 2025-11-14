@@ -22,7 +22,7 @@ public class KingdomInfoCommand {
     public static CommandAPICommand register() {
         return new CommandAPICommand("info")
                 .withPermission("cobalt.kingdom.commands.kingdom.info")
-                .withArguments(new StringArgument("kingdom_name").replaceSuggestions(ArgumentSuggestions.strings(si -> KINGDOM_MANAGER.getKingdomNames(((Player) si.sender()).getUniqueId()).toArray(new String[0]))))
+                .withArguments(new StringArgument("kingdom_name").replaceSuggestions(ArgumentSuggestions.strings(si -> KINGDOM_MANAGER.getKingdomNames().toArray(new String[0]))))
                 .executesPlayer((sender, args) -> {
                     String kingdomName = (String) args.get("kingdom_name");
                     KingdomInfo kingdomInfo = KINGDOM_MANAGER.getKingdomInfo(kingdomName);
