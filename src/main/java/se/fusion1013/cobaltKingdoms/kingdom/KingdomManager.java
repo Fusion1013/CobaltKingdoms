@@ -84,11 +84,10 @@ public class KingdomManager extends Manager<CobaltKingdoms> implements Listener 
 
         kingdomData.setColorPrefix(colorPrefix);
 
-        PlayerManager playerManager = CobaltCore.getInstance().getManager(CobaltKingdoms.getInstance(), PlayerManager.class);
-
         IKingdomDao kingdomDao = DataManager.getInstance().getDao(IKingdomDao.class);
         kingdomDao.insertKingdom(kingdomData); // TODO: Replace with some other database operation
 
+        PlayerManager playerManager = CobaltCore.getInstance().getManager(CobaltKingdoms.getInstance(), PlayerManager.class);
         kingdomData.getMembers().forEach(k -> playerManager.setColorPrefix(k, colorPrefix));
         kingdomData.getMembers().forEach(playerManager::updatePlayerTabVisual);
 
@@ -136,6 +135,9 @@ public class KingdomManager extends Manager<CobaltKingdoms> implements Listener 
         kingdomData.addMember(playerId);
         IKingdomDao kingdomDao = DataManager.getInstance().getDao(IKingdomDao.class);
         kingdomDao.insertPlayer(playerId, kingdomData.getId());
+
+        PlayerManager playerManager = CobaltCore.getInstance().getManager(CobaltKingdoms.getInstance(), PlayerManager.class);
+        playerManager.setColorPrefix(playerId, kingdomData.getColorPrefix());
         return true;
     }
 
@@ -165,6 +167,9 @@ public class KingdomManager extends Manager<CobaltKingdoms> implements Listener 
         IKingdomDao kingdomDao = dataManager.getDao(IKingdomDao.class);
 
         kingdomDao.removePlayer(playerId, kingdomData.getId());
+
+        PlayerManager playerManager = CobaltCore.getInstance().getManager(CobaltKingdoms.getInstance(), PlayerManager.class);
+        playerManager.setColorPrefix(playerId, "");
         return new Response(ResponseType.OK, "Removed player from kingdom");
     }
 
