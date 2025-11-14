@@ -7,8 +7,12 @@ import dev.jorel.commandapi.arguments.StringArgument;
 import org.bukkit.entity.Player;
 import se.fusion1013.cobaltCore.CobaltCore;
 import se.fusion1013.cobaltCore.locale.LocaleManager;
+import se.fusion1013.cobaltCore.util.StringPlaceholders;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
+import se.fusion1013.cobaltKingdoms.Response;
+import se.fusion1013.cobaltKingdoms.ResponseType;
 import se.fusion1013.cobaltKingdoms.kingdom.KingdomManager;
+import se.fusion1013.cobaltKingdoms.kingdom.KingdomPermission;
 
 public class KingdomModifyCommand {
 
@@ -29,7 +33,26 @@ public class KingdomModifyCommand {
                 .executesPlayer((sender, args) -> {
                     String kingdomName = (String) args.get("kingdom_name");
                     String colorPrefix = (String) args.get("color");
-                    KINGDOM_MANAGER.setKingdomColor(kingdomName, colorPrefix);
+
+                    StringPlaceholders placeholders = StringPlaceholders.builder()
+                            .addPlaceholder("kingdom", kingdomName)
+                            .addPlaceholder("color", colorPrefix)
+                            .addPlaceholder("permission", KingdomPermission.MODIFY.key())
+                            .build();
+
+                    boolean hasPermission = KINGDOM_MANAGER.hasPermission(sender.getUniqueId(), KingdomPermission.MODIFY);
+                    if (!hasPermission) {
+                        LOCALE.sendMessage(CobaltKingdoms.getInstance(), sender, "kingdoms.commands.kingdom.permission_denied", placeholders);
+                        return;
+                    }
+
+                    Response response = KINGDOM_MANAGER.setKingdomColor(kingdomName, colorPrefix);
+                    if (response.type() == ResponseType.OK) {
+                        LOCALE.sendMessage(CobaltKingdoms.getInstance(), sender, "kingdoms.commands.kingdom.modify.color.success", placeholders);
+                    } else {
+                        placeholders.addPlaceholder("reason", response.message());
+                        LOCALE.sendMessage(CobaltKingdoms.getInstance(), sender, "kingdoms.commands.kingdom.modify.color.fail", placeholders);
+                    }
                 });
     }
 

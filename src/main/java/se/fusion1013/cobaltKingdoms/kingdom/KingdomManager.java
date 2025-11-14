@@ -78,9 +78,9 @@ public class KingdomManager extends Manager<CobaltKingdoms> implements Listener 
         return new Response(ResponseType.OK, "Kingdom created");
     }
 
-    public boolean setKingdomColor(String kingdomName, String colorPrefix) {
+    public Response setKingdomColor(String kingdomName, String colorPrefix) {
         KingdomData kingdomData = getKingdomData(kingdomName);
-        if (kingdomData == null) return false;
+        if (kingdomData == null) return new Response(ResponseType.FAIL, "Could not find the kingdom");
 
         kingdomData.setColorPrefix(colorPrefix);
 
@@ -92,7 +92,7 @@ public class KingdomManager extends Manager<CobaltKingdoms> implements Listener 
         kingdomData.getMembers().forEach(k -> playerManager.setColorPrefix(k, colorPrefix));
         kingdomData.getMembers().forEach(playerManager::updatePlayerTabVisual);
 
-        return true;
+        return new Response(ResponseType.OK, "Changed the kingdom color");
     }
 
     private KingdomData getPlayerKingdom(UUID playerId) {

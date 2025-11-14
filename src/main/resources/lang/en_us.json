@@ -8,6 +8,9 @@
 
   "kingdoms.commands.kingdom.permission_denied": "&7You are lacking permission node &3%permission% &7for kingdom &3%kingdom%",
 
+  "kingdoms.commands.kingdom.modify.color.success": "&7Changed the display color of %color%%kingdom%",
+  "kingdoms.commands.kingdom.modify.color.fail": "&7Failed to change the color of &3%kingdom%&7: %reason%",
+
   "kingdoms.commands.kingdom.create.succeed": "&7Created new kingdom &3%kingdom%",
   "kingdoms.commands.kingdom.create.announce": "&3%player% &7has founded the kingdom of &3%kingdom%&7!",
   "kingdoms.commands.kingdom.create.fail": "&7Failed to create new kingdom: %reason%",
