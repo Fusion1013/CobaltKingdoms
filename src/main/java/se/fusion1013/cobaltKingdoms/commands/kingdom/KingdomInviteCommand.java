@@ -34,7 +34,7 @@ public class KingdomInviteCommand {
                             .addPlaceholder("receiver", receiverPlayer == null ? "?" : receiverPlayer.getName())
                             .addPlaceholder("kingdom", kingdomName)
                             .addPlaceholder("sender", sender.getName())
-                            .addPlaceholder("permission", KingdomPermission.INVITE)
+                            .addPlaceholder("permission", KingdomPermission.INVITE.key())
                             .build();
 
                     boolean hasPermission = KINGDOM_MANAGER.hasPermission(sender.getUniqueId(), KingdomPermission.INVITE);

@@ -49,7 +49,10 @@ public class PlayerManager extends Manager<CobaltKingdoms> implements Listener {
     private void updatePlayerTabVisual(UUID playerId, PlayerData playerData) {
         Player player = Bukkit.getPlayer(playerId);
         if (player == null) return;
-        player.setPlayerListName(HexUtils.colorify("&7[&3" + playerData.getPlayerStatus().prefix + "&7] " + playerData.getColorPrefix() + player.getName()));
+
+        String adminPrefix = player.isOp() ? "&7[<g:#2991f2:#9d4bdb>MOD&7] " : "";
+
+        player.setPlayerListName(HexUtils.colorify(adminPrefix + "&7[&3" + playerData.getPlayerStatus().prefix + "&7] " + playerData.getColorPrefix() + player.getName()));
     }
 
 

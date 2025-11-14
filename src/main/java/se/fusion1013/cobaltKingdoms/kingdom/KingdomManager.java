@@ -25,7 +25,7 @@ public class KingdomManager extends Manager<CobaltKingdoms> implements Listener 
     public boolean hasPermission(UUID playerId, KingdomPermission permission) {
         KingdomInfo kingdomInfo = getPlayerKingdomInfo(playerId);
         if (kingdomInfo == null) return false;
-        if (kingdomInfo.owner() == playerId) return true;
+        if (kingdomInfo.owner().equals(playerId)) return true;
         // TODO: Add permission check for elevated players
         return false;
     }
