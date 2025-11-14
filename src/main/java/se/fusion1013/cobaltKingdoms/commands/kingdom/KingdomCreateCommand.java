@@ -57,7 +57,7 @@ public class KingdomCreateCommand {
                         }
                     } else {
                         placeholders.addPlaceholder("reason", response.message());
-                        LOCALE.sendMessage(CobaltKingdoms.getInstance(), sender, "kingdoms.commands.kingdom.create.fail");
+                        LOCALE.sendMessage(CobaltKingdoms.getInstance(), sender, "kingdoms.commands.kingdom.create.fail", placeholders);
                     }
                 });
     }
