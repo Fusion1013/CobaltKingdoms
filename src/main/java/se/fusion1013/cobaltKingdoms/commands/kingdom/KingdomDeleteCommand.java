@@ -13,6 +13,7 @@ import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.Response;
 import se.fusion1013.cobaltKingdoms.ResponseType;
 import se.fusion1013.cobaltKingdoms.kingdom.KingdomManager;
+import se.fusion1013.cobaltKingdoms.kingdom.KingdomPermission;
 
 public class KingdomDeleteCommand {
 
@@ -28,7 +29,14 @@ public class KingdomDeleteCommand {
 
                     StringPlaceholders placeholders = StringPlaceholders.builder()
                             .addPlaceholder("kingdom", kingdomName)
+                            .addPlaceholder("permission", KingdomPermission.DELETE.key())
                             .build();
+
+                    boolean hasPermission = KINGDOM_MANAGER.hasPermission(sender.getUniqueId(), KingdomPermission.DELETE);
+                    if (!hasPermission) {
+                        LOCALE.sendMessage(CobaltKingdoms.getInstance(), sender, "kingdoms.commands.kingdom.permission_denied", placeholders);
+                        return;
+                    }
 
                     LOCALE.sendMessage(CobaltKingdoms.getInstance(), sender, "kingdoms.commands.kingdom.delete.confirmation", placeholders);
                     AcceptCommand.setPendingAcceptRequest(sender, (send) -> {

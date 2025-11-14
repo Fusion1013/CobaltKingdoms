@@ -6,32 +6,42 @@
 
   "kingdoms.commands.status.change": "&7Changed your status to &3%status%",
 
+  "kingdoms.commands.kingdom.permission_denied": "&7You are lacking permission node &3%permission% &7for kingdom &3%kingdom%",
+
   "kingdoms.commands.kingdom.create.succeed": "&7Created new kingdom &3%kingdom%",
   "kingdoms.commands.kingdom.create.announce": "&3%player% &7has founded the kingdom of &3%kingdom%&7!",
   "kingdoms.commands.kingdom.create.fail": "&7Failed to create new kingdom: %reason%",
+
   "kingdoms.commands.kingdom.invite.sender_fail": "&7Failed to invite player &3%receiver% &7to &3%kingdom%",
   "kingdoms.commands.kingdom.invite.sender_succeed": "&7Invited &3%receiver% &7to &3%kingdom%",
   "kingdoms.commands.kingdom.invite.player_joined": "&3%sender% &7joined &3%kingdom%",
   "kingdoms.commands.kingdom.invite.receiver_message": "&3%sender% &7invited you to join kingdom &3%kingdom%&7. Type &3/accept &7to accept the invite",
   "kingdoms.commands.kingdom.invite.receiver_succeed": "&7Joined kingdom &3%kingdom%",
   "kingdoms.commands.kingdom.invite.receiver_fail": "&7Failed to join kingdom &3%kingdom%",
+
   "kingdoms.commands.kingdom.list.header": "&7---- [ &3Kingdoms&7 ] ----",
   "kingdoms.commands.kingdom.list.kingdom_item": "&7 - &3%kingdom% &7[&3%member_count%&7]",
+
   "kingdoms.commands.kingdom.info.header": "&7---- [ &3%kingdom% Info&7 ] ----",
   "kingdoms.commands.kingdom.info.owner": "&7Owner: &3%owner%",
   "kingdoms.commands.kingdom.info.player_list_header": "&7Members (&3%member_count%&7):",
   "kingdoms.commands.kingdom.info.player_list_item": "&7 - &3%player%",
+
   "kingdoms.commands.kingdom.delete.confirmation": "&7Are you sure you want to delete the kingdom of &3%kingdom%&7? Type &3/accept &7to continue",
   "kingdoms.commands.kingdom.delete.success": "&7Deleted the kingdom of &3%kingdom%",
   "kingdoms.commands.kingdom.delete.announce": "&7The kingdom of &3%kingdom% &7has been deleted",
   "kingdoms.commands.kingdom.delete.fail": "&7Failed to delete the kingdom of &3%kingdom%&7: %reason%",
+  "kingdoms.commands.kingdom.delete.fail_no_kingdom": "&7You are not a member of a kingdom",
+
   "kingdoms.commands.kingdom.leave.confirmation": "&7Are you sure you want to leave the kingdom of &3%kingdom%&7? Type &3/accept &7to continue",
   "kingdoms.commands.kingdom.leave.fail_not_member": "&7You are not a member of any kingdom",
   "kingdoms.commands.kingdom.leave.fail": "&7Failed to leave kingdom &3%kingdom%&7: %reason%",
   "kingdoms.commands.kingdom.leave.success": "&7Left the kingdom of &3%kingdom%",
   "kingdoms.commands.kingdom.leave.announce": "&3%player% &7has left the kingdom",
+
   "kingdoms.commands.kingdom.message.send": "&7[&3KM&7] %player%: &7%message%",
   "kingdoms.commands.kingdom.message.fail_no_kingdom": "&7You are not a member of a kingdom",
+
   "kingdoms.commands.kingdom.kick.fail_no_sender_kingdom": "&7You are not a member of a kingdom",
   "kingdoms.commands.kingdom.kick.fail_no_kick_kingdom": "&7The player you are attempting to kick is not a member of a kingdom",
   "kingdoms.commands.kingdom.kick.fail_not_in_kingdom": "&7The player you are attempting to kick is not a member of your kingdom",

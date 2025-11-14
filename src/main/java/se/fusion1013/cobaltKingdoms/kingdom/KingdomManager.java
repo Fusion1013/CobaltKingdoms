@@ -22,6 +22,14 @@ public class KingdomManager extends Manager<CobaltKingdoms> implements Listener 
 
     private static final Map<UUID, KingdomData> KINGDOMS = new HashMap<>();
 
+    public boolean hasPermission(UUID playerId, KingdomPermission permission) {
+        KingdomInfo kingdomInfo = getPlayerKingdomInfo(playerId);
+        if (kingdomInfo == null) return false;
+        if (kingdomInfo.owner() == playerId) return true;
+        // TODO: Add permission check for elevated players
+        return false;
+    }
+
     public KingdomInfo getPlayerKingdomInfo(UUID playerId) {
         KingdomData kingdomData = getPlayerKingdom(playerId);
         if (kingdomData == null) return null;
