@@ -1,0 +1,6 @@
+8:lun_coin,,16:quartz_block
+8:sol_coin,,16:blackstone
+8:sol_coin,,16:basalt
+8:lun_coin,,16:calcite
+8:lun_coin,,16:prismarine
+

@@ -1,0 +1,8 @@
+20:raw_copper,,8:sol_coin
+16:lapis_lazuli,,8:lun_coin
+14:raw_iron,,8:lun_coin
+12:coal,,8:sol_coin
+8:raw_gold,,8:sol_coin
+1:diamond,,8:lun_coin
+64:sol_coin,,1:astral_coin
+64:lun_coin,,1:astral_coin

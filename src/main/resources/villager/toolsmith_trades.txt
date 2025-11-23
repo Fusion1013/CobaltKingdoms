@@ -1,0 +1,4 @@
+1:astral_coin,,1:{random_enchant_iron_tool}
+2:astral_coin,,1:{random_enchant_diamond_tool}
+32:sol_coin,,1:bell
+

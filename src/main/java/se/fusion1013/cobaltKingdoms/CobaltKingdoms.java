@@ -7,12 +7,16 @@ import se.fusion1013.cobaltCore.CobaltPlugin;
 import se.fusion1013.cobaltKingdoms.commands.kingdom.KingdomCommand;
 import se.fusion1013.cobaltKingdoms.commands.StatusCommand;
 import se.fusion1013.cobaltKingdoms.database.KingdomDataManager;
+import se.fusion1013.cobaltKingdoms.events.AnvilEvents;
+import se.fusion1013.cobaltKingdoms.events.FishingEvents;
+import se.fusion1013.cobaltKingdoms.events.ItemEvents;
 import se.fusion1013.cobaltKingdoms.events.PortalEvents;
-import se.fusion1013.cobaltKingdoms.events.VillagerEvents;
+import se.fusion1013.cobaltKingdoms.villager.VillagerEvents;
 import se.fusion1013.cobaltKingdoms.items.KingdomItems;
 import se.fusion1013.cobaltKingdoms.kingdom.KingdomManager;
 import se.fusion1013.cobaltKingdoms.pigeon.PigeonEvents;
 import se.fusion1013.cobaltKingdoms.player.PlayerManager;
+import se.fusion1013.cobaltKingdoms.villager.VillagerManager;
 
 public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin {
 
@@ -41,6 +45,9 @@ public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin {
         Bukkit.getPluginManager().registerEvents(new VillagerEvents(), this);
         Bukkit.getPluginManager().registerEvents(CobaltCore.getInstance().getManager(this, KingdomManager.class), this);
         Bukkit.getPluginManager().registerEvents(CobaltCore.getInstance().getManager(this, PlayerManager.class), this);
+        Bukkit.getPluginManager().registerEvents(new AnvilEvents(), this);
+        Bukkit.getPluginManager().registerEvents(new FishingEvents(), this);
+        Bukkit.getPluginManager().registerEvents(new ItemEvents(), this);
     }
 
     @Override
@@ -48,6 +55,7 @@ public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin {
         CobaltPlugin.super.reloadManagers();
         CobaltCore.getInstance().getManager(this, KingdomDataManager.class);
         CobaltCore.getInstance().getManager(this, KingdomManager.class);
+        CobaltCore.getInstance().getManager(this, VillagerManager.class);
     }
 
     @Override

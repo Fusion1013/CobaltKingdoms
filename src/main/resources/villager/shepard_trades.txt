@@ -1,0 +1,7 @@
+1:astral_coin,,1:{random_hat}
+1:astral_coin,,1:{random_hat}
+1:astral_coin,,1:{random_hat}
+1:astral_coin,,1:{random_hat}
+1:astral_coin,,1:{random_hat}
+1:astral_coin,,1:{random_hat}
+16:lun_coin,,1:{random_banner_pattern}

@@ -1,0 +1,5 @@
+2:sol_coin,,16:cooked_chicken
+4:sol_coin,,16:cooked_beef
+3:lun_coin,,16:cooked_porkchop
+3:lun_coin,,16:cooked_mutton
+

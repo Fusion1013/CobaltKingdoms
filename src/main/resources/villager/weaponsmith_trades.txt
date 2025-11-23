@@ -1,0 +1,5 @@
+32:sol_coin,,1:{random_iron_sword_skin}
+32:lun_coin,,1:{random_iron_axe_skin}
+32:sol_coin,,1:{random_iron_spear_skin}
+32:sol_coin,,1:bell
+

@@ -1,0 +1,5 @@
+2:sol_coin,,16:cooked_salmon
+2:lun_coin,,20:cooked_cod
+1:astral_coin,,1:{random_enchanted_rod}
+
+

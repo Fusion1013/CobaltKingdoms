@@ -1,0 +1,5 @@
+32:lun_coin,,1:{random__skin}
+32:lun_coin,,1:{random_crossbow_skin}
+2:lun_coin,,16:arrow
+
+
