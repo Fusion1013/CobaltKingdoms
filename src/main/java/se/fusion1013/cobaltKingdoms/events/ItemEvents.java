@@ -2,11 +2,8 @@ package se.fusion1013.cobaltKingdoms.events;
 
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
-import org.bukkit.entity.Item;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.player.PlayerAttemptPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
 import se.fusion1013.cobaltCore.item.CustomItemManager;
@@ -27,5 +24,4 @@ public class ItemEvents implements Listener {
             event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1, random.nextFloat(1.8f, 2.2f));
         }
     }
-
 }

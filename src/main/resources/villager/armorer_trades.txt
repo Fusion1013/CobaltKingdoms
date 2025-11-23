@@ -1,6 +1,6 @@
 32:sol_coin,,1:bell
 3:astral_coin,,1:{random_armor_trim}
 24:lun_coin,,1:iron_horse_armor
-32:sol_coin,,1:gold_horse_armor
+32:sol_coin,,1:golden_horse_armor
 16:sol_coin,,1:copper_horse_armor
 8:lun_coin,,1:{random_chainmail}

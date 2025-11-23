@@ -1,9 +1,15 @@
 package se.fusion1013.cobaltKingdoms.villager;
 
+import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Villager;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 import se.fusion1013.cobaltCore.manager.Manager;
 import se.fusion1013.cobaltCore.util.FileUtil;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
+import se.fusion1013.cobaltKingdoms.util.ItemVariantUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,6 +20,11 @@ import java.util.*;
 public class VillagerManager extends Manager<CobaltKingdoms> {
 
     private static final Map<Villager.Profession, List<VillagerTrade>> PROFESSION_TRADES = new HashMap<>();
+    private static final Map<String, ITradeFunction> TRADE_FUNCTIONS = new HashMap<>();
+
+    public static ITradeFunction getTradeFunction(String name) {
+        return TRADE_FUNCTIONS.getOrDefault(name, null);
+    }
 
     public static List<VillagerTrade> getTrades(Villager.Profession profession) {
         return PROFESSION_TRADES.getOrDefault(profession, Collections.emptyList());
@@ -46,10 +57,7 @@ public class VillagerManager extends Manager<CobaltKingdoms> {
                     String[] split = part.split(":");
                     if (split.length != 2) continue;
 
-                    int amount = Integer.parseInt(split[0]);
-                    String item = split[1];
-
-                    TradeEntry entry = new TradeEntry(amount, item);
+                    TradeEntry entry = parseEntry(split);
 
                     // Last section = result
                     if (i == parts.length - 1) {
@@ -71,6 +79,15 @@ public class VillagerManager extends Manager<CobaltKingdoms> {
         PROFESSION_TRADES.put(profession, trades);
     }
 
+    private static @NotNull TradeEntry parseEntry(String[] split) {
+        int amount = Integer.parseInt(split[0]);
+        String item = split[1];
+        boolean isFunction = item.startsWith("{") && item.endsWith("}");
+
+        TradeEntry entry = new TradeEntry(amount, item, isFunction);
+        return entry;
+    }
+
     private File getProfessionTradeFile(Villager.Profession profession) {
         return FileUtil.getOrCreateFileFromResource(CobaltKingdoms.getInstance(), "villager/" + profession.getKey().getKey() + "_trades.txt");
     }
@@ -81,6 +98,125 @@ public class VillagerManager extends Manager<CobaltKingdoms> {
 
     @Override
     public void reload() {
+        registerVillagerProfessionTrades();
+        registerTradeFunctions();
+    }
+
+    private void registerTradeFunctions() {
+        TRADE_FUNCTIONS.clear();
+        TRADE_FUNCTIONS.put("random_armor_trim", () -> {
+            Material[] possible = {
+                    Material.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE,
+                    Material.COAST_ARMOR_TRIM_SMITHING_TEMPLATE,
+                    Material.DUNE_ARMOR_TRIM_SMITHING_TEMPLATE,
+                    Material.EYE_ARMOR_TRIM_SMITHING_TEMPLATE,
+                    Material.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE,
+                    Material.HOST_ARMOR_TRIM_SMITHING_TEMPLATE,
+                    Material.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE,
+                    Material.RIB_ARMOR_TRIM_SMITHING_TEMPLATE,
+                    Material.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE,
+                    Material.SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE,
+                    Material.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE,
+                    Material.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE,
+                    Material.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE,
+                    Material.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE,
+                    Material.VEX_ARMOR_TRIM_SMITHING_TEMPLATE,
+                    Material.WARD_ARMOR_TRIM_SMITHING_TEMPLATE,
+                    Material.WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE,
+                    Material.WILD_ARMOR_TRIM_SMITHING_TEMPLATE
+            };
+
+            int[] costMultipliers = {1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 4, 1, 2, 1, 2, 2, 1, 1};
+
+            int choiceId = new Random().nextInt(possible.length);
+            Material choice = possible[choiceId];
+            return new CostItemData(costMultipliers[choiceId], new ItemStack(choice));
+        });
+        TRADE_FUNCTIONS.put("random_chainmail", () -> {
+            Material[] possible = {
+                    Material.CHAINMAIL_BOOTS,
+                    Material.CHAINMAIL_CHESTPLATE,
+                    Material.CHAINMAIL_HELMET,
+                    Material.CHAINMAIL_LEGGINGS
+            };
+
+            int choiceId = new Random().nextInt(possible.length);
+            Material choice = possible[choiceId];
+            return new CostItemData(1, new ItemStack(choice));
+        });
+        TRADE_FUNCTIONS.put("random_enchant_diamond_hoe", () -> {
+
+            ItemStack hoe = new ItemStack(Material.DIAMOND_HOE);
+            ItemMeta meta = hoe.getItemMeta();
+
+            // Possible enchantments for diamond hoes
+            Enchantment[] possibleEnchants = {
+                    Enchantment.EFFICIENCY,
+                    Enchantment.UNBREAKING,
+                    Enchantment.FORTUNE,
+                    Enchantment.MENDING,
+                    Enchantment.SILK_TOUCH
+            };
+
+            Random random = new Random();
+
+            // Random 1–3 enchantments
+            int enchantCount = 1 + random.nextInt(3);
+
+            for (int i = 0; i < enchantCount; i++) {
+
+                Enchantment chosen = possibleEnchants[random.nextInt(possibleEnchants.length)];
+
+                // Choose a random valid level for that enchant
+                int level = 1 + random.nextInt(chosen.getMaxLevel());
+
+                meta.addEnchant(chosen, level, true);
+            }
+
+            hoe.setItemMeta(meta);
+            return new CostItemData(1, hoe);
+        });
+        TRADE_FUNCTIONS.put("random_enchanted_rod", () -> {
+            ItemStack rod = new ItemStack(Material.FISHING_ROD);
+            ItemMeta meta = rod.getItemMeta();
+
+            // Valid enchantments for fishing rods in Minecraft
+            List<Enchantment> possible = new ArrayList<>(List.of(
+                    Enchantment.LUCK_OF_THE_SEA,   // increases treasure chance
+                    Enchantment.LURE,              // speeds up bite time
+                    Enchantment.UNBREAKING,
+                    Enchantment.MENDING
+            ));
+
+            Random random = new Random();
+
+            // 1–3 random enchants
+            int enchantCount = 1 + random.nextInt(3);
+
+            for (int i = 0; i < enchantCount && !possible.isEmpty(); i++) {
+
+                // Pick a random enchantment & remove so we don't repeat it
+                Enchantment chosen = possible.remove(random.nextInt(possible.size()));
+
+                int level = 1 + random.nextInt(chosen.getMaxLevel());
+
+                meta.addEnchant(chosen, level, true);
+            }
+
+            rod.setItemMeta(meta);
+            return new CostItemData(1, rod);
+        });
+        TRADE_FUNCTIONS.put("random_iron_sword_skin", () -> {
+            ItemStack stack = ItemVariantUtil.getRandomIronSword();
+            return new CostItemData(1, stack);
+        });
+        TRADE_FUNCTIONS.put("random_iron_axe_skin", () -> {
+            ItemStack stack = ItemVariantUtil.getRandomIronAxe();
+            return new CostItemData(1, stack);
+        });
+    }
+
+    private void registerVillagerProfessionTrades() {
         loadTradesForProfession(Villager.Profession.ARMORER);
         loadTradesForProfession(Villager.Profession.BUTCHER);
         loadTradesForProfession(Villager.Profession.CARTOGRAPHER);

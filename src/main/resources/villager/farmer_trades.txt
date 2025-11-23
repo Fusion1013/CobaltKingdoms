@@ -3,4 +3,3 @@
 2:lun_coin,,16:pumpkin_pie
 1:sol_coin,,16:bread
 1:astral_coin,,1:{random_enchant_diamond_hoe}
-

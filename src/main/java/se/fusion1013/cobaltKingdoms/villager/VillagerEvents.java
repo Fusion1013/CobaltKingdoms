@@ -30,15 +30,17 @@ public class VillagerEvents implements Listener {
         });
     }
 
-    private boolean setTrades(VillagerCareerChangeEvent event) {
+    private void setTrades(VillagerCareerChangeEvent event) {
         Villager villager = event.getEntity();
         Villager.Profession newProfession = event.getProfession();
+
+        if (villager.getVillagerLevel() > 2) return;
 
         // Lookup trades for this profession
         List<VillagerTrade> trades = VillagerManager.getTrades(newProfession);
 
         // No custom trades? do nothing
-        if (trades == null || trades.isEmpty()) return true;
+        if (trades == null || trades.isEmpty()) return;
 
         // Convert our saved trades into MerchantRecipes
         List<MerchantRecipe> recipes = new ArrayList<>();
@@ -46,13 +48,15 @@ public class VillagerEvents implements Listener {
         for (VillagerTrade trade : trades) {
 
             // Convert result item
-            ItemStack result = makeItem(trade.result);
+            CostItemData result = makeItem(trade.result);
 
-            MerchantRecipe recipe = new MerchantRecipe(result, 9999); // max uses
+            MerchantRecipe recipe = new MerchantRecipe(result.item(), 9999); // max uses
 
             // Convert ingredient items
             for (TradeEntry ingredient : trade.ingredients) {
-                recipe.addIngredient(makeItem(ingredient));
+                ItemStack ingredientStack = makeItem(ingredient).item();
+                ingredientStack.setAmount(ingredientStack.getAmount() * result.costMultiplier());
+                recipe.addIngredient(ingredientStack);
                 villager.setVillagerLevel(5);
                 villager.setVillagerExperience(250);
             }
@@ -62,22 +66,32 @@ public class VillagerEvents implements Listener {
 
         // Apply trades to villager
         villager.setRecipes(recipes);
-        return false;
     }
 
-    private ItemStack makeItem(TradeEntry entry) {
+    private CostItemData makeItem(TradeEntry entry) {
 
-        Material mat = Material.matchMaterial(entry.item);
+        // If this entry represents a function call
+        if (entry.isFunction()) {
+            String functionName = entry.item().substring(1, entry.item().length() - 1); // strip {}
+            ITradeFunction fn = VillagerManager.getTradeFunction(functionName);
+            if (fn != null) {
+                CostItemData costItemData = fn.createItem();
+                costItemData.item().setAmount(entry.amount());
+                return costItemData;
+            }
+        }
+
+        Material mat = Material.matchMaterial(entry.item());
         if (mat == null) {
-            ItemStack stack = CustomItemManager.getCustomItemStack(entry.item);
+            ItemStack stack = CustomItemManager.getCustomItemStack(entry.item());
             if (stack != null) {
                 stack = stack.clone();
-                stack.setAmount(entry.amount);
-                return stack;
+                stack.setAmount(entry.amount());
+                return new CostItemData(1, stack);
             }
             mat = Material.STONE; // fallback to avoid null
         }
 
-        return new ItemStack(mat, entry.amount);
+        return new CostItemData(1, new ItemStack(mat, entry.amount()));
     }
 }
