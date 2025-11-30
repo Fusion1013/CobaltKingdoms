@@ -52,7 +52,7 @@
                             <target>
                                 <copy file="${project.build.directory}/${project.build.finalName}.jar"
                                       todir="D:\containers\minecraft\1.21.8_paper_dev_plugins"
-                                      overwrite="true" />
+                                      overwrite="true"/>
                             </target>
                         </configuration>
                         <goals>
@@ -168,7 +168,7 @@
         <dependency>
             <groupId>se.fusion1013</groupId>
             <artifactId>cobaltcore</artifactId>
-            <version>0.2.2</version>
+            <version>0.3.0</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

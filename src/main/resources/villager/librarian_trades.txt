@@ -1,3 +1,7 @@
-8:sol_coin,,1:{random_common_book}
-16:sol_coin,,1:{random_uncommon_book}
-1:astral_coin,,1:{random_enchanted_book}
+8:sol_coin,,1:{random_book_common}
+8:sol_coin,,1:{random_book_common}
+8:sol_coin,,1:{random_book_common}
+1:astral_coin,,1:{random_book_enchanted}
+16:sol_coin,,1:{random_book_uncommon}
+16:sol_coin,,1:{random_book_uncommon}
+1:astral_coin,,1:{random_book_enchanted}
