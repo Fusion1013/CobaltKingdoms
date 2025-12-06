@@ -83,10 +83,37 @@ public class ItemVariantUtil {
                     new ItemVariant(ItemRarity.RARE, "axe/iron_hammer", "Iron Hammer", "Hammer")
             ),
             Material.BOW, List.of(
-                    new ItemVariant(ItemRarity.COMMON, "bow/", "Bow", "Bow")
+                    new ItemVariant(ItemRarity.COMMON, "birchbow", "Birch Bow", "Birch"),
+                    new ItemVariant(ItemRarity.COMMON, "junglebow", "Jungle Bow", "Jungle"),
+                    new ItemVariant(ItemRarity.COMMON, "sprucebow", "Spruce Bow", "Spruce")
             ),
             Material.CROSSBOW, List.of(
-                    new ItemVariant(ItemRarity.COMMON, "crossbow/", "Crossbow", "Crossbow")
+                    new ItemVariant(ItemRarity.COMMON, "stainedcrossbow", "Stained Crossbow", "Stained"),
+                    new ItemVariant(ItemRarity.COMMON, "mossycrossbow", "Mossy Crossbow", "Mossy"),
+                    new ItemVariant(ItemRarity.COMMON, "bleachedcrossbow", "Bleached Crossbow", "Bleached")
+            ),
+            Material.CARVED_PUMPKIN, List.of(
+                    new ItemVariant(ItemRarity.COMMON, "hat/amber_leather_hat", "Amber Leather Hat", "Amber Leather"),
+                    new ItemVariant(ItemRarity.COMMON, "hat/amber_wool_hat", "Amber Wool Hat", "Amber Wool"),
+                    new ItemVariant(ItemRarity.COMMON, "hat/banker_hat", "Banker Hat", "Banker"),
+                    new ItemVariant(ItemRarity.COMMON, "hat/charcoal_leather_hat", "Charcoal Leather Hat", "Charcoal Leather"),
+                    new ItemVariant(ItemRarity.COMMON, "hat/charcoal_wool_hat", "Charcoal Wool Hat", "Charcoal Wool"),
+                    new ItemVariant(ItemRarity.COMMON, "hat/emerald_leather_hat", "Emerald Leather Hat", "Emerald Leather"),
+                    new ItemVariant(ItemRarity.COMMON, "hat/emerald_wool_hat", "Emerald Wool Hat", "Emerald Wool"),
+                    new ItemVariant(ItemRarity.COMMON, "hat/farmer_hat", "Farmer Hat", "Farmer"),
+                    new ItemVariant(ItemRarity.COMMON, "hat/ivory_leather_hat", "Ivory Leather Hat", "Ivory Leather"),
+                    new ItemVariant(ItemRarity.COMMON, "hat/ivory_wool_hat", "Ivory Wool Hat", "Ivory Wool"),
+                    new ItemVariant(ItemRarity.COMMON, "hat/maroon_leather_hat", "Maroon Leather Hat", "Maroon Leather"),
+                    new ItemVariant(ItemRarity.COMMON, "hat/maroon_wool_hat", "Maroon Wool Hat", "Maroon Wool"),
+                    new ItemVariant(ItemRarity.COMMON, "hat/navy_leather_hat", "Navy Leather Hat", "Navy Leather"),
+                    new ItemVariant(ItemRarity.COMMON, "hat/navy_wool_hat", "Navy Wool Hat", "Navy Wool"),
+                    new ItemVariant(ItemRarity.COMMON, "hat/painter_hat", "Painter Hat", "Painter"),
+                    new ItemVariant(ItemRarity.COMMON, "hat/rust_leather_hat", "Rust Leather Hat", "Rust Leather"),
+                    new ItemVariant(ItemRarity.COMMON, "hat/rust_wool_hat", "Rust Wool Hat", "Rust Wool"),
+                    new ItemVariant(ItemRarity.COMMON, "hat/top_hat", "Top Hat", "Top"),
+                    new ItemVariant(ItemRarity.RARE, "hat/topper_hat", "Topper Hat", "Topper"),
+                    new ItemVariant(ItemRarity.COMMON, "hat/violet_leather_hat", "Violet Leather", "Violet Leather"),
+                    new ItemVariant(ItemRarity.COMMON, "hat/violet_wool_hat", "Violet Wool", "Violet Wool")
             )
     );
 

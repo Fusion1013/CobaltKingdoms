@@ -294,6 +294,7 @@ public class VillagerManager extends Manager<CobaltKingdoms> {
                 "random_crossbow_skin",
                 () -> new CostItemData(1, ItemVariantUtil.getRandomItem(Material.CROSSBOW, ItemVariantUtil.ItemRarity.COMMON))
         );
+        TRADE_FUNCTIONS.put("random_hat_common", () -> new CostItemData(1, ItemVariantUtil.getRandomItem(Material.CARVED_PUMPKIN, ItemVariantUtil.ItemRarity.COMMON)));
     }
 
     private void registerVillagerProfessionTrades() {
