@@ -1,5 +1,5 @@
 name: CobaltKingdoms
-version: '0.2-SNAPSHOT'
+version: '${project.version}'
 main: se.fusion1013.cobaltKingdoms.CobaltKingdoms
 api-version: '1.21'
 depend:

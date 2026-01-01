@@ -4,7 +4,6 @@ import se.fusion1013.cobaltCore.database.system.Dao;
 import se.fusion1013.cobaltCore.database.system.DataStorageType;
 import se.fusion1013.cobaltCore.database.system.implementations.SQLiteImplementation;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
-import se.fusion1013.cobaltKingdoms.database.KingdomDataManager;
 import se.fusion1013.cobaltKingdoms.kingdom.KingdomData;
 
 import java.sql.PreparedStatement;
@@ -39,7 +38,7 @@ public class KingdomDaoSQLite extends Dao implements IKingdomDao {
         SQLiteImplementation.performThreadSafeSQLiteOperations(conn -> {
             try (
                     PreparedStatement insertKingdomPs = conn.prepareStatement("INSERT OR REPLACE INTO kingdoms(uuid, owner_id, name, color_prefix) VALUES(?, ?, ?, ?)");
-                    PreparedStatement insertUserPs = conn.prepareStatement("INSERT OR IGNORE INTO kingdom_members(player_uuid, kingdom_uuid) VALUES(?, ?)");
+                    PreparedStatement insertUserPs = conn.prepareStatement("INSERT OR IGNORE INTO kingdom_members(player_uuid, kingdom_uuid) VALUES(?, ?)")
             ) {
                 conn.setAutoCommit(false);
 
@@ -70,7 +69,7 @@ public class KingdomDaoSQLite extends Dao implements IKingdomDao {
         SQLiteImplementation.performThreadSafeSQLiteOperations(conn -> {
             try (
                     PreparedStatement getKingdomsPs = conn.prepareStatement("SELECT * FROM kingdoms");
-                    PreparedStatement getUsersPs = conn.prepareStatement("SELECT * FROM kingdom_members WHERE kingdom_uuid = ?");
+                    PreparedStatement getUsersPs = conn.prepareStatement("SELECT * FROM kingdom_members WHERE kingdom_uuid = ?")
             ) {
                 ResultSet kingdomResults = getKingdomsPs.executeQuery();
 
@@ -109,9 +108,10 @@ public class KingdomDaoSQLite extends Dao implements IKingdomDao {
     public void insertPlayer(UUID playerId, UUID kingdomId) {
         SQLiteImplementation.performThreadSafeSQLiteOperations(conn -> {
             try (
-                    PreparedStatement insertUserPs = conn.prepareStatement("INSERT OR IGNORE INTO kingdom_members(player_uuid, kingdom_uuid) VALUES(?, ?)");
+                    PreparedStatement insertUserPs = conn.prepareStatement("INSERT OR IGNORE INTO kingdom_members(player_uuid, kingdom_uuid) VALUES(?, ?)")
             ) {
                 insertUserPs.setString(1, playerId.toString());
+                insertUserPs.setString(2, kingdomId.toString());
                 insertUserPs.executeUpdate();
             } catch (SQLException ex) {
                 CobaltKingdoms.getInstance().getLogger().severe("Error inserting kingdom user into database: " + ex.getMessage());
@@ -124,7 +124,7 @@ public class KingdomDaoSQLite extends Dao implements IKingdomDao {
         SQLiteImplementation.performThreadSafeSQLiteOperations(conn -> {
             try (
                     PreparedStatement deleteUsers = conn.prepareStatement("DELETE FROM kingdom_members WHERE kingdom_uuid = ?");
-                    PreparedStatement deleteKingdom = conn.prepareStatement("DELETE FROM kingdoms WHERE uuid = ?");
+                    PreparedStatement deleteKingdom = conn.prepareStatement("DELETE FROM kingdoms WHERE uuid = ?")
             ) {
                 conn.setAutoCommit(false);
 
@@ -145,7 +145,7 @@ public class KingdomDaoSQLite extends Dao implements IKingdomDao {
     public void removePlayer(UUID playerId, UUID kingdomId) {
         SQLiteImplementation.performThreadSafeSQLiteOperations(conn -> {
             try (
-                    PreparedStatement deleteUsers = conn.prepareStatement("DELETE FROM kingdom_members WHERE kingdom_uuid = ? AND player_uuid = ?");
+                    PreparedStatement deleteUsers = conn.prepareStatement("DELETE FROM kingdom_members WHERE kingdom_uuid = ? AND player_uuid = ?")
             ) {
                 deleteUsers.setString(1, kingdomId.toString());
                 deleteUsers.setString(2, playerId.toString());
