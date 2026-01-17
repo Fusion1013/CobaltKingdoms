@@ -47,6 +47,9 @@ public class VillagerEvents implements Listener {
         if (event.getProfession() == Villager.Profession.WEAPONSMITH)
             event.getEntity().customName(Component.text("Weaponsmith"));
 
+        if (event.getProfession() == Villager.Profession.NONE) return;
+        if (event.getProfession() == Villager.Profession.NITWIT) return;
+
         event.getEntity().setCustomNameVisible(false);
 
         Bukkit.getScheduler().runTask(CobaltKingdoms.getInstance(), () -> {
@@ -74,14 +77,18 @@ public class VillagerEvents implements Listener {
         for (VillagerTrade trade : trades) {
 
             // Convert result item
-            CostItemData result = makeItem(trade.result);
+            CostItemData result = makeItem(trade.result());
 
             MerchantRecipe recipe = new MerchantRecipe(result.item(), 2); // max uses
 
             // Convert ingredient items
-            for (TradeEntry ingredient : trade.ingredients) {
+            for (TradeEntry ingredient : trade.ingredients()) {
                 ItemStack ingredientStack = makeItem(ingredient).item();
-                ingredientStack.setAmount(ingredientStack.getAmount() * result.costMultiplier());
+                ingredientStack.setAmount(Math.max(ingredientStack.getAmount() * result.costMultiplier(), 1));
+                if (ingredientStack.isEmpty()) {
+                    ingredientStack = new ItemStack(Material.TEST_BLOCK, 1);
+                    CobaltKingdoms.getInstance().getLogger().warning("Had to use test block for villager " + key);
+                }
                 recipe.addIngredient(ingredientStack);
             }
             recipes.add(recipe);
@@ -112,7 +119,7 @@ public class VillagerEvents implements Listener {
                 stack.setAmount(entry.amount());
                 return new CostItemData(1, stack);
             }
-            mat = Material.STONE; // fallback to avoid null
+            mat = Material.BEDROCK; // fallback to avoid null
         }
 
         return new CostItemData(1, new ItemStack(mat, entry.amount()));

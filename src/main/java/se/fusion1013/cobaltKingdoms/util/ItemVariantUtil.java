@@ -1,7 +1,6 @@
 package se.fusion1013.cobaltKingdoms.util;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -31,6 +30,23 @@ public class ItemVariantUtil {
                     new ItemVariant(ItemRarity.COMMON, "book/maroon_1", "Writable Book", "Simple Maroon"),
                     new ItemVariant(ItemRarity.COMMON, "book/maroon_2", "Writable Book", "Decorated Maroon"),
                     new ItemVariant(ItemRarity.COMMON, "book/maroon_3", "Writable Book", "Ornate Maroon"),
+                    new ItemVariant(ItemRarity.COMMON, "book/letter", "Letter", ""),
+                    new ItemVariant(ItemRarity.COMMON, "book/letter_black", "Black Letter", ""),
+                    new ItemVariant(ItemRarity.COMMON, "book/letter_blue", "Blue Letter", ""),
+                    new ItemVariant(ItemRarity.COMMON, "book/letter_brown", "Brown Letter", ""),
+                    new ItemVariant(ItemRarity.COMMON, "book/letter_cyan", "Cyan Letter", ""),
+                    new ItemVariant(ItemRarity.COMMON, "book/letter_gray", "Gray Letter", ""),
+                    new ItemVariant(ItemRarity.COMMON, "book/letter_green", "Green Letter", ""),
+                    new ItemVariant(ItemRarity.COMMON, "book/letter_light_blue", "Light Blue Letter", ""),
+                    new ItemVariant(ItemRarity.COMMON, "book/letter_light_gray", "Light Gray Latter", ""),
+                    new ItemVariant(ItemRarity.COMMON, "book/letter_lime", "Lime Letter", ""),
+                    new ItemVariant(ItemRarity.COMMON, "book/letter_magenta", "Magenta Letter", ""),
+                    new ItemVariant(ItemRarity.COMMON, "book/letter_orange", "Orange Letter", ""),
+                    new ItemVariant(ItemRarity.COMMON, "book/letter_pink", "Pink Letter", ""),
+                    new ItemVariant(ItemRarity.COMMON, "book/letter_purple", "Purple Letter", ""),
+                    new ItemVariant(ItemRarity.COMMON, "book/letter_red", "Red Letter", ""),
+                    new ItemVariant(ItemRarity.COMMON, "book/letter_white", "White Letter", ""),
+                    new ItemVariant(ItemRarity.COMMON, "book/letter_yellow", "Yellow Letter", ""),
                     new ItemVariant(ItemRarity.UNCOMMON, "book/brown_1", "Writable Book", "Brown"),
                     new ItemVariant(ItemRarity.UNCOMMON, "book/brown_yellow", "Writable Book", "Yellow-Brown"),
                     new ItemVariant(ItemRarity.UNCOMMON, "book/burnt", "Writable Book", "Burnt"),
@@ -46,7 +62,14 @@ public class ItemVariantUtil {
                     new ItemVariant(ItemRarity.RARE, "book/binding_bound_foliot", "Writable Book", "Deep Binding Book"),
                     new ItemVariant(ItemRarity.RARE, "book/binding_bound_marid", "Writable Book", "Shimmering Binding Book"),
                     new ItemVariant(ItemRarity.RARE, "book/curse", "Writable Book", "Cursed"),
-                    new ItemVariant(ItemRarity.RARE, "book/spellbook", "Writable Book", "Spellbook")
+                    new ItemVariant(ItemRarity.RARE, "book/spellbook", "Writable Book", "Spellbook"),
+                    new ItemVariant(ItemRarity.RARE, "book/letter_ashen", "Ashen Letter", ""),
+                    new ItemVariant(ItemRarity.RARE, "book/letter_bloodsoaked", "Bloodsoaked Letter", ""),
+                    new ItemVariant(ItemRarity.RARE, "book/letter_gilded", "Gilded Letter", ""),
+                    new ItemVariant(ItemRarity.RARE, "book/letter_mossy", "Mossy Letter", ""),
+                    new ItemVariant(ItemRarity.RARE, "book/letter_ornate", "Ornate Letter", ""),
+                    new ItemVariant(ItemRarity.RARE, "book/letter_prismatic", "Prismatic Letter", ""),
+                    new ItemVariant(ItemRarity.RARE, "book/letter_royal", "Royal Letter", "")
             ),
             Material.IRON_SWORD, List.of(
                     new ItemVariant(ItemRarity.COMMON, "sword/iron_cutlass", "Iron Cutlass", "Cutlass"),
@@ -55,7 +78,6 @@ public class ItemVariantUtil {
                     new ItemVariant(ItemRarity.COMMON, "sword/iron_longsword", "Iron Longsword", "Longsword"),
                     new ItemVariant(ItemRarity.COMMON, "sword/iron_rapier", "Iron Rapier", "Rapier"),
                     new ItemVariant(ItemRarity.COMMON, "sword/iron_shortsword", "Iron Shortsword", "Shortsword"),
-                    new ItemVariant(ItemRarity.COMMON, "sword/iron_khopesh", "Iron Khopesh", "Khopesh"),
                     new ItemVariant(ItemRarity.RARE, "sword/iron_scythe", "Iron Scythe", "Scythe"),
                     new ItemVariant(ItemRarity.RARE, "sword/iron_sickle", "Iron Sickle", "Sickle"),
                     new ItemVariant(ItemRarity.RARE, "sword/iron_zweihander", "Iron Zweihander", "Zweihander")
@@ -65,14 +87,14 @@ public class ItemVariantUtil {
                     new ItemVariant(ItemRarity.COMMON, "sword/diamond_dagger", "Diamond Dagger", "Dagger"),
                     new ItemVariant(ItemRarity.COMMON, "sword/diamond_falchion", "Diamond Falchion", "Falchion"),
                     new ItemVariant(ItemRarity.COMMON, "sword/diamond_greatsword", "Diamond Greatsword", "Greatsword"),
-                    new ItemVariant(ItemRarity.COMMON, "sword/diamond_katana", "Diamond Katana", "Katana"),
+                    new ItemVariant(ItemRarity.COMMON, "sword/diamond_gladius", "Diamond Gladius", "Gladius"),
                     new ItemVariant(ItemRarity.COMMON, "sword/diamond_khopesh", "Diamond Khopesh", "Khopesh"),
                     new ItemVariant(ItemRarity.COMMON, "sword/diamond_longsword", "Diamond Longsword", "Longsword"),
                     new ItemVariant(ItemRarity.COMMON, "sword/diamond_rapier", "Diamond Rapier", "Rapier"),
                     new ItemVariant(ItemRarity.COMMON, "sword/diamond_scythe", "Diamond Scythe", "Scythe"),
                     new ItemVariant(ItemRarity.COMMON, "sword/diamond_shortsword", "Diamond Shortsword", "Shortsword"),
                     new ItemVariant(ItemRarity.COMMON, "sword/diamond_sickle", "Diamond Sickle", "Sickle"),
-                    new ItemVariant(ItemRarity.COMMON, "sword/diamond_spidersword", "Diamond Spidersword", "Spidersword"),
+                    new ItemVariant(ItemRarity.COMMON, "sword/diamond_ornate_sword", "Diamond Ornate Sword", "Ornate"),
                     new ItemVariant(ItemRarity.COMMON, "sword/diamond_zweihander", "Diamond Zweihander", "Zweihander")
             ),
             Material.IRON_AXE, List.of(
@@ -93,27 +115,41 @@ public class ItemVariantUtil {
                     new ItemVariant(ItemRarity.COMMON, "bleachedcrossbow", "Bleached Crossbow", "Bleached")
             ),
             Material.CARVED_PUMPKIN, List.of(
-                    new ItemVariant(ItemRarity.COMMON, "hat/amber_leather_hat", "Amber Leather Hat", "Amber Leather"),
+                    new ItemVariant(ItemRarity.UNCOMMON, "hat/amber_leather_hat", "Amber Leather Hat", "Amber Leather"),
                     new ItemVariant(ItemRarity.COMMON, "hat/amber_wool_hat", "Amber Wool Hat", "Amber Wool"),
-                    new ItemVariant(ItemRarity.COMMON, "hat/banker_hat", "Banker Hat", "Banker"),
-                    new ItemVariant(ItemRarity.COMMON, "hat/charcoal_leather_hat", "Charcoal Leather Hat", "Charcoal Leather"),
+                    new ItemVariant(ItemRarity.UNCOMMON, "hat/banker_hat", "Banker Hat", "Banker"),
+                    new ItemVariant(ItemRarity.UNCOMMON, "hat/charcoal_leather_hat", "Charcoal Leather Hat", "Charcoal Leather"),
                     new ItemVariant(ItemRarity.COMMON, "hat/charcoal_wool_hat", "Charcoal Wool Hat", "Charcoal Wool"),
-                    new ItemVariant(ItemRarity.COMMON, "hat/emerald_leather_hat", "Emerald Leather Hat", "Emerald Leather"),
+                    new ItemVariant(ItemRarity.UNCOMMON, "hat/emerald_leather_hat", "Emerald Leather Hat", "Emerald Leather"),
                     new ItemVariant(ItemRarity.COMMON, "hat/emerald_wool_hat", "Emerald Wool Hat", "Emerald Wool"),
-                    new ItemVariant(ItemRarity.COMMON, "hat/farmer_hat", "Farmer Hat", "Farmer"),
-                    new ItemVariant(ItemRarity.COMMON, "hat/ivory_leather_hat", "Ivory Leather Hat", "Ivory Leather"),
+                    new ItemVariant(ItemRarity.RARE, "hat/farmer_hat", "Farmer Hat", "Farmer"),
+                    new ItemVariant(ItemRarity.UNCOMMON, "hat/ivory_leather_hat", "Ivory Leather Hat", "Ivory Leather"),
                     new ItemVariant(ItemRarity.COMMON, "hat/ivory_wool_hat", "Ivory Wool Hat", "Ivory Wool"),
-                    new ItemVariant(ItemRarity.COMMON, "hat/maroon_leather_hat", "Maroon Leather Hat", "Maroon Leather"),
+                    new ItemVariant(ItemRarity.UNCOMMON, "hat/maroon_leather_hat", "Maroon Leather Hat", "Maroon Leather"),
                     new ItemVariant(ItemRarity.COMMON, "hat/maroon_wool_hat", "Maroon Wool Hat", "Maroon Wool"),
-                    new ItemVariant(ItemRarity.COMMON, "hat/navy_leather_hat", "Navy Leather Hat", "Navy Leather"),
+                    new ItemVariant(ItemRarity.UNCOMMON, "hat/navy_leather_hat", "Navy Leather Hat", "Navy Leather"),
                     new ItemVariant(ItemRarity.COMMON, "hat/navy_wool_hat", "Navy Wool Hat", "Navy Wool"),
-                    new ItemVariant(ItemRarity.COMMON, "hat/painter_hat", "Painter Hat", "Painter"),
-                    new ItemVariant(ItemRarity.COMMON, "hat/rust_leather_hat", "Rust Leather Hat", "Rust Leather"),
+                    new ItemVariant(ItemRarity.RARE, "hat/painter_hat", "Painter Hat", "Painter"),
+                    new ItemVariant(ItemRarity.UNCOMMON, "hat/rust_leather_hat", "Rust Leather Hat", "Rust Leather"),
                     new ItemVariant(ItemRarity.COMMON, "hat/rust_wool_hat", "Rust Wool Hat", "Rust Wool"),
-                    new ItemVariant(ItemRarity.COMMON, "hat/top_hat", "Top Hat", "Top"),
+                    new ItemVariant(ItemRarity.RARE, "hat/top_hat", "Top Hat", "Top"),
                     new ItemVariant(ItemRarity.RARE, "hat/topper_hat", "Topper Hat", "Topper"),
-                    new ItemVariant(ItemRarity.COMMON, "hat/violet_leather_hat", "Violet Leather", "Violet Leather"),
+                    new ItemVariant(ItemRarity.UNCOMMON, "hat/violet_leather_hat", "Violet Leather", "Violet Leather"),
                     new ItemVariant(ItemRarity.COMMON, "hat/violet_wool_hat", "Violet Wool", "Violet Wool")
+            ),
+            Material.IRON_SPEAR, List.of(
+                    new ItemVariant(ItemRarity.COMMON, "spear/iron_glaive", "Iron Glaive", "Iron Glaive"),
+                    new ItemVariant(ItemRarity.RARE, "spear/iron_halberd", "Iron Halberd", "Iron Halberd"),
+                    new ItemVariant(ItemRarity.COMMON, "spear/iron_javelin", "Iron Javelin", "Iron Javelin"),
+                    new ItemVariant(ItemRarity.RARE, "spear/iron_lance", "Iron Lance", "Iron Lance"),
+                    new ItemVariant(ItemRarity.COMMON, "spear/iron_pike", "Iron Pike", "Iron Pike")
+            ),
+            Material.DIAMOND_SPEAR, List.of(
+                    new ItemVariant(ItemRarity.COMMON, "spear/diamond_glaive", "Diamond Glaive", "Diamond Glaive"),
+                    new ItemVariant(ItemRarity.RARE, "spear/diamond_halberd", "Diamond Halberd", "Diamond Halberd"),
+                    new ItemVariant(ItemRarity.COMMON, "spear/diamond_javelin", "Diamond Javelin", "Diamond Javelin"),
+                    new ItemVariant(ItemRarity.RARE, "spear/diamond_lance", "Diamond Lance", "Diamond Lance"),
+                    new ItemVariant(ItemRarity.COMMON, "spear/diamond_pike", "Diamond Pike", "Diamond Pike")
             )
     );
 
@@ -223,7 +259,8 @@ public class ItemVariantUtil {
             ItemMeta meta = stack.getItemMeta();
             meta.displayName(Component.text(name).decoration(TextDecoration.ITALIC, false));
             meta.setItemModel(new NamespacedKey("thegreatwork", path));
-            meta.lore(List.of(Component.text("Skin: " + lore).color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)));
+//            if (!lore.isEmpty())
+//                meta.lore(List.of(Component.text("Skin: " + lore).color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)));
             stack.setItemMeta(meta);
             return stack;
         }

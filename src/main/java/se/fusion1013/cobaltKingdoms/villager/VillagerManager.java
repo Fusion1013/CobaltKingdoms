@@ -211,6 +211,12 @@ public class VillagerManager extends Manager<CobaltKingdoms> {
                 "random_iron_axe_skin",
                 () -> new CostItemData(1, ItemVariantUtil.getRandomItem(Material.IRON_AXE, ItemVariantUtil.ItemRarity.COMMON)));
         TRADE_FUNCTIONS.put(
+                "random_iron_spear_skin",
+                () -> new CostItemData(1, ItemVariantUtil.getRandomItem(Material.IRON_SPEAR, ItemVariantUtil.ItemRarity.COMMON)));
+        TRADE_FUNCTIONS.put(
+                "random_iron_spear_skin_rare",
+                () -> new CostItemData(1, ItemVariantUtil.getRandomItem(Material.IRON_SPEAR, ItemVariantUtil.ItemRarity.RARE)));
+        TRADE_FUNCTIONS.put(
                 "random_iron_axe_skin_rare",
                 () -> new CostItemData(1, ItemVariantUtil.getRandomItem(Material.IRON_AXE, ItemVariantUtil.ItemRarity.RARE)));
         TRADE_FUNCTIONS.put(
@@ -295,6 +301,8 @@ public class VillagerManager extends Manager<CobaltKingdoms> {
                 () -> new CostItemData(1, ItemVariantUtil.getRandomItem(Material.CROSSBOW, ItemVariantUtil.ItemRarity.COMMON))
         );
         TRADE_FUNCTIONS.put("random_hat_common", () -> new CostItemData(1, ItemVariantUtil.getRandomItem(Material.CARVED_PUMPKIN, ItemVariantUtil.ItemRarity.COMMON)));
+        TRADE_FUNCTIONS.put("random_hat_uncommon", () -> new CostItemData(1, ItemVariantUtil.getRandomItem(Material.CARVED_PUMPKIN, ItemVariantUtil.ItemRarity.UNCOMMON)));
+        TRADE_FUNCTIONS.put("random_hat_rare", () -> new CostItemData(1, ItemVariantUtil.getRandomItem(Material.CARVED_PUMPKIN, ItemVariantUtil.ItemRarity.RARE)));
     }
 
     private void registerVillagerProfessionTrades() {

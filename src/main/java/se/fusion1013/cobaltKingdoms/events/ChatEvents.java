@@ -42,6 +42,7 @@ public class ChatEvents implements Listener {
         if (!sender.hasPermission("cobalt.kingdoms.chat")) {
             event.setCancelled(true);
             sender.sendMessage(Component.text("You are not allowed to do that"));
+            return;
         }
 
         event.setCancelled(true); // Cancel event and handle message handling separately to prevent lag spikes

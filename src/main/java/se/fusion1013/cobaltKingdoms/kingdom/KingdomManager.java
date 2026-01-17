@@ -25,9 +25,8 @@ public class KingdomManager extends Manager<CobaltKingdoms> implements Listener 
     public boolean hasPermission(UUID playerId, KingdomPermission permission) {
         KingdomInfo kingdomInfo = getPlayerKingdomInfo(playerId);
         if (kingdomInfo == null) return false;
-        if (kingdomInfo.owner().equals(playerId)) return true;
+        return kingdomInfo.owner().equals(playerId);
         // TODO: Add permission check for elevated players
-        return false;
     }
 
     public KingdomInfo getPlayerKingdomInfo(UUID playerId) {
@@ -56,7 +55,7 @@ public class KingdomManager extends Manager<CobaltKingdoms> implements Listener 
     private static void resetPlayerColorPrefix(List<UUID> players) {
         PlayerManager playerManager = CobaltCore.getInstance().getManager(CobaltKingdoms.getInstance(), PlayerManager.class);
         players.forEach(k -> playerManager.setColorPrefix(k, ""));
-        players.forEach(playerManager::updatePlayerTabVisual);
+        players.forEach(playerManager::updatePlayerStatus);
     }
 
     public Response createKingdom(String kingdomName, UUID owner) {
@@ -64,7 +63,8 @@ public class KingdomManager extends Manager<CobaltKingdoms> implements Listener 
         if (playerKingdom != null) return new Response(ResponseType.FAIL, "Player already owns a kingdom");
 
         KingdomData existingNameKingdom = getKingdomData(kingdomName);
-        if (existingNameKingdom != null) return new Response(ResponseType.FAIL, "Kingdom with that name already exists");
+        if (existingNameKingdom != null)
+            return new Response(ResponseType.FAIL, "Kingdom with that name already exists");
 
         KingdomData kingdomData = new KingdomData(kingdomName, UUID.randomUUID(), owner);
 
@@ -89,7 +89,7 @@ public class KingdomManager extends Manager<CobaltKingdoms> implements Listener 
 
         PlayerManager playerManager = CobaltCore.getInstance().getManager(CobaltKingdoms.getInstance(), PlayerManager.class);
         kingdomData.getMembers().forEach(k -> playerManager.setColorPrefix(k, colorPrefix));
-        kingdomData.getMembers().forEach(playerManager::updatePlayerTabVisual);
+        kingdomData.getMembers().forEach(playerManager::updatePlayerStatus);
 
         return new Response(ResponseType.OK, "Changed the kingdom color");
     }
@@ -159,7 +159,8 @@ public class KingdomManager extends Manager<CobaltKingdoms> implements Listener 
         if (kingdomData == null) return new Response(ResponseType.FAIL, "Player is not a member of a kingdom");
 
         // Check if player is the owner of the kingdom
-        if (kingdomData.getOwner().equals(playerId)) return new Response(ResponseType.FAIL, "Cannot leave your own kingdom");
+        if (kingdomData.getOwner().equals(playerId))
+            return new Response(ResponseType.FAIL, "Cannot leave your own kingdom");
 
         // Remove player from database and kingdom data
         kingdomData.removeMember(playerId);

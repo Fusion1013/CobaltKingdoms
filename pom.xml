@@ -6,7 +6,7 @@
 
     <groupId>se.fusion1013</groupId>
     <artifactId>cobaltkingdoms</artifactId>
-    <version>0.3.0</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>cobaltkingdoms</name>
