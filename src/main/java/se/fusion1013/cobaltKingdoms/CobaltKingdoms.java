@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import se.fusion1013.cobaltCore.CobaltCore;
 import se.fusion1013.cobaltCore.CobaltPlugin;
+import se.fusion1013.cobaltKingdoms.chair.ChairManager;
 import se.fusion1013.cobaltKingdoms.commands.EnderchestCommand;
 import se.fusion1013.cobaltKingdoms.commands.InvseeCommand;
 import se.fusion1013.cobaltKingdoms.commands.StatusCommand;
@@ -56,6 +57,7 @@ public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin {
         CobaltCore.getInstance().getManager(this, KingdomDataManager.class);
         CobaltCore.getInstance().getManager(this, KingdomManager.class);
         CobaltCore.getInstance().getManager(this, VillagerManager.class);
+        CobaltCore.getInstance().getManager(this, ChairManager.class);
     }
 
     @Override
