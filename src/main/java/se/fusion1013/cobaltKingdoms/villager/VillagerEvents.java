@@ -2,7 +2,6 @@ package se.fusion1013.cobaltKingdoms.villager;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.AbstractVillager;
 import org.bukkit.entity.Villager;
 import org.bukkit.entity.WanderingTrader;
@@ -10,9 +9,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.VillagerCareerChangeEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.MerchantRecipe;
-import se.fusion1013.cobaltCore.item.CustomItemManager;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 
 import java.util.ArrayList;
@@ -72,56 +69,18 @@ public class VillagerEvents implements Listener {
     private void setTrades(AbstractVillager villager, String key) {
         List<VillagerTrade> trades = VillagerManager.getTrades(key);
         if (trades == null || trades.isEmpty()) return;
+
         List<MerchantRecipe> recipes = new ArrayList<>();
-
-        for (VillagerTrade trade : trades) {
-
-            // Convert result item
-            CostItemData result = makeItem(trade.result());
-
-            MerchantRecipe recipe = new MerchantRecipe(result.item(), 2); // max uses
-
-            // Convert ingredient items
-            for (TradeEntry ingredient : trade.ingredients()) {
-                ItemStack ingredientStack = makeItem(ingredient).item();
-                ingredientStack.setAmount(Math.max(ingredientStack.getAmount() * result.costMultiplier(), 1));
-                if (ingredientStack.isEmpty()) {
-                    ingredientStack = new ItemStack(Material.TEST_BLOCK, 1);
-                    CobaltKingdoms.getInstance().getLogger().warning("Had to use test block for villager " + key);
-                }
-                recipe.addIngredient(ingredientStack);
-            }
-            recipes.add(recipe);
-        }
-
-        // Apply trades to villager
+        trades.forEach(trade -> createMerchantTrade(trade, recipes));
         villager.setRecipes(recipes);
     }
 
-    private CostItemData makeItem(TradeEntry entry) {
-
-        // If this entry represents a function call
-        if (entry.isFunction()) {
-            String functionName = entry.item().substring(1, entry.item().length() - 1); // strip {}
-            ITradeFunction fn = VillagerManager.getTradeFunction(functionName);
-            if (fn != null) {
-                CostItemData costItemData = fn.createItem();
-                costItemData.item().setAmount(entry.amount());
-                return costItemData;
-            }
+    private void createMerchantTrade(VillagerTrade trade, List<MerchantRecipe> recipes) {
+        try {
+            MerchantRecipe recipe = trade.createRecipe();
+            recipes.add(recipe);
+        } catch (Exception e) {
+            CobaltKingdoms.getInstance().getLogger().warning("Error creating villager recipe: " + e.getMessage());
         }
-
-        Material mat = Material.matchMaterial(entry.item());
-        if (mat == null) {
-            ItemStack stack = CustomItemManager.getCustomItemStack(entry.item());
-            if (stack != null) {
-                stack = stack.clone();
-                stack.setAmount(entry.amount());
-                return new CostItemData(1, stack);
-            }
-            mat = Material.BEDROCK; // fallback to avoid null
-        }
-
-        return new CostItemData(1, new ItemStack(mat, entry.amount()));
     }
 }

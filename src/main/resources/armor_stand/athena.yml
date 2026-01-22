@@ -1,0 +1,25 @@
+internal_name: athena
+body:
+  x: 0
+  y: 0
+  z: 2
+head:
+  x: -5
+  y: 0
+  z: 0
+left_arm:
+  x: 10
+  y: 0
+  z: -5
+left_leg:
+  x: -3
+  y: -3
+  z: -3
+right_arm:
+  x: -60
+  y: 20
+  z: -10
+right_leg:
+  x: 3
+  y: 3
+  z: 3

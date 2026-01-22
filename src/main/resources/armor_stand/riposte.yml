@@ -1,0 +1,25 @@
+internal_name: riposte
+body:
+  x: 0
+  y: 0
+  z: 0
+head:
+  x: 16
+  y: 20
+  z: 0
+left_arm:
+  x: 4
+  y: 8
+  z: 237
+left_leg:
+  x: -14
+  y: -18
+  z: -16
+right_arm:
+  x: 246
+  y: 0
+  z: 89
+right_leg:
+  x: 8
+  y: 20
+  z: 4

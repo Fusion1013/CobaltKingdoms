@@ -4,11 +4,13 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
-import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import se.fusion1013.cobaltCore.util.HexUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +19,30 @@ public class AnvilEvents implements Listener {
 
     @EventHandler
     public void onPrepareAnvil(PrepareAnvilEvent event) {
+        validateEnchantments(event);
+    }
 
+    @EventHandler
+    public void anvilNameEvent(InventoryClickEvent event) {
+        nameAnvilResult(event);
+    }
+
+    private static void nameAnvilResult(InventoryClickEvent event) {
+        if (event.getCurrentItem() == null) return;
+        if (event.getCurrentItem().getType() == Material.AIR) return;
+
+        if (event.getInventory().getType() == InventoryType.ANVIL) {
+            if (event.getSlotType() == InventoryType.SlotType.RESULT) {
+                ItemMeta meta = event.getCurrentItem().getItemMeta();
+                if (meta == null) return;
+
+                meta.setDisplayName(HexUtils.colorify(meta.getDisplayName()));
+                event.getCurrentItem().setItemMeta(meta);
+            }
+        }
+    }
+
+    private static void validateEnchantments(PrepareAnvilEvent event) {
         ItemStack left = event.getInventory().getItem(0);
         ItemStack right = event.getInventory().getItem(1);
         ItemStack result = event.getResult();
@@ -47,8 +72,6 @@ public class AnvilEvents implements Listener {
                 return;
             }
         }
-
-        // All checks passed -> allow vanilla result
     }
 
     private static boolean isAirOrNull(ItemStack item) {
@@ -72,8 +95,7 @@ public class AnvilEvents implements Listener {
 
         // Stored enchantments (enchanted books, or any EnchantmentStorageMeta)
         ItemMeta meta = item.getItemMeta();
-        if (meta instanceof EnchantmentStorageMeta) {
-            EnchantmentStorageMeta esm = (EnchantmentStorageMeta) meta;
+        if (meta instanceof EnchantmentStorageMeta esm) {
             Map<Enchantment, Integer> stored = esm.getStoredEnchants();
             if (stored != null && !stored.isEmpty()) {
                 // If an enchant appears in both maps, prefer the higher value (shouldn't usually happen)

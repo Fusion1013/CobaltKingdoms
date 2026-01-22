@@ -6,7 +6,7 @@
 
     <groupId>se.fusion1013</groupId>
     <artifactId>cobaltkingdoms</artifactId>
-    <version>1.0.1</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
 
     <name>cobaltkingdoms</name>
@@ -168,7 +168,7 @@
         <dependency>
             <groupId>se.fusion1013</groupId>
             <artifactId>cobaltcore</artifactId>
-            <version>0.3.0</version>
+            <version>1.0.2</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

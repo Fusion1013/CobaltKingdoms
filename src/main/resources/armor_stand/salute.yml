@@ -1,0 +1,25 @@
+internal_name: salute
+body:
+  x: 0
+  y: 0
+  z: 0
+head:
+  x: 0
+  y: 0
+  z: 0
+left_arm:
+  x: 10
+  y: 0
+  z: -5
+left_leg:
+  x: -1
+  y: 0
+  z: -1
+right_arm:
+  x: -70
+  y: -40
+  z: 0
+right_leg:
+  x: 1
+  y: 0
+  z: 1

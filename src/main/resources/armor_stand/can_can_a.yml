@@ -1,0 +1,25 @@
+internal_name: can_can_a
+body:
+  x: 0
+  y: 22
+  z: 0
+head:
+  x: -5
+  y: 18
+  z: 0
+left_arm:
+  x: 8
+  y: 0
+  z: -114
+left_leg:
+  x: -111
+  y: 55
+  z: 0
+right_arm:
+  x: 0
+  y: 84
+  z: 111
+right_leg:
+  x: 0
+  y: 23
+  z: -13

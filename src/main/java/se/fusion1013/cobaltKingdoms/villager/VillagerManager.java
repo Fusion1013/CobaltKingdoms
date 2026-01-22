@@ -246,7 +246,7 @@ public class VillagerManager extends Manager<CobaltKingdoms> {
                 () -> {
                     Material[] possible =
                             new Material[]{
-                                    Material.IRON_PICKAXE, Material.IRON_SHOVEL, Material.IRON_AXE, Material.IRON_HOE,
+                                    Material.IRON_PICKAXE, Material.IRON_SHOVEL, Material.IRON_HOE,
                             };
                     int[] costMultipliers = {2, 1, 2, 1};
 
@@ -264,7 +264,6 @@ public class VillagerManager extends Manager<CobaltKingdoms> {
                             new Material[]{
                                     Material.DIAMOND_PICKAXE,
                                     Material.DIAMOND_SHOVEL,
-                                    Material.DIAMOND_AXE,
                                     Material.DIAMOND_HOE
                             };
                     int[] costMultipliers = {2, 1, 2, 1};

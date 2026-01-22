@@ -3,38 +3,17 @@ package se.fusion1013.cobaltKingdoms.events;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.inventory.meta.ItemMeta;
 import se.fusion1013.cobaltCore.locale.LocaleManager;
 import se.fusion1013.cobaltCore.util.HexUtils;
 import se.fusion1013.cobaltCore.util.PlayerUtil;
 import se.fusion1013.cobaltCore.util.StringPlaceholders;
 
 public class ChatEvents implements Listener {
-
-    @EventHandler
-    public void anvilNameEvent(InventoryClickEvent event) {
-
-        if (event.getCurrentItem() == null) return;
-        if (event.getCurrentItem().getType() == Material.AIR) return;
-
-        if (event.getInventory().getType() == InventoryType.ANVIL) {
-            if (event.getSlotType() == InventoryType.SlotType.RESULT) {
-                ItemMeta meta = event.getCurrentItem().getItemMeta();
-                if (meta == null) return;
-
-                meta.setDisplayName(HexUtils.colorify(meta.getDisplayName()));
-                event.getCurrentItem().setItemMeta(meta);
-            }
-        }
-    }
 
     @EventHandler
     public void onChatEvent(AsyncPlayerChatEvent event) {

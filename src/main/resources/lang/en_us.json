@@ -39,5 +39,18 @@
   "kingdoms.commands.kingdom.kick.fail_not_in_kingdom": "&7The player you are attempting to kick is not a member of your kingdom",
   "kingdoms.commands.kingdom.kick.success": "&7Kicked player &3%kick_player% &7from the kingdom of &3%sender_kingdom%",
   "kingdoms.commands.kingdom.kick.fail": "&7Failed to kick player &3%kick_player% &7from the kingdom of &3%sender_kingdom%&7: %reason%",
-  "kingdoms.status.player_join": "&7You are currently &3%status%"
+  "kingdoms.status.player_join": "&7You are currently &3%status%",
+  "kingdoms.items.compass.distance": "&7You are &3%distance% &7blocks away",
+  "kingdoms.commands.height.set": "&7Set height to &3%height%",
+  "kingdoms.commands.height.set.survival": "&o&7You suddenly feel weak..",
+  "kingdoms.commands.height.query": "&7The player's height is &3%height% &7and max health &3%max_health%",
+  "kingdoms.commands.armorstand.set.arms": "&7Set arms to &3%value%",
+  "kingdoms.commands.armorstand.set.base": "&7Set base to &3%value%",
+  "kingdoms.commands.armorstand.set.invulnerable": "&7Set invulnerable to &3%value%",
+  "kingdoms.commands.armorstand.set.small": "&7Set small to &3%value%",
+  "kingdoms.commands.armorstand.set.fail_no_armor_stand": "&7Could not find a nearby armor stand",
+  "kingdoms.commands.armorstand.set.lock_set": "&7Locked slot &3%slot% &7with &3%type%",
+  "kingdoms.commands.armorstand.set.lock_remove": "&7Removed lock for slot &3%slot% &7with &3%type%",
+  "kingdoms.commands.armorstand.pose.preset_not_found": "&7Pose &3%pose% &7not found",
+  "kingdoms.commands.armorstand.pose.preset.set": "&7Set pose to &3%pose%"
 }

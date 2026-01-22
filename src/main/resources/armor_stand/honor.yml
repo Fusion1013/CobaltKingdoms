@@ -1,0 +1,25 @@
+internal_name: honor
+body:
+  x: 0
+  y: 0
+  z: 0
+head:
+  x: -15
+  y: 0
+  z: 0
+left_arm:
+  x: -110
+  y: 35
+  z: 0
+left_leg:
+  x: 5
+  y: -3
+  z: -3
+right_arm:
+  x: -110
+  y: -35
+  z: 0
+right_leg:
+  x: -5
+  y: 3
+  z: 3

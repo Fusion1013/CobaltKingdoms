@@ -6,11 +6,15 @@ import se.fusion1013.cobaltCore.CobaltCore;
 import se.fusion1013.cobaltCore.CobaltPlugin;
 import se.fusion1013.cobaltKingdoms.chair.ChairManager;
 import se.fusion1013.cobaltKingdoms.commands.EnderchestCommand;
+import se.fusion1013.cobaltKingdoms.commands.HeightCommand;
 import se.fusion1013.cobaltKingdoms.commands.InvseeCommand;
 import se.fusion1013.cobaltKingdoms.commands.StatusCommand;
+import se.fusion1013.cobaltKingdoms.commands.armorstand.ArmorStandCommand;
 import se.fusion1013.cobaltKingdoms.commands.kingdom.KingdomCommand;
 import se.fusion1013.cobaltKingdoms.database.KingdomDataManager;
+import se.fusion1013.cobaltKingdoms.entities.armorstand.ArmorStandManager;
 import se.fusion1013.cobaltKingdoms.events.*;
+import se.fusion1013.cobaltKingdoms.items.CompassManager;
 import se.fusion1013.cobaltKingdoms.items.KingdomItems;
 import se.fusion1013.cobaltKingdoms.kingdom.KingdomManager;
 import se.fusion1013.cobaltKingdoms.pigeon.PigeonEvents;
@@ -58,6 +62,8 @@ public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin {
         CobaltCore.getInstance().getManager(this, KingdomManager.class);
         CobaltCore.getInstance().getManager(this, VillagerManager.class);
         CobaltCore.getInstance().getManager(this, ChairManager.class);
+        CobaltCore.getInstance().getManager(this, CompassManager.class);
+        CobaltCore.getInstance().getManager(this, ArmorStandManager.class);
     }
 
     @Override
@@ -67,6 +73,8 @@ public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin {
         StatusCommand.register();
         InvseeCommand.register();
         EnderchestCommand.register();
+        HeightCommand.register();
+        ArmorStandCommand.register();
     }
 
     public static CobaltKingdoms getInstance() {
