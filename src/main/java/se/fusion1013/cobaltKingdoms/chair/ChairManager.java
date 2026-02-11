@@ -24,6 +24,8 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import se.fusion1013.cobaltCore.manager.Manager;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 
@@ -37,13 +39,16 @@ public class ChairManager extends Manager<CobaltKingdoms> implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onSit(PlayerInteractEvent event) {
+    public void playerInteractEvent(PlayerInteractEvent event) {
+        trySit(event);
+    }
+
+    private static void trySit(PlayerInteractEvent event) {
         if (event.getHand() == null || !event.getHand().equals(EquipmentSlot.HAND)) return;
 
         if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) return;
 
         Block block = event.getClickedBlock();
-//        Location below = block.getLocation().add(new Vector(0, -1, 0));
         Block belowBlock = block.getRelative(BlockFace.DOWN);
         BlockData blockData = block.getBlockData();
 
@@ -56,15 +61,104 @@ public class ChairManager extends Manager<CobaltKingdoms> implements Listener {
         Player p = event.getPlayer();
 
         if (p.isSneaking()) return;
-
         if (!p.getInventory().getItemInMainHand().getType().equals(Material.AIR)) return;
-
         if (p.isInsideVehicle()) return;
 
         CobaltKingdoms instance = CobaltKingdoms.getInstance();
         FileConfiguration config = instance.getConfig();
-        String selectedLayout = null;
+        String selectedLayout = getSelectedLayout(config, p, belowBlock, blockData, block);
 
+        if (selectedLayout == null) return;
+
+        sitOnChair(event, block, config, selectedLayout, blockData, p, instance);
+    }
+
+    private static void sitOnChair(PlayerInteractEvent event, Block block, FileConfiguration config, String selectedLayout, BlockData blockData, Player p, CobaltKingdoms instance) {
+        event.setCancelled(true);
+
+        Location loc = block.getLocation();
+
+        double adderX = config.getDouble("sitables." + selectedLayout + ".offsets.x");
+        double adderY = config.getDouble("sitables." + selectedLayout + ".offsets.y");
+        double adderZ = config.getDouble("sitables." + selectedLayout + ".offsets.z");
+
+        loc.setX(loc.getX() + adderX);
+        loc.setY(loc.getY() + adderY);
+        loc.setZ(loc.getZ() + adderZ);
+
+        setLocationDirectionFromDirectional(blockData, loc, p);
+        setLocationDirectionFromStairs(blockData, loc);
+
+        Entity entity = createChairEntity(config, selectedLayout, p, loc, instance);
+
+        entity.addPassenger(p);
+    }
+
+    private static @NotNull Entity createChairEntity(FileConfiguration config, String selectedLayout, Player p, Location loc, CobaltKingdoms instance) {
+        String entityType = config.getString("sitables." + selectedLayout + ".entity.type");
+        // create final value to use in lambda
+        final String layout = selectedLayout;
+        Entity entity = p.getWorld().spawn(loc, EntityType.valueOf(entityType).getEntityClass(), (stair -> {
+            stair.setPersistent(false);
+            if (stair instanceof Attributable attributable) {
+                // set movement speed to 0 to entity to not move when steering item(carrot on a stick) held
+                attributable.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0);
+
+                if (stair instanceof Pig && config.getBoolean("sitables." + layout + ".entity.saddle")) {
+                    ((Pig) stair).setSaddle(true);
+                }
+            }
+
+            stair.setInvulnerable(true);
+            stair.setSilent(true);
+            stair.setGravity(false);
+            stair.setMetadata("stair", new FixedMetadataValue(instance, true));
+            stair.setInvisible(true);
+
+            if (stair instanceof LivingEntity livingEntity) {
+                livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 99999, 1, false, false));
+                //livingEntity.setInvisible(true);
+                livingEntity.setAI(false);
+            }
+        }));
+        return entity;
+    }
+
+    private static void setLocationDirectionFromStairs(BlockData blockData, Location loc) {
+        if (blockData instanceof Stairs) {
+            Stairs.Shape shape = ((Stairs) blockData).getShape();
+            if (shape == Stairs.Shape.INNER_RIGHT || shape == Stairs.Shape.OUTER_RIGHT) {
+                loc.setYaw(loc.getYaw() + 45);
+            } else if (shape == Stairs.Shape.INNER_LEFT || shape == Stairs.Shape.OUTER_LEFT) {
+                loc.setYaw(loc.getYaw() - 45);
+            }
+        }
+    }
+
+    private static void setLocationDirectionFromDirectional(BlockData blockData, Location loc, Player p) {
+        if (blockData instanceof Directional) {
+            BlockFace facing = ((Directional) blockData).getFacing();
+            switch (facing) {
+                case SOUTH:
+                    loc.setYaw(180);
+                    break;
+                case WEST:
+                    loc.setYaw(270);
+                    break;
+                case EAST:
+                    loc.setYaw(90);
+                    break;
+                case NORTH:
+                    loc.setYaw(0);
+                    break;
+            }
+        } else {
+            loc.setYaw(p.getLocation().getYaw() + 180);
+        }
+    }
+
+    private static @Nullable String getSelectedLayout(FileConfiguration config, Player p, Block belowBlock, BlockData blockData, Block block) {
+        String selectedLayout = null;
         Set<String> nodes = config.getConfigurationSection("sitables").getKeys(false);
         for (String node : nodes) {
 
@@ -105,77 +199,7 @@ public class ChairManager extends Manager<CobaltKingdoms> implements Listener {
             }
             if (selectedLayout != null) break;
         }
-        if (selectedLayout == null) return;
-
-        event.setCancelled(true);
-
-        Location loc = block.getLocation();
-
-        double adderX = config.getDouble("sitables." + selectedLayout + ".offsets.x");
-        double adderY = config.getDouble("sitables." + selectedLayout + ".offsets.y");
-        double adderZ = config.getDouble("sitables." + selectedLayout + ".offsets.z");
-
-        loc.setX(loc.getX() + adderX);
-        loc.setY(loc.getY() + adderY);
-        loc.setZ(loc.getZ() + adderZ);
-
-        if (blockData instanceof Directional) {
-            BlockFace facing = ((Directional) blockData).getFacing();
-            switch (facing) {
-                case SOUTH:
-                    loc.setYaw(180);
-                    break;
-                case WEST:
-                    loc.setYaw(270);
-                    break;
-                case EAST:
-                    loc.setYaw(90);
-                    break;
-                case NORTH:
-                    loc.setYaw(0);
-                    break;
-            }
-        } else {
-            loc.setYaw(p.getLocation().getYaw() + 180);
-        }
-
-        if (blockData instanceof Stairs) {
-            Stairs.Shape shape = ((Stairs) blockData).getShape();
-            if (shape == Stairs.Shape.INNER_RIGHT || shape == Stairs.Shape.OUTER_RIGHT) {
-                loc.setYaw(loc.getYaw() + 45);
-            } else if (shape == Stairs.Shape.INNER_LEFT || shape == Stairs.Shape.OUTER_LEFT) {
-                loc.setYaw(loc.getYaw() - 45);
-            }
-        }
-
-        String entityType = config.getString("sitables." + selectedLayout + ".entity.type");
-        // create final value to use in lambda
-        final String layout = selectedLayout;
-        Entity entity = p.getWorld().spawn(loc, EntityType.valueOf(entityType).getEntityClass(), (stair -> {
-            stair.setPersistent(false);
-            if (stair instanceof Attributable attributable) {
-                // set movement speed to 0 to entity to not move when steering item(carrot on a stick) held
-                attributable.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0);
-
-                if (stair instanceof Pig && config.getBoolean("sitables." + layout + ".entity.saddle")) {
-                    ((Pig) stair).setSaddle(true);
-                }
-            }
-
-            stair.setInvulnerable(true);
-            stair.setSilent(true);
-            stair.setGravity(false);
-            stair.setMetadata("stair", new FixedMetadataValue(instance, true));
-            stair.setInvisible(true);
-
-            if (stair instanceof LivingEntity livingEntity) {
-                livingEntity.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 99999, 1, false, false));
-                //livingEntity.setInvisible(true);
-                livingEntity.setAI(false);
-            }
-        }));
-
-        entity.addPassenger(p);
+        return selectedLayout;
     }
 
     @EventHandler

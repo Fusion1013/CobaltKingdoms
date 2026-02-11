@@ -9,7 +9,7 @@ import se.fusion1013.cobaltCore.locale.LocaleManager;
 import se.fusion1013.cobaltCore.util.StringPlaceholders;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.player.PlayerManager;
-import se.fusion1013.cobaltKingdoms.player.PlayerStatus;
+import se.fusion1013.cobaltKingdoms.player.status.PlayerStatus;
 
 import java.util.Arrays;
 
@@ -41,6 +41,12 @@ public class StatusCommand {
                 .withPermission("cobalt.kingdoms.command.status")
                 .executesPlayer((sender, args) -> {
                     updateStatus(sender, PlayerStatus.OUT_OF_CHARACTER);
+                }).register();
+
+        new CommandAPICommand("oic")
+                .withPermission("cobalt.kingdoms.command.status")
+                .executesPlayer((sender, args) -> {
+                    updateStatus(sender, PlayerStatus.OPEN_FOR_IN_CHARACTER);
                 }).register();
     }
 

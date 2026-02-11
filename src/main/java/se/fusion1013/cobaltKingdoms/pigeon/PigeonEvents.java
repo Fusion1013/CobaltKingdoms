@@ -12,13 +12,14 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import se.fusion1013.cobaltCore.locale.LocaleManager;
-import se.fusion1013.cobaltCore.util.ItemUtil;
-import se.fusion1013.cobaltCore.util.StringPlaceholders;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 
 import java.util.HashMap;
+import java.util.Random;
 
 public class PigeonEvents implements Listener {
+
+    private static final Random rnd = new Random();
 
     @EventHandler
     public void onSendPigeonLetter(PlayerEditBookEvent event) {
@@ -27,6 +28,10 @@ public class PigeonEvents implements Listener {
         Player sendingPlayer = event.getPlayer();
         BookMeta bookMeta = event.getNewBookMeta();
 
+        sendLetter(event, bookMeta, sendingPlayer);
+    }
+
+    private static void sendLetter(PlayerEditBookEvent event, BookMeta bookMeta, Player sendingPlayer) {
         if (bookMeta.getItemModel() == null) return;
         if (!bookMeta.getItemModel().getKey().contains("letter")) return;
 
@@ -36,13 +41,7 @@ public class PigeonEvents implements Listener {
         // Try to find the player to send the mail to
         Player player = Bukkit.getPlayer(title);
         if (player == null) {
-            // Set the old book meta and reply with a fail message
-            event.setNewBookMeta(event.getPreviousBookMeta());
-            event.setSigning(false);
-            StringPlaceholders placeholders = StringPlaceholders.builder()
-                    .addPlaceholder("player", title)
-                    .build();
-            LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), sendingPlayer, "kingdoms.pigeon.fail.player_not_found", placeholders);
+            // Save the letter for offline usage
             return;
         }
 
@@ -59,9 +58,9 @@ public class PigeonEvents implements Listener {
         sendLetter(sendingPlayer, player, bookMeta);
     }
 
-    private void sendLetter(Player senderPlayer, Player receiverPlayer, BookMeta content) {
+    public static void sendLetter(Player senderPlayer, Player receiverPlayer, BookMeta content) {
         Location senderPlayerLocation = senderPlayer.getLocation();
-        Location senderParrotTarget = senderPlayerLocation.clone().add(10, 6, 10);
+        Location senderParrotTarget = senderPlayerLocation.clone().add(rnd.nextFloat(-10, 10), 6, rnd.nextFloat(-10, 10));
 
         // Send two parrots
         sendPigeon(senderPlayerLocation, senderParrotTarget);
@@ -76,9 +75,15 @@ public class PigeonEvents implements Listener {
         }, 5 * 20L);
     }
 
-    private void receiveLetter(Player player, ItemStack letter) {
+    public static void sendSenderPigeon(Player senderPlayer) {
+        Location senderPlayerLocation = senderPlayer.getLocation();
+        Location senderParrotTarget = senderPlayerLocation.clone().add(rnd.nextFloat(-10, 10), 6, rnd.nextFloat(-10, 10));
+        sendPigeon(senderPlayerLocation, senderParrotTarget);
+    }
+
+    public static void receiveLetter(Player player, ItemStack letter) {
         Location receiverPlayerLocation = player.getLocation();
-        Location receiverParrotSpawn = receiverPlayerLocation.clone().add(5, 3, 5);
+        Location receiverParrotSpawn = receiverPlayerLocation.clone().add(rnd.nextFloat(-5, 5), 3, rnd.nextFloat(-5, 5));
 
         sendPigeon(receiverParrotSpawn, receiverPlayerLocation);
 
@@ -94,7 +99,7 @@ public class PigeonEvents implements Listener {
         }, 5 * 20L);
     }
 
-    private void sendPigeon(Location spawnLocation, Location targetLocation) {
+    private static void sendPigeon(Location spawnLocation, Location targetLocation) {
         World world = spawnLocation.getWorld();
 
         Parrot parrot = (Parrot) world.spawnEntity(spawnLocation, EntityType.PARROT);
@@ -106,7 +111,7 @@ public class PigeonEvents implements Listener {
         }, 5 * 20L);
     }
 
-    private void removePigeon(Parrot parrot) {
+    private static void removePigeon(Parrot parrot) {
         if (parrot.isDead()) return;
 
         Location location = parrot.getLocation();

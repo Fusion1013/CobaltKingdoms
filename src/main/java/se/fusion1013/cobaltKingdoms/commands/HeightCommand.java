@@ -34,10 +34,18 @@ public class HeightCommand {
         double height = (double) commandArguments.get("height");
         Player targetPlayer = commandArguments.get("player") != null ? (Player) commandArguments.get("player") : player;
 
+        if (targetPlayer.getUniqueId() != player.getUniqueId() && !player.hasPermission("cobalt.kingdoms.armorstand.set_other_player")) {
+            LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), player, "kingdoms.commands.height.set_only_self");
+            return;
+        }
+
         if (targetPlayer.getAttribute(Attribute.SCALE) != null)
             targetPlayer.getAttribute(Attribute.SCALE).setBaseValue(height);
-        if (targetPlayer.getAttribute(Attribute.MAX_HEALTH) != null)
-            targetPlayer.getAttribute(Attribute.MAX_HEALTH).setBaseValue(Math.min(20 * (height / 2 + 0.5), 20));
+        if (targetPlayer.getAttribute(Attribute.MAX_HEALTH) != null) {
+            int targetHealth = 20;
+            if (height < 1) targetHealth = 18;
+            targetPlayer.getAttribute(Attribute.MAX_HEALTH).setBaseValue(targetHealth);
+        }
 
         if (targetPlayer.getGameMode() == GameMode.SURVIVAL) {
             targetPlayer.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 20 * 10, 0));

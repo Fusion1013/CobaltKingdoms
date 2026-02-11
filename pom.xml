@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>se.fusion1013</groupId>
-    <artifactId>cobaltkingdoms</artifactId>
-    <version>1.1.0</version>
+    <artifactId>CobaltKingdoms</artifactId>
+    <version>1.2.1</version>
     <packaging>jar</packaging>
 
-    <name>cobaltkingdoms</name>
+    <name>CobaltKingdoms</name>
 
     <properties>
         <java.version>21</java.version>
@@ -79,13 +79,13 @@
     </build>
 
     <repositories>
-        <!-- Spigot snapshots (for spigot-api) -->
+        <!-- Spigot snapshots -->
         <repository>
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
 
-        <!-- PaperMC repo (optional, only if you use paper-api) -->
+        <!-- PaperMC repo -->
         <repository>
             <id>papermc-repo</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
@@ -168,7 +168,7 @@
         <dependency>
             <groupId>se.fusion1013</groupId>
             <artifactId>cobaltcore</artifactId>
-            <version>1.0.2</version>
+            <version>1.1.0</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

@@ -68,7 +68,10 @@ public class ChatEvents implements Listener {
                 }
 
                 // Send the message
-                p.sendMessage(HexUtils.colorify("<" + sender.getName() + "&r> ") + playerMessage);
+                localeManager.sendMessage("", p, "player.chat", StringPlaceholders.builder()
+                        .addPlaceholder("message", playerMessage)
+                        .addPlaceholder("player", p.getName())
+                        .build());
             }
         }
     }

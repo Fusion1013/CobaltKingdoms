@@ -41,10 +41,10 @@ public class KingdomInfoCommand {
                     LOCALE.sendMessage("", sender, "kingdoms.commands.kingdom.info.player_list_header", generalPlaceholder);
                     for (UUID playerId : kingdomInfo.members()) {
                         Player player = Bukkit.getPlayer(playerId);
-                        if (player == null) continue;
+                        String playerIdentifier = player == null ? playerId.toString() : player.getName();
 
                         StringPlaceholders placeholders = StringPlaceholders.builder()
-                                .addPlaceholder("player", player.getName())
+                                .addPlaceholder("player", playerIdentifier)
                                 .build();
                         LOCALE.sendMessage("", sender, "kingdoms.commands.kingdom.info.player_list_item", placeholders);
                     }
