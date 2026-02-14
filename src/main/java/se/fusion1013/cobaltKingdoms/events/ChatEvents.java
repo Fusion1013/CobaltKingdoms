@@ -70,7 +70,7 @@ public class ChatEvents implements Listener {
                 // Send the message
                 localeManager.sendMessage("", p, "player.chat", StringPlaceholders.builder()
                         .addPlaceholder("message", playerMessage)
-                        .addPlaceholder("player", p.getName())
+                        .addPlaceholder("player", player.getName())
                         .build());
             }
         }

@@ -5,12 +5,19 @@ Upcoming features:
 **FEATURE:** Kingdom roles, multiple leaders
 **FEATURE:** Player abilities
 
+**CobaltKingdoms Version 1.3.0**
+
+- **FEATURE:** Added discord integration
+- **BUGFIX:** Fixed incorrect player in chat messages
+
 **CobaltKingdoms Version 1.2.1**
 
 - **FEATURE:** Updated chat messages to the new Cobalt Color Profile (tm)
-- **FEATURE:** Nametags are invisible for players in character
-- **BUGFIX:** Fixed missing quit messages
+- **FEATURE:** Nametags are now invisible for players in character
+- **BUGFIX:** Fixed missing locale messages
+- **BUGFIX:** Fixed join/quit messages displaying for players with vanish permissions
 - **BUGFIX:** Fixed incorrect status prefix
+- **BUGFIX:** Fixed letters not getting sent if character profile name is empty
 
 **CobaltKingdoms Version 1.2.0**
 

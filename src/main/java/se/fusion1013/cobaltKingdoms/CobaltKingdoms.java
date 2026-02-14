@@ -9,6 +9,7 @@ import se.fusion1013.cobaltKingdoms.commands.*;
 import se.fusion1013.cobaltKingdoms.commands.armorstand.ArmorStandCommand;
 import se.fusion1013.cobaltKingdoms.commands.kingdom.KingdomCommand;
 import se.fusion1013.cobaltKingdoms.database.KingdomDataManager;
+import se.fusion1013.cobaltKingdoms.discord.DiscordManager;
 import se.fusion1013.cobaltKingdoms.entities.armorstand.ArmorStandManager;
 import se.fusion1013.cobaltKingdoms.events.*;
 import se.fusion1013.cobaltKingdoms.items.CompassManager;
@@ -68,6 +69,7 @@ public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin {
         CobaltCore.getInstance().getManager(this, CharacterProfileManager.class);
         CobaltCore.getInstance().getManager(this, KitManager.class);
         CobaltCore.getInstance().getManager(this, LetterManager.class);
+        CobaltCore.getInstance().getManager(this, DiscordManager.class);
     }
 
     @Override
