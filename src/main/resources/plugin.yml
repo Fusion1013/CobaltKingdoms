@@ -4,3 +4,5 @@ main: se.fusion1013.cobaltKingdoms.CobaltKingdoms
 api-version: '1.21'
 depend:
   - CobaltCore
+  - voicechat
+voicechat_api_version: 1

@@ -52,13 +52,8 @@ public class PlayerManager extends Manager<CobaltKingdoms> implements Listener {
                 StringPlaceholders.builder().addPlaceholder("status", getPlayerData(player.getUniqueId()).getPlayerStatus().title).build());
 
         event.joinMessage(Component.empty());
-        if (!player.isOp())
-            LocaleManager.getInstance().broadcastMessage("", "kingdoms.player_join", StringPlaceholders.builder().addPlaceholder("player", player.getName()).build());
-        else {
-            for (Player otherPlayer : Bukkit.getOnlinePlayers()) {
-                if (otherPlayer.isOp())
-                    LocaleManager.getInstance().sendMessage("", otherPlayer, "kingdoms.player_join", StringPlaceholders.builder().addPlaceholder("player", player.getName()).build());
-            }
+        for (Player otherPlayer : Bukkit.getOnlinePlayers()) {
+            LocaleManager.getInstance().sendMessage("", otherPlayer, "kingdoms.player_join", StringPlaceholders.builder().addPlaceholder("player", player.getName()).build());
         }
 
     }
@@ -67,13 +62,8 @@ public class PlayerManager extends Manager<CobaltKingdoms> implements Listener {
     private void onPlayerLeave(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         event.quitMessage(Component.empty());
-        if (!player.isOp())
-            LocaleManager.getInstance().broadcastMessage("", "kingdoms.player_quit", StringPlaceholders.builder().addPlaceholder("player", player.getName()).build());
-        else {
-            for (Player otherPlayer : Bukkit.getOnlinePlayers()) {
-                if (otherPlayer.isOp())
-                    LocaleManager.getInstance().sendMessage("", otherPlayer, "kingdoms.player_quit", StringPlaceholders.builder().addPlaceholder("player", player.getName()).build());
-            }
+        for (Player otherPlayer : Bukkit.getOnlinePlayers()) {
+            LocaleManager.getInstance().sendMessage("", otherPlayer, "kingdoms.player_quit", StringPlaceholders.builder().addPlaceholder("player", player.getName()).build());
         }
     }
 

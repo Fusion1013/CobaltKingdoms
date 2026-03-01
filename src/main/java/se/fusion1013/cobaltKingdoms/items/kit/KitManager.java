@@ -24,7 +24,7 @@ public class KitManager extends Manager<CobaltKingdoms> {
     }
 
     public static void loadKitFiles(CobaltPlugin plugin, boolean overwrite) {
-        FileUtil.loadFilesInto(plugin, "kit/", new IProviderStorage() {
+        FileUtil.loadFilesInto(plugin, "kit/", new IProviderStorage<INameProvider>() {
             @Override
             public void put(String key, INameProvider provider) {
                 register(provider);

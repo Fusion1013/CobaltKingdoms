@@ -71,7 +71,7 @@ public class DiscordManager extends Manager<CobaltKingdoms> implements Listener 
 
         final String playerCountMessage = "| IC: " + nInCharacter + " | OIC: " + nOpenForInCharacter + " | OOC: " + nOutOfCharacter + " | AFK: " + nAfk + " |";
 
-        long playerCount = players.stream().filter(p -> !p.isOp()).count();
+        long playerCount = players.size();
         Bukkit.getScheduler().runTaskLaterAsynchronously(CobaltKingdoms.getInstance(), () -> {
             JDA.getPresence().setActivity(Activity.of(Activity.ActivityType.CUSTOM_STATUS, "Players Online: " + playerCount));
         }, 1);

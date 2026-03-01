@@ -5,10 +5,16 @@ Upcoming features:
 **FEATURE:** Kingdom roles, multiple leaders
 **FEATURE:** Player abilities
 
-**CobaltKingdoms Version 1.3.0**
+**CobaltKingdoms Version 1.2.3**
+
+**FEATURE:** The discord bot now displays the status for vanished players
+**UPDATE:** Player leave and join messages now appear for vanished players
+
+**CobaltKingdoms Version 1.2.2**
 
 - **FEATURE:** Added discord integration
-- **BUGFIX:** Fixed incorrect player in chat messages
+- **COMMAND:** New discord command: '/info'
+- **BUGFIX:** Fixed incorrect player chat messages
 
 **CobaltKingdoms Version 1.2.1**
 

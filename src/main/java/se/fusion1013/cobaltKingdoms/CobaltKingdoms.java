@@ -1,5 +1,8 @@
 package se.fusion1013.cobaltKingdoms;
 
+import de.maxhenkel.voicechat.api.VoicechatApi;
+import de.maxhenkel.voicechat.api.VoicechatPlugin;
+import de.maxhenkel.voicechat.api.events.EventRegistration;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import se.fusion1013.cobaltCore.CobaltCore;
@@ -23,7 +26,7 @@ import se.fusion1013.cobaltKingdoms.player.character.CharacterProfileManager;
 import se.fusion1013.cobaltKingdoms.villager.VillagerEvents;
 import se.fusion1013.cobaltKingdoms.villager.VillagerManager;
 
-public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin {
+public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin, VoicechatPlugin {
 
     private static CobaltKingdoms INSTANCE;
 
@@ -99,5 +102,20 @@ public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin {
     @Override
     public String getPrefix() {
         return "prefix.kingdoms";
+    }
+
+    @Override
+    public String getPluginId() {
+        return getInternalName();
+    }
+
+    @Override
+    public void initialize(VoicechatApi voicechatApi) {
+
+    }
+
+    @Override
+    public void registerEvents(EventRegistration registration) {
+
     }
 }

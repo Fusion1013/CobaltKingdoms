@@ -13,6 +13,7 @@ import se.fusion1013.cobaltKingdoms.player.PlayerManager;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,7 +23,7 @@ public class SlashCommandListener extends ListenerAdapter {
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         switch (event.getName()) {
             case "info" -> {
-                Collection<Player> players = Bukkit.getOnlinePlayers().stream().filter(p -> !p.isOp()).collect(Collectors.toSet());
+                Collection<Player> players = new HashSet<>(Bukkit.getOnlinePlayers());
 
                 int nInCharacter = 0;
                 List<Player> inCharacter = new ArrayList<>();

@@ -54,7 +54,7 @@ public class LetterCommand {
 
         if (player.getName().equalsIgnoreCase(receiverPlayer)) {
             LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), player, "kingdoms.commands.letter.send.not_self");
-//            return;
+            if (!player.isOp()) return;
         }
 
         if (mainHandItem.getType() != Material.WRITTEN_BOOK) {

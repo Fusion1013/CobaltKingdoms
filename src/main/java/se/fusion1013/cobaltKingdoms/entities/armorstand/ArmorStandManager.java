@@ -26,7 +26,7 @@ public class ArmorStandManager extends Manager<CobaltKingdoms> {
     }
 
     public static void loadArmorStandFiles(CobaltPlugin plugin, boolean overwrite) {
-        FileUtil.loadFilesInto(plugin, "armor_stand/", new IProviderStorage() {
+        FileUtil.loadFilesInto(plugin, "armor_stand/", new IProviderStorage<INameProvider>() {
             @Override
             public void put(String key, INameProvider provider) {
                 register(provider);
