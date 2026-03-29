@@ -1,6 +1,8 @@
 package se.fusion1013.cobaltKingdoms.items.kit;
 
+import com.google.gson.JsonObject;
 import net.kyori.adventure.key.Key;
+import org.apache.commons.lang3.NotImplementedException;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
@@ -92,6 +94,10 @@ public class Kit implements IKit {
     public static IKit create(ConfigurationSection yaml) {
         String internalName = yaml.getString("internal_name");
         return new Kit(internalName, yaml);
+    }
+
+    public static IKit create(JsonObject json) {
+        throw new NotImplementedException();
     }
 
     @Override

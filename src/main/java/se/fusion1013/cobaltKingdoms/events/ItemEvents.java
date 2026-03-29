@@ -4,12 +4,15 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerAttemptPickupItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import se.fusion1013.cobaltCore.item.CustomItemManager;
 import se.fusion1013.cobaltCore.item.ICustomItem;
+import se.fusion1013.cobaltCore.util.BlockUtil;
+import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 
 import java.util.Random;
 
@@ -18,9 +21,31 @@ public class ItemEvents implements Listener {
     private static final Random random = new Random();
 
     @EventHandler
-    public void onPlayerClickFlower(PlayerInteractEvent event) {
+    public void onPlayerInteract(PlayerInteractEvent event) {
         tryBoneMealFlower(event);
         blockHatPlace(event);
+        tryCopyLectern(event);
+    }
+
+    private void tryCopyLectern(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        if (!event.getPlayer().isSneaking()) return;
+
+        Block block = event.getClickedBlock();
+        if (block == null || block.getType() != Material.LECTERN) return;
+
+        ItemStack item = event.getItem();
+        if (item == null || item.getType() != Material.WRITABLE_BOOK) return;
+
+        ItemStack lecternItem = BlockUtil.getLecternItem(block);
+        if (lecternItem == null) return;
+
+        event.getPlayer().getInventory().setItemInMainHand(lecternItem);
+        event.getPlayer().playSound(block.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
+        event.setCancelled(true);
+        Bukkit.getScheduler().runTaskLater(CobaltKingdoms.getInstance(), () -> {
+            event.getPlayer().closeInventory();
+        }, 1);
     }
 
     private static void blockHatPlace(PlayerInteractEvent event) {

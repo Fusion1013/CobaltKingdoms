@@ -38,7 +38,6 @@ public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin, Voicecha
     public void onEnable() {
         CobaltCore.getInstance().registerCobaltPlugin(this);
         KingdomItems.register();
-        KitManager.reloadKits();
     }
 
     @Override
@@ -88,6 +87,7 @@ public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin, Voicecha
         CharacterCommand.register();
         KitCommand.register();
         ColorsCommand.register();
+        WindMessageCommand.register();
     }
 
     public static CobaltKingdoms getInstance() {
