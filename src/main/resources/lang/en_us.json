@@ -91,5 +91,6 @@
   "kingdoms.letters.notification_on_join": "&7You have &z%letters%&7 letters. Use &z/letter read&7 to read",
   "kingdoms.commands.letter.send.not_letter": "&7Held item is not a letter",
   "kingdoms.commands.letter.send.not_written_book": "&7Held item is not a written book",
-  "kingdoms.commands.letter.send.not_self": "&7Cannot send a letter to yourself"
+  "kingdoms.commands.letter.send.not_self": "&7Cannot send a letter to yourself",
+  "kingdoms.commands.random_loot.insert": "&7Inserted &z%amount% &7loot items"
 }

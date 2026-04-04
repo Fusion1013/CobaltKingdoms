@@ -12,6 +12,7 @@ public class EnderchestCommand {
     public static void register() {
         new CommandAPICommand("enderchest")
                 .withPermission("cobalt.kingdoms.enderchest")
+                .withAliases("echest")
                 .withOptionalArguments(new EntitySelectorArgument.OnePlayer("player"))
                 .executesPlayer(EnderchestCommand::openPlayerEchest)
                 .register();

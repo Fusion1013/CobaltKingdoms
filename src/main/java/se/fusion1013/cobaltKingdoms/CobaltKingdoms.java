@@ -88,6 +88,8 @@ public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin, Voicecha
         KitCommand.register();
         ColorsCommand.register();
         WindMessageCommand.register();
+        RandomLootCommand.register();
+        GetCompassCommand.register();
     }
 
     public static CobaltKingdoms getInstance() {
