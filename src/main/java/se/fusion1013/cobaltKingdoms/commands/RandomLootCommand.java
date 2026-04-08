@@ -1,10 +1,7 @@
 package se.fusion1013.cobaltKingdoms.commands;
 
 import dev.jorel.commandapi.CommandAPICommand;
-import dev.jorel.commandapi.arguments.BooleanArgument;
-import dev.jorel.commandapi.arguments.DoubleArgument;
-import dev.jorel.commandapi.arguments.LocationArgument;
-import dev.jorel.commandapi.arguments.LocationType;
+import dev.jorel.commandapi.arguments.*;
 import dev.jorel.commandapi.executors.CommandArguments;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -18,6 +15,7 @@ import se.fusion1013.cobaltCore.locale.LocaleManager;
 import se.fusion1013.cobaltCore.util.CommandUtil;
 import se.fusion1013.cobaltCore.util.StringPlaceholders;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
+import se.fusion1013.cobaltKingdoms.loot.LootManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,6 +29,7 @@ public class RandomLootCommand {
                 .withPermission(CommandUtil.getPermissionString(CobaltKingdoms.getInstance(), "random_loot"))
                 .withArguments(new DoubleArgument("scaling"))
                 .withOptionalArguments(new BooleanArgument("clear"))
+                .withOptionalArguments(new StringArgument("loot").replaceSuggestions(ArgumentSuggestions.strings(k -> LootManager.getLootDistributionNames())))
                 .withOptionalArguments(new LocationArgument("location", LocationType.BLOCK_POSITION))
                 .executesPlayer(RandomLootCommand::insertRandomLoot)
                 .register();
@@ -40,12 +39,13 @@ public class RandomLootCommand {
         Location location = args.get("location") != null ? (Location) args.get("location") : getTargetBlock(player, 5).getLocation();
         double scaling = (double) args.get("scaling");
         boolean clear = (boolean) args.getOrDefault("clear", false);
-        int amount = distributeLootToChest(location, player, scaling, clear);
+        String source = args.get("loot") != null ? (String) args.get("loot") : "player";
+        int amount = distributeLootToChest(location, player, source, scaling, clear);
         LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), player, "kingdoms.commands.random_loot.insert", StringPlaceholders.builder()
                 .addPlaceholder("amount", amount).build());
     }
 
-    private static int distributeLootToChest(Location chestLocation, Player player, double lootFactor, boolean clearInventory) {
+    private static int distributeLootToChest(Location chestLocation, Player player, String lootSource, double lootFactor, boolean clearInventory) {
         if (chestLocation == null || player == null) return 0;
 
         Block block = chestLocation.getBlock();
@@ -60,20 +60,34 @@ public class RandomLootCommand {
         List<ItemStack> hotbarItems = new ArrayList<>();
         int totalWeight = 0;
 
-        for (int i = 0; i < 9; i++) {
-            ItemStack item = playerInv.getItem(i);
-            if (item != null && item.getType() != Material.AIR && item.getAmount() > 0) {
-                hotbarItems.add(item.clone());
-                totalWeight += item.getAmount(); // weight = stack size
+        if (lootSource.equalsIgnoreCase("player")) {
+            for (int i = 0; i < 9; i++) {
+                ItemStack item = playerInv.getItem(i);
+                if (item != null && item.getType() != Material.AIR && item.getAmount() > 0) {
+                    hotbarItems.add(item.clone());
+                    totalWeight += item.getAmount(); // weight = stack size
+                }
+            }
+        } else {
+            List<ItemStack> items = LootManager.getItems(lootSource);
+            for (ItemStack item : items) {
+                if (item != null && item.getType() != Material.AIR && item.getAmount() > 0) {
+                    hotbarItems.add(item.clone());
+                    totalWeight += item.getAmount(); // weight = stack size
+                }
             }
         }
 
-        if (hotbarItems.isEmpty() || totalWeight == 0) return 0;
+        return distributeLoot(lootFactor, hotbarItems, totalWeight, chestInv);
+    }
+
+    private static int distributeLoot(double lootFactor, List<ItemStack> items, int totalWeight, Inventory chestInv) {
+        if (items.isEmpty() || totalWeight == 0) return 0;
 
         Random random = new Random();
 
         // Determine number of loot rolls based on lootFactor
-        int rolls = Math.max(1, (int) Math.round(lootFactor * hotbarItems.size()));
+        int rolls = Math.max(1, (int) Math.round(lootFactor * items.size()));
 
         int itemAmount = 0;
 
@@ -81,7 +95,7 @@ public class RandomLootCommand {
             int r = random.nextInt(totalWeight);
             int cumulative = 0;
 
-            for (ItemStack item : hotbarItems) {
+            for (ItemStack item : items) {
                 cumulative += item.getAmount();
 
                 if (r < cumulative) {

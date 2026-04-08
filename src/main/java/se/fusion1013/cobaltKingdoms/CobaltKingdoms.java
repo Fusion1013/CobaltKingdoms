@@ -19,6 +19,7 @@ import se.fusion1013.cobaltKingdoms.items.CompassManager;
 import se.fusion1013.cobaltKingdoms.items.KingdomItems;
 import se.fusion1013.cobaltKingdoms.items.kit.KitManager;
 import se.fusion1013.cobaltKingdoms.kingdom.KingdomManager;
+import se.fusion1013.cobaltKingdoms.loot.LootManager;
 import se.fusion1013.cobaltKingdoms.pigeon.LetterManager;
 import se.fusion1013.cobaltKingdoms.pigeon.PigeonEvents;
 import se.fusion1013.cobaltKingdoms.player.PlayerManager;
@@ -72,6 +73,7 @@ public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin, Voicecha
         CobaltCore.getInstance().getManager(this, KitManager.class);
         CobaltCore.getInstance().getManager(this, LetterManager.class);
         CobaltCore.getInstance().getManager(this, DiscordManager.class);
+        CobaltCore.getInstance().getManager(this, LootManager.class);
     }
 
     @Override
