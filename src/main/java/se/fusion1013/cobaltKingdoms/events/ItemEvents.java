@@ -2,11 +2,16 @@ package se.fusion1013.cobaltKingdoms.events;
 
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerAttemptPickupItemEvent;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import se.fusion1013.cobaltCore.item.CustomItemManager;
@@ -21,10 +26,75 @@ public class ItemEvents implements Listener {
     private static final Random random = new Random();
 
     @EventHandler
+    public void onArmorStandInteract(PlayerInteractAtEntityEvent event) {
+        if (!(event.getRightClicked() instanceof ArmorStand stand)) return;
+
+        Player player = event.getPlayer();
+
+        if (!player.isSneaking()) return;
+
+        event.setCancelled(true);
+
+        EntityEquipment standEq = stand.getEquipment();
+        EntityEquipment playerEq = player.getEquipment();
+
+        if (standEq == null || playerEq == null) return;
+
+        swapIfUnlocked(stand, standEq, playerEq, EquipmentSlot.HEAD);
+        swapIfUnlocked(stand, standEq, playerEq, EquipmentSlot.CHEST);
+        swapIfUnlocked(stand, standEq, playerEq, EquipmentSlot.LEGS);
+        swapIfUnlocked(stand, standEq, playerEq, EquipmentSlot.FEET);
+        swapIfUnlocked(stand, standEq, playerEq, EquipmentSlot.HAND);
+        swapIfUnlocked(stand, standEq, playerEq, EquipmentSlot.OFF_HAND);
+    }
+
+    private void swapIfUnlocked(ArmorStand stand, EntityEquipment standEq, EntityEquipment playerEq, EquipmentSlot slot) {
+        // If the slot is locked, do nothing
+        if (stand.hasEquipmentLock(slot, ArmorStand.LockType.REMOVING_OR_CHANGING)) {
+            return;
+        }
+
+        ItemStack standItem = standEq.getItem(slot);
+        ItemStack playerItem = playerEq.getItem(slot);
+
+        standEq.setItem(slot, playerItem);
+        playerEq.setItem(slot, standItem);
+    }
+
+    @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         tryBoneMealFlower(event);
         blockHatPlace(event);
         tryCopyLectern(event);
+    }
+
+    @EventHandler
+    public void onPlayerSneak(PlayerToggleSneakEvent event) {
+        tryDropMannequin(event);
+    }
+
+    private void tryDropMannequin(PlayerToggleSneakEvent event) {
+        if (!event.isSneaking()) return;
+
+        for (int i = event.getPlayer().getPassengers().size() - 1; i >= 0; i--) {
+            Entity entity = event.getPlayer().getPassengers().get(i);
+            if (entity instanceof Mannequin mannequin) {
+                if (!mannequin.getScoreboardTags().contains("passenger")) continue;
+                event.getPlayer().removePassenger(mannequin);
+                mannequin.setPose(Pose.SWIMMING);
+            }
+        }
+    }
+
+    @EventHandler
+    public void tryPickUpMannequin(PlayerInteractAtEntityEvent event) {
+        if (!event.getPlayer().isSneaking()) return;
+        if (!(event.getRightClicked() instanceof Mannequin mannequin)) return;
+        if (mannequin.getPose() != Pose.SLEEPING && mannequin.getPose() != Pose.SWIMMING) return;
+        if (!mannequin.getScoreboardTags().contains("passenger")) return;
+
+        event.getPlayer().addPassenger(mannequin);
+        mannequin.setPose(Pose.SWIMMING);
     }
 
     private void tryCopyLectern(PlayerInteractEvent event) {

@@ -15,7 +15,8 @@ public class EnchantedBookUtil {
     private static final Random RANDOM = new Random();
 
     public static ItemStack getRandomEnchantedBook(int maxLevel) {
-        Enchantment enchantment = Enchantment.values()[RANDOM.nextInt(Enchantment.values().length)];
+        List<Enchantment> possibleEnchantments = Arrays.stream(Enchantment.values()).filter(e -> e.getKey().getNamespace().equalsIgnoreCase("minecraft")).toList();
+        Enchantment enchantment = possibleEnchantments.get(RANDOM.nextInt(possibleEnchantments.size()));
         ItemStack book = new ItemStack(Material.ENCHANTED_BOOK);
         EnchantmentStorageMeta meta = (EnchantmentStorageMeta) book.getItemMeta();
         meta.addStoredEnchant(enchantment, 1 + RANDOM.nextInt(Math.min(maxLevel, enchantment.getMaxLevel())), true);

@@ -5,6 +5,10 @@ Upcoming features:
 **FEATURE:** Kingdom roles, multiple leaders
 **FEATURE:** Player abilities
 
+**CobaltKingdoms Version 1.2.5**
+
+**FEATURE:** Right-clicking an armor stand while sneaking will switch all the slots with yours
+
 **CobaltKingdoms Version 1.2.3**
 
 **FEATURE:** The discord bot now displays the status for vanished players
