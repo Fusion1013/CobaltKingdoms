@@ -108,7 +108,7 @@ public class KingdomManager extends Manager<CobaltKingdoms> implements Listener 
         return null;
     }
 
-    private KingdomData getKingdomData(String name) {
+    public KingdomData getKingdomData(String name) {
         for (KingdomData data : KINGDOMS.values()) {
             if (data.getName().equalsIgnoreCase(name)) return data;
         }

@@ -2,6 +2,7 @@ Upcoming features:
 
 **FEATURE:** Added height support to kits
 **FEATURE:** Added attribute support to kits
+**FEATURE:** /kit save - Saves a kit from your active inventory state
 **FEATURE:** Kingdom roles, multiple leaders
 **FEATURE:** Player abilities
 

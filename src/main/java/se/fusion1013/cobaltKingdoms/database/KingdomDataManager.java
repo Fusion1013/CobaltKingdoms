@@ -5,6 +5,8 @@ import se.fusion1013.cobaltCore.manager.Manager;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.database.kingdom.IKingdomDao;
 import se.fusion1013.cobaltKingdoms.database.kingdom.KingdomDaoSQLite;
+import se.fusion1013.cobaltKingdoms.database.kingdom.town.ITownDao;
+import se.fusion1013.cobaltKingdoms.database.kingdom.town.TownDaoSQLite;
 import se.fusion1013.cobaltKingdoms.database.letter.ILetterDao;
 import se.fusion1013.cobaltKingdoms.database.letter.LetterDaoSQLite;
 import se.fusion1013.cobaltKingdoms.database.player.CharacterProfileDaoSQLite;
@@ -22,6 +24,7 @@ public class KingdomDataManager extends Manager<CobaltKingdoms> {
         dataManager.registerDao(new KingdomDaoSQLite(), IKingdomDao.class);
         dataManager.registerDao(new CharacterProfileDaoSQLite(), ICharacterProfileDao.class);
         dataManager.registerDao(new LetterDaoSQLite(), ILetterDao.class);
+        dataManager.registerDao(new TownDaoSQLite(), ITownDao.class);
     }
 
     @Override

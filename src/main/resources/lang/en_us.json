@@ -92,5 +92,14 @@
   "kingdoms.commands.letter.send.not_letter": "&7Held item is not a letter",
   "kingdoms.commands.letter.send.not_written_book": "&7Held item is not a written book",
   "kingdoms.commands.letter.send.not_self": "&7Cannot send a letter to yourself",
-  "kingdoms.commands.random_loot.insert": "&7Inserted &z%amount% &7loot items"
+  "kingdoms.commands.random_loot.insert": "&7Inserted &z%amount% &7loot items",
+  "kingdoms.quests.start.item_delivery": "&z%player% &7started an item delivery from &z%start% &7to &z%end%",
+  "kingdoms.commands.town.list.header": "&7---- [ &zTowns&7 ] ----",
+  "kingdoms.commands.town.list.item": "&7 - &z%town% &7[&z%location%&7]",
+  "kingdoms.commands.town.create": "&7Created new town &z%town%",
+  "kingdoms.commands.town.create.fail": "&7Failed to create town &z%town%",
+  "kingdoms.commands.town.delete": "&7Deleted town &z%town%",
+  "kingdoms.commands.town.delete.fail": "&7Failed to delete town &z%town%",
+  "kingdoms.commands.town.move": "&7Moved town &z%town%",
+  "kingdoms.commands.town.move.fail": "&7Failed to move town &z%town%"
 }

@@ -62,7 +62,7 @@ public class KingdomCreateCommand {
                 });
     }
 
-    private static void spawnRandomFirework(Player player) {
+    public static void spawnRandomFirework(Player player) {
         Location loc = player.getLocation();
         Firework firework = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK_ROCKET);
         FireworkMeta meta = firework.getFireworkMeta();
