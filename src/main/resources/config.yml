@@ -1,0 +1,42 @@
+sitables:
+  stairs:
+    entity:
+      type: PIG
+      saddle: true
+    offsets:
+      x: 0.5
+      y: -0.4
+      z: 0.5
+    #BLOCKDATA, BLOCKS
+    check: BLOCKDATA
+    list:
+      - org.bukkit.block.data.type.Stairs
+  slabs:
+    entity:
+      type: PIG
+      saddle: true
+    offsets:
+      x: 0.5
+      y: -0.4
+      z: 0.5
+    check: BLOCKDATA
+    list:
+      - org.bukkit.block.data.type.Slab
+  fun:
+    # if require is set to true
+    # player must have "sit.fun" permission to sit on the block's this layout has
+    permission:
+      require: true
+      # %s is the layout name
+      name: "sit.%s"
+    entity:
+      type: ARMOR_STAND
+      saddle: false
+    offsets:
+      x: 0.5
+      y: -1.1
+      z: 0.5
+    check: BLOCKS
+    list:
+      - END_ROD
+

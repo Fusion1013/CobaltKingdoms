@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import se.fusion1013.cobaltCore.locale.LocaleManager;
 import se.fusion1013.cobaltCore.util.StringPlaceholders;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
+import se.fusion1013.cobaltKingdoms.Response;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownManager;
 
 public class TownMoveCommand {
@@ -26,15 +27,16 @@ public class TownMoveCommand {
         String townName = (String) args.get("town");
         Location newLocation = args.get("new_location") != null ? (Location) args.get("new_location") : player.getLocation();
 
-        boolean moved = TownManager.getInstance().moveTown(player, townName, newLocation);
+        Response response = TownManager.getInstance().moveTown(player, townName, newLocation);
 
-        if (moved) {
+        if (response.ok()) {
             LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), player, "kingdoms.commands.town.move", StringPlaceholders.builder()
                     .addPlaceholder("town", townName)
                     .build());
         } else {
             LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), player, "kingdoms.commands.town.move.fail", StringPlaceholders.builder()
                     .addPlaceholder("town", townName)
+                    .addPlaceholder("reason", response.message())
                     .build());
         }
     }

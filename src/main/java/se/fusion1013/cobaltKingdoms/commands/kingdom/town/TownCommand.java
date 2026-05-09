@@ -13,6 +13,10 @@ public class TownCommand {
                 .withSubcommand(TownDeleteCommand.register())
                 .withSubcommand(TownListCommand.register())
                 .withSubcommand(TownMoveCommand.register())
+                .withSubcommand(TownInviteCommand.register())
+                .withSubcommand(TownKickCommand.register())
+                .withSubcommand(TownLeaveCommand.register())
+                .withSubcommand(TownInfoCommand.register())
                 .register();
     }
 

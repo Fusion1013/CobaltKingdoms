@@ -7,31 +7,39 @@ import org.bukkit.entity.Parrot;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
+import se.fusion1013.cobaltCore.database.system.DataManager;
 import se.fusion1013.cobaltCore.manager.Manager;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownData;
+import se.fusion1013.cobaltKingdoms.database.kingdom.town.ITownRepository;
+import se.fusion1013.cobaltKingdoms.database.quest.IQuestRepository;
+import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownManager;
-import se.fusion1013.cobaltKingdoms.quest.item_delivery.QuestItemDelivery;
+import se.fusion1013.cobaltKingdoms.kingdom.town.TownMemberEntity;
+import se.fusion1013.cobaltKingdoms.quest.gui.QuestMenu;
+import se.fusion1013.cobaltKingdoms.util.ItemSerializationUtils;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
 
-import static se.fusion1013.cobaltKingdoms.commands.kingdom.KingdomCreateCommand.spawnRandomFirework;
+import static se.fusion1013.cobaltKingdoms.quest.item_delivery.ItemDeliveryQuestEntity.DROPS_KEY;
+import static se.fusion1013.cobaltKingdoms.quest.item_delivery.ItemDeliveryQuestEntity.QUEST_KEY;
 
 public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
 
     public static final NamespacedKey QUEST_ID_KEY = new NamespacedKey(CobaltKingdoms.getInstance(), "quest_id");
     public static final NamespacedKey QUEST_GIVER_ID_KEY = new NamespacedKey(CobaltKingdoms.getInstance(), "quest_giver_id");
 
+    private static final IQuestRepository questRepository = DataManager.getInstance().getDao(IQuestRepository.class);
+    private static final ITownRepository townRepository = DataManager.getInstance().getDao(ITownRepository.class);
+
     private static final Random random = new Random();
-    private static final Map<UUID, IQuest> ACTIVE_QUESTS = new HashMap<>();
 
     // TODO: Replace with a list of some custom class
     // TODO: Store the spawn time and remove the entity after some time
@@ -40,7 +48,8 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
     @EventHandler
     public void onPlayerInteractAtEntity(PlayerInteractAtEntityEvent event) {
         Entity rightClicked = event.getRightClicked();
-        if (rightClicked.getPersistentDataContainer().has(QUEST_GIVER_ID_KEY)) resolveInteractAtQuestGiver(event);
+        // TODO: Might add this back later for more dynamic quests that is not given by towns
+//        if (rightClicked.getPersistentDataContainer().has(QUEST_GIVER_ID_KEY)) resolveInteractAtQuestGiver(event);
         if (rightClicked.getPersistentDataContainer().has(TownManager.TOWN_ENTITY_KEY))
             resolveInteractAtTownEntity(event);
     }
@@ -48,61 +57,52 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
     private void resolveInteractAtTownEntity(PlayerInteractAtEntityEvent event) {
         Entity rightClicked = event.getRightClicked();
         Player player = event.getPlayer();
-        ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
-        if (!itemInMainHand.getPersistentDataContainer().has(QUEST_ID_KEY)) {
-            CobaltKingdoms.getInstance().getLogger().info("Item does not have quest id");
-            return;
-        }
+        TownEntity clickedTown = TownManager.getInstance().getTown(rightClicked);
+        if (clickedTown == null) return;
 
-        String questIdString = itemInMainHand.getPersistentDataContainer().get(QUEST_ID_KEY, PersistentDataType.STRING);
-        if (questIdString == null) {
-            CobaltKingdoms.getInstance().getLogger().info("Could not find quest id on item");
-            return;
-        }
+        boolean completed = false;
+        Optional<List<ActivePlayerQuestEntity>> activePlayerQuestsByPlayer = questRepository.getActivePlayerQuestsByPlayer(player);
+        if (activePlayerQuestsByPlayer.isPresent()) {
+            List<ActivePlayerQuestEntity> activePlayerQuestEntities = activePlayerQuestsByPlayer.get();
+            for (ActivePlayerQuestEntity q : activePlayerQuestEntities) {
+                IQuestData questData = questRepository.getQuestData(q.getQuest().getId(), q.getQuest().getQuestType());
+                if (questData == null) continue;
 
-        UUID questId = UUID.fromString(questIdString);
-        IQuest quest = ACTIVE_QUESTS.get(questId);
-
-        TownData handInTown = quest.getHandInTown();
-        if (handInTown == null) {
-            CobaltKingdoms.getInstance().getLogger().info("Could not find hand in town");
-            return;
-        }
-
-        if (!TownManager.getInstance().isTown(rightClicked, handInTown.uuid())) {
-            CobaltKingdoms.getInstance().getLogger().info("Incorrect hand in town: " + handInTown.uuid().toString());
-            return;
-        }
-
-        boolean finishedQuest = quest.tryFinish(player, rightClicked.getLocation());
-        if (finishedQuest) {
-            ACTIVE_QUESTS.remove(questId);
-            player.getInventory().setItemInMainHand(ItemStack.empty());
-            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-            for (int i = 0; i < 5; i++) {
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        spawnRandomFirework(player);
-                    }
-                }.runTaskLater(CobaltKingdoms.getInstance(), i * 4);
+                completed = questData.tryComplete(player, player.getLocation(), clickedTown) || completed;
+                if (completed) {
+                    townRepository.increaseTownXp(q.getQuest().getStartTown().getUuid(), questData.getXpValue());
+                    townRepository.increaseTownXp(clickedTown.getUuid(), questData.getXpValue() / 2);
+                    questRepository.removeActivePlayerQuestById(q.getId());
+                    questRepository.updateStatus(q.getQuest().getId(), QuestStatus.COMPLETED);
+                }
             }
         }
 
+        if (completed) return;
+
+        // Can only do quests for towns that you are a member of
+        TownMemberEntity townMember = townRepository.getTownMember(player.getUniqueId());
+        if (!townMember.getTown().getUuid().equals(clickedTown.getUuid())) return;
+
+        QuestMenu questMenu = new QuestMenu(clickedTown);
+        questMenu.displayTo(event.getPlayer());
+
+        player.swingHand(EquipmentSlot.HAND);
     }
 
     private void resolveInteractAtQuestGiver(PlayerInteractAtEntityEvent event) {
         Entity rightClicked = event.getRightClicked();
-        String questIdString = rightClicked.getPersistentDataContainer().get(QUEST_GIVER_ID_KEY, PersistentDataType.STRING);
-        if (questIdString == null) return;
+        Long questId = rightClicked.getPersistentDataContainer().get(QUEST_GIVER_ID_KEY, PersistentDataType.LONG);
+        if (questId == null) return;
 
-        UUID questId = UUID.fromString(questIdString);
-
-        IQuest quest = ACTIVE_QUESTS.get(questId);
+        QuestEntity quest = questRepository.getQuest(questId);
         if (quest == null) return;
 
-        givePlayerQuest(event.getPlayer(), quest);
-        quest.start(event.getPlayer(), rightClicked.getLocation());
+        IQuestData questData = questRepository.getQuestData(questId, quest.getQuestType());
+        if (questData == null) return;
+
+        questData.start(event.getPlayer(), rightClicked.getLocation());
+        questRepository.updateStatus(questId, QuestStatus.ACTIVE);
 
         World world = rightClicked.getWorld();
 
@@ -112,14 +112,6 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
         rightClicked.remove();
     }
 
-    private void givePlayerQuest(@NotNull Player player, IQuest quest) {
-        ItemStack questToken = quest.getQuestToken();
-        ItemStack descriptionItem = quest.getQuestDescriptionItem();
-
-        player.give(questToken);
-        player.give(descriptionItem);
-    }
-
     public QuestManager(CobaltKingdoms plugin) {
         super(plugin);
     }
@@ -127,6 +119,7 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
     @Override
     public void reload() {
         Bukkit.getScheduler().runTaskTimer(CobaltKingdoms.getInstance(), this::tickQuestGiverEntities, 1, 20 * 7);
+        Bukkit.getScheduler().runTaskTimer(CobaltKingdoms.getInstance(), this::validateQuests, 1, 20 * 60);
         Bukkit.getPluginManager().registerEvents(this, CobaltKingdoms.getInstance());
     }
 
@@ -144,6 +137,32 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
         return INSTANCE;
     }
 
+    private void validateQuests() {
+        List<QuestEntity> newQuests = questRepository.getQuests().stream().filter(q -> q.getStatus() == QuestStatus.NEW).toList();
+
+        // Iterate over quests that have not been claimed
+        for (QuestEntity quest : newQuests) {
+            Instant createdTimestamp = quest.getCreatedTimestamp().toInstant();
+            Instant expiresAt = createdTimestamp.plus(Duration.ofMinutes(60));
+            if (expiresAt.isAfter(Instant.now())) continue;
+
+            // Mark the quest as despawned
+            questRepository.updateStatus(quest.getId(), QuestStatus.DESPAWNED);
+        }
+
+        // Iterate over quests that are active
+        List<ActivePlayerQuestEntity> activeQuests = questRepository.getActiveQuests();
+        for (ActivePlayerQuestEntity quest : activeQuests) {
+            Instant expiryTime = quest.getExpiryTime().toInstant();
+            if (expiryTime.isAfter(Instant.now())) continue;
+
+            // Mark the quest as failed
+            questRepository.updateStatus(quest.getQuest().getId(), QuestStatus.FAILED);
+            // TODO: Send a message to the player if they are online
+        }
+
+    }
+
     private void tickQuestGiverEntities() {
         for (Map.Entry<Location, Parrot> locationParrotEntry : QUEST_GIVER_ENTITIES.entrySet()) {
             Location location = locationParrotEntry.getKey();
@@ -158,34 +177,67 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
 
     }
 
-    private IQuest createRandomQuest(TownData startTown) {
-        int difficulty = random.nextInt(0, 3);
-        return QuestItemDelivery.create(startTown, difficulty);
-    }
-
-    public void summonQuestGiver(@NotNull Location spawnPosition, TownData town) {
+    public void summonQuestGiver(@NotNull Location spawnPosition, QuestEntity quest) {
         if (!spawnPosition.isChunkLoaded()) return;
+
+        IQuestData questData = questRepository.getQuestData(quest.getId(), quest.getQuestType());
+        if (questData == null) return;
 
         World world = spawnPosition.getWorld();
         Block highestBlock = world.getHighestBlockAt(spawnPosition.getBlockX(), spawnPosition.getBlockZ());
 
         Location spawnLocationOnGround = new Location(spawnPosition.getWorld(), spawnPosition.x(), highestBlock.getY() + random.nextInt(1, 5), spawnPosition.z());
 
-        IQuest quest = createRandomQuest(town);
-        ACTIVE_QUESTS.put(quest.getId(), quest);
-
         CobaltKingdoms.getInstance().getLogger().info("Spawning quest giver at " + spawnLocationOnGround.toVector());
 
         Parrot questGiver = world.spawn(spawnLocationOnGround, Parrot.class, parrot -> {
             parrot.setGlowing(true);
-            parrot.getPersistentDataContainer().set(QUEST_GIVER_ID_KEY, PersistentDataType.STRING, quest.getId().toString());
-            parrot.customName(quest.getEntityName());
+            parrot.getPersistentDataContainer().set(QUEST_GIVER_ID_KEY, PersistentDataType.LONG, quest.getId());
             parrot.setCustomNameVisible(false);
             parrot.setVariant(quest.getQuestType().parrotVariant);
+            parrot.customName(questData.getTitle());
         });
         world.spawnParticle(Particle.CLOUD, spawnLocationOnGround, 5, .1, .1, .1, 0);
         world.playSound(spawnLocationOnGround, Sound.BLOCK_DECORATED_POT_INSERT, 1, 1);
 
         QUEST_GIVER_ENTITIES.put(spawnPosition, questGiver);
+    }
+
+    @EventHandler
+    public void onEntityDeath(EntityDeathEvent event) {
+        Entity entity = event.getEntity();
+
+        // Check if we need to change drops
+        String serializedDrops = entity.getPersistentDataContainer().get(DROPS_KEY, PersistentDataType.STRING);
+        if (serializedDrops != null) {
+            List<ItemStack> drops = event.getDrops();
+            drops.clear();
+            List<ItemStack> newDrops = ItemSerializationUtils.deserializeItemStacks(serializedDrops);
+            drops.addAll(newDrops);
+        }
+
+        // Check if the entity is part of the caravan for a mission
+        Long questId = entity.getPersistentDataContainer().get(QUEST_KEY, PersistentDataType.LONG);
+        if (questId != null) {
+            // Get the mission from the database
+            Optional<ActivePlayerQuestEntity> activePlayerQuest = questRepository.getActivePlayerQuestByQuestId(questId);
+
+            // Check if the mission is still active (should always be the case or the tag would have been removed)
+            if (activePlayerQuest.isPresent()) {
+                // Send the player a message and play a sound
+                UUID playerUUID = activePlayerQuest.get().getPlayerUUID();
+                Player player = Bukkit.getPlayer(playerUUID);
+                if (player != null) {
+                    player.playSound(player.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.6f, 0.7f);
+                }
+
+                questRepository.updateStatus(questId, QuestStatus.FAILED);
+                questRepository.removeActivePlayerQuestById(activePlayerQuest.get().getId());
+            } else {
+                CobaltKingdoms.getInstance().getLogger().warning(
+                        "Deceased entity had mission metadata, but the "
+                                + "mission was not in the active mission database");
+            }
+        }
     }
 }

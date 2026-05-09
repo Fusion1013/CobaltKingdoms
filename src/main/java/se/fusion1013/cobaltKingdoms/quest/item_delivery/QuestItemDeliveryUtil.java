@@ -10,7 +10,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownData;
+import org.jetbrains.annotations.NotNull;
+import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownManager;
 
 import java.util.*;
@@ -135,16 +136,17 @@ public class QuestItemDeliveryUtil {
     }
 
     public static Component createCostRewardComponent(List<ItemStack> cost, List<ItemStack> reward) {
-        String costText = cost.stream()
-                .map(QuestItemDeliveryUtil::formatItem)
-                .collect(Collectors.joining(", "));
-
-        String rewardText = reward.stream()
-                .map(QuestItemDeliveryUtil::formatItem)
-                .collect(Collectors.joining(", "));
+        String costText = toComponent(cost);
+        String rewardText = toComponent(reward);
 
         return Component.text(costText + " -> " + rewardText)
                 .color(NamedTextColor.GRAY);
+    }
+
+    public static @NotNull String toComponent(List<ItemStack> cost) {
+        return cost.stream()
+                .map(QuestItemDeliveryUtil::formatItem)
+                .collect(Collectors.joining(", "));
     }
 
     private static String formatItem(ItemStack item) {
@@ -176,13 +178,13 @@ public class QuestItemDeliveryUtil {
         return result.toString().trim();
     }
 
-    public static TownData getRandomTown(TownData startLocation, int difficulty) {
-        List<TownData> allTowns = new ArrayList<>(TownManager.getInstance().getTowns());
+    public static TownEntity getRandomTown(TownEntity startLocation, int difficulty) {
+        List<TownEntity> allTowns = new ArrayList<>(TownManager.getInstance().getTowns());
 
         Location start = startLocation.getLocation();
 
         // Remove starting town
-        List<TownData> validTowns = allTowns.stream()
+        List<TownEntity> validTowns = allTowns.stream()
                 .filter(town -> !town.equals(startLocation))
                 .filter(town -> town.getLocation().getWorld().equals(start.getWorld()))
                 .collect(Collectors.toList());

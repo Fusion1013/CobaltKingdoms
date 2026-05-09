@@ -6,7 +6,7 @@ import org.bukkit.entity.Parrot;
 public enum QuestType {
 
     Combat("⚔", NamedTextColor.RED, Parrot.Variant.RED),
-    Deliver("\uD83D\uDCE6", NamedTextColor.GREEN, Parrot.Variant.GREEN),
+    Deliver("\uD83D\uDCE6", NamedTextColor.DARK_GREEN, Parrot.Variant.GREEN),
     Collect("\uD83C\uDF3F", NamedTextColor.BLUE, Parrot.Variant.BLUE);
 
     public final String symbol;

@@ -10,6 +10,8 @@ import org.bukkit.entity.Player;
 import se.fusion1013.cobaltCore.locale.LocaleManager;
 import se.fusion1013.cobaltCore.util.StringPlaceholders;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
+import se.fusion1013.cobaltKingdoms.Response;
+import se.fusion1013.cobaltKingdoms.ResponseType;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownManager;
 
 public class TownCreateCommand {
@@ -17,23 +19,24 @@ public class TownCreateCommand {
     public static CommandAPICommand register() {
         return new CommandAPICommand("create")
                 .withArguments(new StringArgument("name"))
-                .withArguments(new LocationArgument("town_center", LocationType.BLOCK_POSITION))
+                .withOptionalArguments(new LocationArgument("town_center", LocationType.BLOCK_POSITION))
                 .executesPlayer(TownCreateCommand::createTown);
     }
 
     private static void createTown(Player player, CommandArguments args) {
         String townName = (String) args.get("name");
-        Location location = (Location) args.get("town_center");
+        Location location = args.get("town_center") != null ? (Location) args.get("town_center") : player.getLocation();
 
-        boolean created = TownManager.getInstance().createTown(townName, player, location);
+        Response response = TownManager.getInstance().createTown(townName, player, location);
 
-        if (created) {
+        if (response.type() == ResponseType.OK) {
             LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), player, "kingdoms.commands.town.create", StringPlaceholders.builder()
                     .addPlaceholder("town", townName)
                     .build());
         } else {
             LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), player, "kingdoms.commands.town.create.fail", StringPlaceholders.builder()
                     .addPlaceholder("town", townName)
+                    .addPlaceholder("reason", response.message())
                     .build());
         }
     }

@@ -5,6 +5,7 @@ Upcoming features:
 **FEATURE:** /kit save - Saves a kit from your active inventory state
 **FEATURE:** Kingdom roles, multiple leaders
 **FEATURE:** Player abilities
+**FEATURE:** Capped xp cost at 1 level when renaming an item
 
 **CobaltKingdoms Version 1.2.5**
 
