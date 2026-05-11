@@ -10,12 +10,14 @@ import org.bukkit.entity.Mannequin;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 import se.fusion1013.cobaltCore.database.system.DataManager;
 import se.fusion1013.cobaltCore.manager.Manager;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.Response;
 import se.fusion1013.cobaltKingdoms.config.KingdomsConfig;
 import se.fusion1013.cobaltKingdoms.config.town.TownConfig;
+import se.fusion1013.cobaltKingdoms.config.town.TownLevelConfig;
 import se.fusion1013.cobaltKingdoms.database.kingdom.town.ITownRepository;
 import se.fusion1013.cobaltKingdoms.kingdom.KingdomData;
 import se.fusion1013.cobaltKingdoms.kingdom.KingdomInfo;
@@ -25,7 +27,7 @@ import se.fusion1013.cobaltKingdoms.quest.QuestManager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class TownManager extends Manager<CobaltKingdoms> implements Listener {
@@ -37,14 +39,17 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
 
     private int TownVerificationTimer = 20 * 60;
 
+    // ##%%##%%## TOWN ##%%##%%## //
+
     public Response createTown(String townName, Player player, Location location) {
         KingdomInfo playerKingdomInfo = KingdomManager.getInstance().getPlayerKingdomInfo(player.getUniqueId());
         if (playerKingdomInfo == null) return Response.error("You are not part of a kingdom");
 
         KingdomData kingdomData = KingdomManager.getInstance().getKingdomData(playerKingdomInfo.name());
 
-        TownMemberEntity townMember = townRepository.getTownMember(player.getUniqueId());
-        if (townMember != null && !player.isOp()) return Response.error("You are already a member of a town");
+        List<TownMemberEntity> townMember = townRepository.getTownMember(player.getUniqueId());
+        if (townMember != null && !townMember.isEmpty() && !player.isOp())
+            return Response.error("You are already a member of a town");
 
         TownEntity townWithSameName = townRepository.getTownByName(townName);
         if (townWithSameName != null && !player.isOp()) return Response.error("A town with that name already exists");
@@ -66,7 +71,7 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
         if (!townEntity.getOwnerId().equals(player.getUniqueId()) && !player.isOp())
             return Response.error("You do not have permission to move this town");
 
-        Response canPlaceHere = verifyTownPlacement(newLocation, townEntity.getUuid());
+        Response canPlaceHere = verifyTownPlacement(newLocation, townEntity.getId());
         if (canPlaceHere.error()) return Response.error("Invalid town placement, " + canPlaceHere.message());
 
         removeTownEntities(townEntity);
@@ -83,7 +88,7 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
         if (!town.getOwnerId().equals(player.getUniqueId()) && !player.isOp())
             return Response.error("You do not have permission to remove this town");
 
-        DataManager.getInstance().getDao(ITownRepository.class).deleteTown(town.getUuid());
+        DataManager.getInstance().getDao(ITownRepository.class).deleteTown(town.getId());
         removeTownEntities(town);
 
         return Response.ok("Removed town");
@@ -92,7 +97,10 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
     public Response hasTownEditPermissions(Player player, String townName) {
         TownEntity town = townRepository.getTownByName(townName);
         if (town == null) return Response.error("Could not find town");
+        return hasTownEditPermissions(player, town);
+    }
 
+    private static @NotNull Response hasTownEditPermissions(Player player, TownEntity town) {
         if (!town.getOwnerId().equals(player.getUniqueId()) && !player.isOp())
             return Response.error("You do not have permission to remove this town");
 
@@ -103,7 +111,7 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
         TownEntity town = getTown(townName);
         if (town == null) return Response.error("Could not find town");
 
-        townRepository.addTownMember(town.getUuid(), invitePlayer);
+        townRepository.addTownMember(town.getId(), invitePlayer);
         return Response.ok("Added player to town");
     }
 
@@ -122,6 +130,38 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
         return Response.ok("Removed player from town");
     }
 
+    // ##%%##%%## JAIL ##%%##%%## //
+
+    public Response createJail(Player player, String jailName, Location location) {
+        TownEntity town = getPlayerTown(player);
+        if (town == null) return Response.error("You are not a member of a town");
+
+        Response hasEditPermissions = hasTownEditPermissions(player, town);
+        if (hasEditPermissions.error()) return hasEditPermissions;
+
+        TownJailEntity jail = new TownJailEntity();
+        jail.setName(jailName);
+        jail.setTown(town);
+        jail.setLocation(location);
+
+        townRepository.createJail(jail);
+        return Response.ok("Created jail");
+    }
+
+    public Response deleteJail(Player player, String jailName) {
+        TownEntity town = getPlayerTown(player);
+        if (town == null) return Response.error("You are not a member of a town");
+
+        Response hasEditPermissions = hasTownEditPermissions(player, town);
+        if (hasEditPermissions.error()) return hasEditPermissions;
+
+        boolean deleted = townRepository.deleteJail(town.getId(), jailName);
+        if (deleted) return Response.ok("Deleted jail");
+        return Response.error("Could not find jail");
+    }
+
+    // ##%%##%%## OTHER ##%%##%%## //
+
     private void removeTownEntities(TownEntity town) {
         Location location = town.getLocation();
         World world = location.getWorld();
@@ -132,17 +172,17 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
         }
     }
 
-    private Response verifyTownPlacement(Location location, UUID ignoreTownWithId) {
+    private Response verifyTownPlacement(Location location, Long ignoreTownWithId) {
         List<TownEntity> towns = townRepository.getTowns();
         TownConfig townConfig = KingdomsConfig.getTownConfig();
 
         if (location.getBlock().getType() != Material.AIR)
             return Response.error("Town center needs to be an air block");
-        if (location.subtract(0, 1, 0).getBlock().getType() == Material.AIR)
+        if (location.clone().subtract(0, 1, 0).getBlock().getType() == Material.AIR)
             return Response.error("Town needs to be placed on the ground");
 
         for (TownEntity town : towns) {
-            if (town.getUuid().equals(ignoreTownWithId)) continue;
+            if (town.getId().equals(ignoreTownWithId)) continue;
             double distance = town.getLocation().distance(location);
             if (distance < townConfig.getTownMinSpacing()) return Response.error("Too close to another town");
         }
@@ -161,7 +201,7 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
             mannequin.setInvulnerable(true);
             mannequin.setAI(false);
             mannequin.setGlowing(true);
-            mannequin.getPersistentDataContainer().set(TOWN_ENTITY_KEY, PersistentDataType.STRING, town.getUuid().toString());
+            mannequin.getPersistentDataContainer().set(TOWN_ENTITY_KEY, PersistentDataType.LONG, town.getId());
             mannequin.setProfile(ResolvableProfile.resolvableProfile().name("Fusion1013").build());
             mannequin.customName(Component.text(town.getName()));
         });
@@ -173,16 +213,16 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
 
     }
 
-    public boolean isTown(Entity entity, UUID townId) {
+    public boolean isTown(Entity entity, Long townId) {
         if (!entity.getPersistentDataContainer().has(TOWN_ENTITY_KEY)) return false;
-        String keyValue = entity.getPersistentDataContainer().get(TOWN_ENTITY_KEY, PersistentDataType.STRING);
+        Long keyValue = entity.getPersistentDataContainer().get(TOWN_ENTITY_KEY, PersistentDataType.LONG);
         if (keyValue == null) return false;
-        return keyValue.equalsIgnoreCase(townId.toString());
+        return keyValue.equals(townId);
     }
 
     public TownEntity getTown(Entity entity) {
-        String key = entity.getPersistentDataContainer().get(TOWN_ENTITY_KEY, PersistentDataType.STRING);
-        return getTowns().stream().filter(t -> t.getUuid().toString().equalsIgnoreCase(key)).findFirst().orElse(null);
+        Long key = entity.getPersistentDataContainer().get(TOWN_ENTITY_KEY, PersistentDataType.LONG);
+        return getTowns().stream().filter(t -> Objects.equals(t.getId(), key)).findFirst().orElse(null);
     }
 
     public TownManager(CobaltKingdoms plugin) {
@@ -273,7 +313,37 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
         return getTowns().stream().map(TownEntity::getName).toArray(String[]::new);
     }
 
-    public List<TownMemberEntity> getTownMembers(UUID townId) {
+    public String[] getJailNames(Player player) {
+        return getJails(player).stream().map(TownJailEntity::getName).toArray(String[]::new);
+    }
+
+    public List<TownJailEntity> getJails(Player player) {
+        TownEntity playerTown = getPlayerTown(player);
+        return townRepository.getJails(playerTown.getId());
+    }
+
+    public TownJailEntity getJail(Player player, String jailName) {
+        TownEntity playerTown = getPlayerTown(player);
+        return townRepository.getJailByName(playerTown.getId(), jailName).orElse(null);
+    }
+
+    public List<TownMemberEntity> getTownMembers(Long townId) {
         return townRepository.getTownMembersByTownId(townId);
+    }
+
+    public void setTownLevel(String townName, int level) {
+        TownEntity town = getTown(townName);
+        if (town == null) return;
+
+        TownConfig townConfig = KingdomsConfig.getTownConfig();
+
+        int totalXp = 0;
+        for (int i = 0; i <= level; i++) {
+            TownLevelConfig townLevelConfig = townConfig.getTownLevelConfigFromLevel(i);
+            if (townLevelConfig == null) continue;
+            totalXp += townLevelConfig.getXpThreshold();
+        }
+        town.setExperience(totalXp);
+        townRepository.updateTown(town);
     }
 }

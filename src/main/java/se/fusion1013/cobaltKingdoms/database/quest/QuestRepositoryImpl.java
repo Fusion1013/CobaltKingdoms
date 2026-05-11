@@ -1,7 +1,9 @@
 package se.fusion1013.cobaltKingdoms.database.quest;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
+import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 import org.bukkit.entity.Player;
@@ -10,6 +12,7 @@ import se.fusion1013.cobaltCore.database.system.implementations.SQLiteImplementa
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
 import se.fusion1013.cobaltKingdoms.quest.*;
+import se.fusion1013.cobaltKingdoms.quest.bounty.BountyQuestEntity;
 import se.fusion1013.cobaltKingdoms.quest.item_delivery.ItemDeliveryQuestEntity;
 
 import java.sql.SQLException;
@@ -21,6 +24,7 @@ public class QuestRepositoryImpl implements IQuestRepository {
     private Dao<QuestEntity, Long> questDao;
     private Dao<ItemDeliveryQuestEntity, Long> itemDeliveryQuestDao;
     private Dao<ActivePlayerQuestEntity, Long> activePlayerQuestDao;
+    private Dao<BountyQuestEntity, Long> bountyQuestDao;
 
     @Override
     public void init() {
@@ -30,10 +34,12 @@ public class QuestRepositoryImpl implements IQuestRepository {
             questDao = DaoManager.createDao(connectionSource, QuestEntity.class);
             itemDeliveryQuestDao = DaoManager.createDao(connectionSource, ItemDeliveryQuestEntity.class);
             activePlayerQuestDao = DaoManager.createDao(connectionSource, ActivePlayerQuestEntity.class);
+            bountyQuestDao = DaoManager.createDao(connectionSource, BountyQuestEntity.class);
 
             TableUtils.createTableIfNotExists(connectionSource, QuestEntity.class);
             TableUtils.createTableIfNotExists(connectionSource, ItemDeliveryQuestEntity.class);
             TableUtils.createTableIfNotExists(connectionSource, ActivePlayerQuestEntity.class);
+            TableUtils.createTableIfNotExists(connectionSource, BountyQuestEntity.class);
 
         } catch (SQLException e) {
             CobaltKingdoms.getInstance().getLogger().severe("Error initializing Town DAO: " + e.getMessage());
@@ -97,9 +103,12 @@ public class QuestRepositoryImpl implements IQuestRepository {
                 case Combat -> {
                 }
                 case Deliver -> {
-                    return itemDeliveryQuestDao.queryForId(questId);
+                    return itemDeliveryQuestDao.queryForEq("quest", questId).getFirst();
                 }
                 case Collect -> {
+                }
+                case Bounty -> {
+                    return bountyQuestDao.queryForEq("quest", questId).getFirst();
                 }
             }
         } catch (SQLException ex) {
@@ -153,6 +162,30 @@ public class QuestRepositoryImpl implements IQuestRepository {
         } catch (SQLException e) {
             CobaltKingdoms.getInstance().getLogger().severe("Error getting active player quests: " + e.getMessage());
             return List.of();
+        }
+    }
+
+    @Override
+    public void insertQuest(BountyQuestEntity quest) {
+        try {
+            bountyQuestDao.create(quest);
+        } catch (SQLException e) {
+            CobaltKingdoms.getInstance().getLogger().severe("Error inserting bounty quest: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public List<BountyQuestEntity> getBounty(Player owner, PlayerProfile target) {
+        QueryBuilder<BountyQuestEntity, Long> qb = bountyQuestDao.queryBuilder();
+        try {
+            qb.where()
+                    .eq("owner_player_id", owner.getUniqueId())
+                    .and()
+                    .eq("target_player_id", target.getId());
+            return qb.query();
+        } catch (SQLException e) {
+            CobaltKingdoms.getInstance().getLogger().severe("Error getting bounty: " + e.getMessage());
+            return null;
         }
     }
 

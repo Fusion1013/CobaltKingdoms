@@ -4,10 +4,14 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 import se.fusion1013.cobaltCore.database.system.DataManager;
+import se.fusion1013.cobaltCore.locale.LocaleManager;
+import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.config.KingdomsConfig;
 import se.fusion1013.cobaltKingdoms.config.town.TownConfig;
 import se.fusion1013.cobaltKingdoms.config.town.TownLevelConfig;
@@ -18,9 +22,11 @@ import se.fusion1013.cobaltKingdoms.quest.IQuestData;
 import se.fusion1013.cobaltKingdoms.quest.QuestEntity;
 import se.fusion1013.cobaltKingdoms.quest.QuestStatus;
 
+import java.util.List;
+
 public class QuestMenu extends Menu {
 
-    public QuestMenu(TownEntity startTown) {
+    public QuestMenu(TownEntity startTown, @NotNull Player player) {
         this.setSize(9 * 4);
 
         TownConfig townConfig = KingdomsConfig.getTownConfig();
@@ -31,13 +37,17 @@ public class QuestMenu extends Menu {
         int maxTradeRoutes = 9 * 4;
         int tradeRouteCount = 0;
 
+        List<QuestEntity> quests = DataManager.getInstance().getDao(IQuestRepository.class).getQuests();
+
         // Add buttons for each trade destination
-        for (QuestEntity quest : startTown.getQuests()) {
+        for (QuestEntity quest : quests) {
             if (tradeRouteCount >= maxTradeRoutes) break;
             if (quest.getStatus() != QuestStatus.NEW) continue;
 
             IQuestData questData = quest.getQuestData();
             if (questData == null) continue;
+
+            if (!questData.shouldShowInMenu(startTown, player)) continue;
 
             // Create the button for each trader
             this.addButton(new Button(tradeRouteCount) {
@@ -59,15 +69,18 @@ public class QuestMenu extends Menu {
 
     private void checkMissionRequirements(Player player, TownEntity town, QuestEntity quest, IQuestData questData) {
         if (quest.getStatus() != QuestStatus.NEW) {
-            player.sendMessage(Component.text(
-                    "This mission has already been taken by another player.", NamedTextColor.RED));
+            player.playSound(player, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, 1, 1);
+            LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), player, "kingdoms.quests.fail_already_claimed");
             return;
         }
 
         boolean isValidQuest = questData.validateQuest(player);
 
         if (isValidQuest) {
+            player.playSound(player, Sound.BLOCK_NOTE_BLOCK_BELL, 1, 1);
             new ConfirmMenu(town, quest, questData).displayTo(player);
+        } else {
+            player.playSound(player, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, 1, 1);
         }
     }
 
@@ -91,6 +104,7 @@ public class QuestMenu extends Menu {
                 public void onClick(Player player) {
                     QuestMenu outerMenu = QuestMenu.this;
                     outerMenu.displayTo(player);
+                    player.playSound(player, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, 1, 1);
                 }
             });
 
@@ -108,6 +122,7 @@ public class QuestMenu extends Menu {
                 public void onClick(Player player) {
                     initiateTradeMission(player, town, quest, questData);
                     player.closeInventory();
+                    player.playSound(player, Sound.BLOCK_NOTE_BLOCK_BELL, 1, 1);
                 }
             });
         }

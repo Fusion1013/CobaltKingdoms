@@ -65,7 +65,7 @@ public class TownConfig extends AbstractConfig {
             if (townLevelConfig == null) continue;
 
             totalXp += townLevelConfig.getXpThreshold();
-            if (totalXp >= xp) return previousTownLevelConfig;
+            if (totalXp > xp) return previousTownLevelConfig;
 
             previousTownLevelConfig = townLevelConfig;
         }
@@ -78,4 +78,7 @@ public class TownConfig extends AbstractConfig {
         return new TownConfig();
     }
 
+    public TownLevelConfig getTownLevelConfigFromLevel(int level) {
+        return levels.get(level);
+    }
 }

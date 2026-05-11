@@ -80,8 +80,6 @@ public class ItemDeliveryQuestEntity implements IQuestData {
     }
 
     public static ItemDeliveryQuestEntity createRandom(TownEntity startTown, TownEntity endTown) {
-        int townExperience = startTown.getExperience();
-
         QuestConfig questConfig = KingdomsConfig.getQuestConfig();
 
         // Base values
@@ -182,14 +180,22 @@ public class ItemDeliveryQuestEntity implements IQuestData {
 
     @Override
     public boolean tryComplete(Player player, @NotNull Location location, TownEntity clickedTown) {
-        if (!clickedTown.getUuid().equals(endTown.getUuid())) return false;
+        if (!clickedTown.getId().equals(quest.getEndTown().getId())) {
+            CobaltKingdoms.getInstance().getLogger().info("Wrong end town:");
+            CobaltKingdoms.getInstance().getLogger().info(" - " + clickedTown.getName());
+            CobaltKingdoms.getInstance().getLogger().info(" - " + quest.getEndTown().getName());
+            return false;
+        }
 
         Collection<Camel> nearbyEntitiesByType = location.getNearbyEntitiesByType(Camel.class, 12, camel -> {
             Long questId = camel.getPersistentDataContainer().get(QUEST_KEY, PersistentDataType.LONG);
-            return Objects.equals(questId, id);
+            return Objects.equals(questId, quest.getId());
         });
 
-        if (nearbyEntitiesByType.isEmpty()) return false;
+        if (nearbyEntitiesByType.isEmpty()) {
+            CobaltKingdoms.getInstance().getLogger().info("No nearby camel");
+            return false;
+        }
 
         for (Camel camel : nearbyEntitiesByType) {
             camel.remove();
@@ -203,7 +209,12 @@ public class ItemDeliveryQuestEntity implements IQuestData {
                     player.getWorld().dropItem(player.getLocation(), leftover.get(0));
                 }
             }
-            // TODO: Play success message
+            // Broadcast message
+            LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.finish", StringPlaceholders.builder()
+                    .addPlaceholder("player", player.getName())
+                    .addPlaceholder("start_town", quest.getStartTown().getName())
+                    .addPlaceholder("end_town", quest.getEndTown().getName())
+                    .build());
         }
 
         Location endLocation = endTown.getLocation();
@@ -298,6 +309,13 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         PersistentDataContainer container = camel.getPersistentDataContainer();
         container.set(DROPS_KEY, PersistentDataType.STRING, ItemSerializationUtils.serializeItemStacks(getRequiredItems()));
         container.set(QUEST_KEY, PersistentDataType.LONG, quest.getId());
+
+        // Broadcast message
+        LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.start", StringPlaceholders.builder()
+                .addPlaceholder("player", player.getName())
+                .addPlaceholder("start_town", quest.getStartTown().getName())
+                .addPlaceholder("end_town", quest.getEndTown().getName())
+                .build());
     }
 
     @Override
@@ -366,6 +384,7 @@ public class ItemDeliveryQuestEntity implements IQuestData {
 
     @Override
     public Component getTitle() {
+        if (quest.getEndTown() == null || quest.getStartTown() == null) return Component.text("Something went wrong");
         Component typeSymbol = Component.text(" [" + quest.getQuestType().symbol + "] ").color(quest.getQuestType().textColor);
         Component titleText = Component.text("Delivery to " + quest.getEndTown().getName()).color(NamedTextColor.GRAY);
         return typeSymbol.append(titleText).append(typeSymbol).decoration(TextDecoration.ITALIC, false);
@@ -373,6 +392,8 @@ public class ItemDeliveryQuestEntity implements IQuestData {
 
     @Override
     public ItemStack getButtonItem() {
+        if (endTown == null || quest.getStartTown() == null) return new ItemStack(Material.BARRIER);
+
         String coordinates = String.format("[%d, %d, %d]",
                 endTown.getLocation().getBlockX(),
                 endTown.getLocation().getBlockY(),
@@ -423,6 +444,17 @@ public class ItemDeliveryQuestEntity implements IQuestData {
     @Override
     public int getXpValue() {
         return 10;
+    }
+
+    @Override
+    public boolean shouldShowInMenu(TownEntity town, Player player) {
+        return town.getId().equals(quest.getStartTown().getId()) &&
+                quest.getStatus() == QuestStatus.NEW;
+    }
+
+    @Override
+    public boolean isValid() {
+        return quest.getStartTown() != null && quest.getEndTown() != null;
     }
 
     public static String formatMaterialName(String input) {

@@ -10,6 +10,7 @@ import se.fusion1013.cobaltCore.CobaltPlugin;
 import se.fusion1013.cobaltKingdoms.chair.ChairManager;
 import se.fusion1013.cobaltKingdoms.commands.*;
 import se.fusion1013.cobaltKingdoms.commands.armorstand.ArmorStandCommand;
+import se.fusion1013.cobaltKingdoms.commands.bounty.BountyCommand;
 import se.fusion1013.cobaltKingdoms.commands.kingdom.KingdomCommand;
 import se.fusion1013.cobaltKingdoms.commands.kingdom.town.TownCommand;
 import se.fusion1013.cobaltKingdoms.config.ItemValueConfig;
@@ -32,6 +33,7 @@ import se.fusion1013.cobaltKingdoms.player.PlayerManager;
 import se.fusion1013.cobaltKingdoms.player.character.CharacterProfileManager;
 import se.fusion1013.cobaltKingdoms.quest.QuestManager;
 import se.fusion1013.cobaltKingdoms.quest.QuestMenuListener;
+import se.fusion1013.cobaltKingdoms.quest.bounty.BountyManager;
 import se.fusion1013.cobaltKingdoms.villager.VillagerEvents;
 import se.fusion1013.cobaltKingdoms.villager.VillagerManager;
 
@@ -89,6 +91,7 @@ public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin, Voicecha
         CobaltCore.getInstance().getManager(this, QuestManager.class);
         CobaltCore.getInstance().getManager(this, TownQuestManager.class);
         CobaltCore.getInstance().getManager(this, QuestMenuListener.class);
+        CobaltCore.getInstance().getManager(this, BountyManager.class);
     }
 
     @Override
@@ -108,6 +111,7 @@ public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin, Voicecha
         RandomLootCommand.register();
         GetCompassCommand.register();
         TownCommand.register();
+        BountyCommand.register();
     }
 
     public static CobaltKingdoms getInstance() {

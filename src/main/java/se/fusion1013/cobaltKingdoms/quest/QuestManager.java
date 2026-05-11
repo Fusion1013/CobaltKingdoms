@@ -55,36 +55,55 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
     }
 
     private void resolveInteractAtTownEntity(PlayerInteractAtEntityEvent event) {
+        CobaltKingdoms.getInstance().getLogger().info("--------------------------------");
         Entity rightClicked = event.getRightClicked();
         Player player = event.getPlayer();
+        CobaltKingdoms.getInstance().getLogger().info("Interact at town");
+        if (event.getHand() != EquipmentSlot.HAND) {
+            CobaltKingdoms.getInstance().getLogger().info("Wrong hand");
+            return;
+        }
         TownEntity clickedTown = TownManager.getInstance().getTown(rightClicked);
-        if (clickedTown == null) return;
+        if (clickedTown == null) {
+            CobaltKingdoms.getInstance().getLogger().info("Could not find town");
+            return;
+        }
 
         boolean completed = false;
         Optional<List<ActivePlayerQuestEntity>> activePlayerQuestsByPlayer = questRepository.getActivePlayerQuestsByPlayer(player);
+        CobaltKingdoms.getInstance().getLogger().info("Are active quests? " + activePlayerQuestsByPlayer.isPresent());
         if (activePlayerQuestsByPlayer.isPresent()) {
             List<ActivePlayerQuestEntity> activePlayerQuestEntities = activePlayerQuestsByPlayer.get();
+            CobaltKingdoms.getInstance().getLogger().info("Found active quests " + activePlayerQuestEntities.size());
             for (ActivePlayerQuestEntity q : activePlayerQuestEntities) {
-                IQuestData questData = questRepository.getQuestData(q.getQuest().getId(), q.getQuest().getQuestType());
-                if (questData == null) continue;
+                IQuestData questData = q.getQuest().getQuestData();
+                if (questData == null) {
+                    CobaltKingdoms.getInstance().getLogger().info("No quest data found");
+                    continue;
+                }
 
                 completed = questData.tryComplete(player, player.getLocation(), clickedTown) || completed;
+                CobaltKingdoms.getInstance().getLogger().info("Completed: " + completed);
                 if (completed) {
-                    townRepository.increaseTownXp(q.getQuest().getStartTown().getUuid(), questData.getXpValue());
-                    townRepository.increaseTownXp(clickedTown.getUuid(), questData.getXpValue() / 2);
+                    CobaltKingdoms.getInstance().getLogger().info("Complete a quest");
+                    townRepository.increaseTownXp(q.getQuest().getStartTown().getId(), questData.getXpValue());
+                    townRepository.increaseTownXp(clickedTown.getId(), questData.getXpValue() / 2);
                     questRepository.removeActivePlayerQuestById(q.getId());
                     questRepository.updateStatus(q.getQuest().getId(), QuestStatus.COMPLETED);
                 }
             }
         }
 
-        if (completed) return;
+        if (completed) {
+            player.swingHand(EquipmentSlot.HAND);
+            return;
+        }
 
         // Can only do quests for towns that you are a member of
-        TownMemberEntity townMember = townRepository.getTownMember(player.getUniqueId());
-        if (!townMember.getTown().getUuid().equals(clickedTown.getUuid())) return;
+        List<TownMemberEntity> townMember = townRepository.getTownMember(player.getUniqueId()).stream().filter(tm -> tm.getTown().getId().equals(clickedTown.getId())).toList();
+        if (townMember.isEmpty()) return;
 
-        QuestMenu questMenu = new QuestMenu(clickedTown);
+        QuestMenu questMenu = new QuestMenu(clickedTown, event.getPlayer());
         questMenu.displayTo(event.getPlayer());
 
         player.swingHand(EquipmentSlot.HAND);
@@ -138,13 +157,26 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
     }
 
     private void validateQuests() {
-        List<QuestEntity> newQuests = questRepository.getQuests().stream().filter(q -> q.getStatus() == QuestStatus.NEW).toList();
+        List<QuestEntity> quests = questRepository.getQuests();
+        for (QuestEntity quest : quests) {
+            IQuestData questData = quest.getQuestData();
+            if (questData == null) {
+                questRepository.updateStatus(quest.getId(), QuestStatus.DESPAWNED);
+                continue;
+            }
+
+            if (quest.isValid()) continue;
+            questRepository.updateStatus(quest.getId(), QuestStatus.DESPAWNED);
+        }
+
+        List<QuestEntity> newQuests = quests.stream().filter(q -> q.getStatus() == QuestStatus.NEW).toList();
 
         // Iterate over quests that have not been claimed
         for (QuestEntity quest : newQuests) {
             Instant createdTimestamp = quest.getCreatedTimestamp().toInstant();
             Instant expiresAt = createdTimestamp.plus(Duration.ofMinutes(60));
             if (expiresAt.isAfter(Instant.now())) continue;
+            if (!quest.canDespawn()) continue;
 
             // Mark the quest as despawned
             questRepository.updateStatus(quest.getId(), QuestStatus.DESPAWNED);
@@ -155,6 +187,7 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
         for (ActivePlayerQuestEntity quest : activeQuests) {
             Instant expiryTime = quest.getExpiryTime().toInstant();
             if (expiryTime.isAfter(Instant.now())) continue;
+            if (!quest.getQuest().canDespawn()) continue;
 
             // Mark the quest as failed
             questRepository.updateStatus(quest.getQuest().getId(), QuestStatus.FAILED);
@@ -177,7 +210,7 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
 
     }
 
-    public void summonQuestGiver(@NotNull Location spawnPosition, QuestEntity quest) {
+    public void summonQuestMarker(@NotNull Location spawnPosition, QuestEntity quest) {
         if (!spawnPosition.isChunkLoaded()) return;
 
         IQuestData questData = questRepository.getQuestData(quest.getId(), quest.getQuestType());

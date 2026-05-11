@@ -38,7 +38,7 @@ public class TownInfoCommand {
         TownEntity town = TownManager.getInstance().getTown(townName);
         if (town == null) return Response.error("Could not find town");
 
-        List<TownMemberEntity> townMembers = TownManager.getInstance().getTownMembers(town.getUuid());
+        List<TownMemberEntity> townMembers = TownManager.getInstance().getTownMembers(town.getId());
 
         LocaleManager.getInstance().sendMessage("", player, "kingdoms.commands.town.info.header", StringPlaceholders.builder()
                 .addPlaceholder("town", town.getName())

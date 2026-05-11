@@ -10,17 +10,20 @@ import se.fusion1013.cobaltCore.database.system.DataStorageType;
 import se.fusion1013.cobaltCore.database.system.implementations.SQLiteImplementation;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
+import se.fusion1013.cobaltKingdoms.kingdom.town.TownJailEntity;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownMemberEntity;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownMemberRole;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class TownRepositoryImpl implements ITownRepository {
 
-    private Dao<TownEntity, String> townDao;
+    private Dao<TownEntity, Long> townDao;
     private Dao<TownMemberEntity, Long> townMemberDao;
+    private Dao<TownJailEntity, Long> townJailDao;
 
     @Override
     public void init() {
@@ -29,9 +32,11 @@ public class TownRepositoryImpl implements ITownRepository {
 
             townDao = DaoManager.createDao(connectionSource, TownEntity.class);
             townMemberDao = DaoManager.createDao(connectionSource, TownMemberEntity.class);
+            townJailDao = DaoManager.createDao(connectionSource, TownJailEntity.class);
 
             TableUtils.createTableIfNotExists(connectionSource, TownEntity.class);
             TableUtils.createTableIfNotExists(connectionSource, TownMemberEntity.class);
+            TableUtils.createTableIfNotExists(connectionSource, TownJailEntity.class);
 
         } catch (SQLException e) {
             CobaltKingdoms.getInstance().getLogger().severe("Error initializing Town DAO: " + e.getMessage());
@@ -76,13 +81,13 @@ public class TownRepositoryImpl implements ITownRepository {
     }
 
     @Override
-    public void deleteTown(UUID id) {
+    public void deleteTown(Long townId) {
         try {
-            List<TownMemberEntity> townMemberList = townMemberDao.queryForAll().stream().filter(tm -> tm.getTown().getUuid().equals(id)).toList();
+            List<TownMemberEntity> townMemberList = townMemberDao.queryForAll().stream().filter(tm -> tm.getTown().getId().equals(townId)).toList();
             for (TownMemberEntity townMemberEntity : townMemberList) {
                 townMemberDao.deleteById(townMemberEntity.getId());
             }
-            townDao.deleteById(id.toString());
+            townDao.deleteById(townId);
         } catch (SQLException e) {
             CobaltKingdoms.getInstance().getLogger().severe("Error deleting town: " + e.getMessage());
         }
@@ -123,9 +128,9 @@ public class TownRepositoryImpl implements ITownRepository {
     }
 
     @Override
-    public void increaseTownXp(UUID uuid, int xpValue) {
+    public void increaseTownXp(Long townId, int xpValue) {
         try {
-            TownEntity townEntity = townDao.queryForId(uuid.toString());
+            TownEntity townEntity = townDao.queryForId(townId);
             townEntity.setExperience(townEntity.getExperience() + xpValue);
             townDao.update(townEntity);
         } catch (SQLException e) {
@@ -134,9 +139,9 @@ public class TownRepositoryImpl implements ITownRepository {
     }
 
     @Override
-    public TownMemberEntity getTownMember(@NotNull UUID playerId) {
+    public List<TownMemberEntity> getTownMember(@NotNull UUID playerId) {
         try {
-            return townMemberDao.queryForEq("player_uuid", playerId).getFirst();
+            return townMemberDao.queryForEq("player_uuid", playerId);
         } catch (SQLException e) {
             CobaltKingdoms.getInstance().getLogger().severe("Error getting town member: " + e.getMessage());
             return null;
@@ -144,9 +149,9 @@ public class TownRepositoryImpl implements ITownRepository {
     }
 
     @Override
-    public void addTownMember(UUID townId, Player invitePlayer) {
+    public void addTownMember(Long townId, Player invitePlayer) {
         try {
-            TownEntity town = townDao.queryForId(townId.toString());
+            TownEntity town = townDao.queryForId(townId);
             if (town == null) return;
 
             // Remove any existing player town memberships
@@ -169,24 +174,64 @@ public class TownRepositoryImpl implements ITownRepository {
 
     @Override
     public void removePlayerMember(Player kickPlayer) {
-        TownMemberEntity townMember = getTownMember(kickPlayer.getUniqueId());
-        if (townMember == null) return;
+        List<TownMemberEntity> townMember = getTownMember(kickPlayer.getUniqueId());
+        if (townMember == null || townMember.isEmpty()) return;
 
         try {
-            townMemberDao.deleteById(townMember.getId());
+            for (TownMemberEntity townMemberEntity : townMember) {
+                townMemberDao.deleteById(townMemberEntity.getId());
+            }
         } catch (SQLException e) {
             CobaltKingdoms.getInstance().getLogger().severe("Failed to remove player member: " + e.getMessage());
         }
     }
 
     @Override
-    public List<TownMemberEntity> getTownMembersByTownId(UUID townId) {
+    public List<TownMemberEntity> getTownMembersByTownId(Long townId) {
         try {
             return townMemberDao.queryForEq("town", townId);
         } catch (SQLException e) {
             CobaltKingdoms.getInstance().getLogger().severe("Failed to get town members: " + e.getMessage());
             return List.of();
         }
+    }
+
+    @Override
+    public void createJail(TownJailEntity jail) {
+        try {
+            townJailDao.create(jail);
+        } catch (SQLException e) {
+            CobaltKingdoms.getInstance().getLogger().severe("Failed to create jail: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public boolean deleteJail(Long townId, String jailName) {
+        try {
+            List<TownJailEntity> townJails = getJails(townId).stream().filter(t -> t.getName().equalsIgnoreCase(jailName)).toList();
+            for (TownJailEntity townJail : townJails) {
+                townJailDao.deleteById(townJail.getId());
+            }
+            return true;
+        } catch (SQLException e) {
+            CobaltKingdoms.getInstance().getLogger().severe("Failed to delete jail: " + e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public List<TownJailEntity> getJails(Long townId) {
+        try {
+            return townJailDao.queryForEq("town", townId);
+        } catch (SQLException e) {
+            CobaltKingdoms.getInstance().getLogger().severe("Failed to get jails: " + e.getMessage());
+            return List.of();
+        }
+    }
+
+    @Override
+    public Optional<TownJailEntity> getJailByName(Long townId, String jailName) {
+        return getJails(townId).stream().filter(tj -> tj.getName().equalsIgnoreCase(jailName)).findFirst();
     }
 
     @Override

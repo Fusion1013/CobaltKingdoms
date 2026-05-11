@@ -23,4 +23,7 @@ public interface IQuestData {
 
     int getXpValue();
 
+    boolean shouldShowInMenu(TownEntity town, Player player);
+
+    boolean isValid();
 }

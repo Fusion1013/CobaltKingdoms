@@ -1,9 +1,7 @@
 package se.fusion1013.cobaltKingdoms.commands.kingdom.town;
 
 import dev.jorel.commandapi.CommandAPICommand;
-import dev.jorel.commandapi.arguments.LocationArgument;
-import dev.jorel.commandapi.arguments.LocationType;
-import dev.jorel.commandapi.arguments.StringArgument;
+import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import dev.jorel.commandapi.executors.CommandArguments;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -18,14 +16,13 @@ public class TownCreateCommand {
 
     public static CommandAPICommand register() {
         return new CommandAPICommand("create")
-                .withArguments(new StringArgument("name"))
-                .withOptionalArguments(new LocationArgument("town_center", LocationType.BLOCK_POSITION))
+                .withArguments(new GreedyStringArgument("name"))
                 .executesPlayer(TownCreateCommand::createTown);
     }
 
     private static void createTown(Player player, CommandArguments args) {
         String townName = (String) args.get("name");
-        Location location = args.get("town_center") != null ? (Location) args.get("town_center") : player.getLocation();
+        Location location = player.getLocation();
 
         Response response = TownManager.getInstance().createTown(townName, player, location);
 

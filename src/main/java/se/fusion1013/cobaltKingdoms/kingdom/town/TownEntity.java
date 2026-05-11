@@ -18,8 +18,8 @@ import java.util.UUID;
 @DatabaseTable(tableName = "towns")
 public class TownEntity {
 
-    @DatabaseField(id = true, columnName = "uuid")
-    private String uuid;
+    @DatabaseField(generatedId = true, columnName = "id")
+    private Long id;
 
     @DatabaseField(columnName = "owner_id", canBeNull = false)
     private String ownerId;
@@ -49,18 +49,6 @@ public class TownEntity {
     }
 
     public TownEntity(String ownerId, String name, String kingdomId, double centerX, double centerY, double centerZ, String worldId) {
-        this.uuid = UUID.randomUUID().toString();
-        this.ownerId = ownerId;
-        this.name = name;
-        this.kingdomId = kingdomId;
-        this.centerX = centerX;
-        this.centerY = centerY;
-        this.centerZ = centerZ;
-        this.worldId = worldId;
-    }
-
-    public TownEntity(String uuid, String ownerId, String name, String kingdomId, double centerX, double centerY, double centerZ, String worldId) {
-        this.uuid = uuid;
         this.ownerId = ownerId;
         this.name = name;
         this.kingdomId = kingdomId;
@@ -71,7 +59,6 @@ public class TownEntity {
     }
 
     public TownEntity(String townName, UUID kingdomId, @NotNull UUID playerId, Location location) {
-        this.uuid = UUID.randomUUID().toString();
         this.name = townName;
         this.kingdomId = kingdomId.toString();
         this.ownerId = playerId.toString();
@@ -88,8 +75,8 @@ public class TownEntity {
         this.worldId = location.getWorld().getUID().toString();
     }
 
-    public UUID getUuid() {
-        return UUID.fromString(uuid);
+    public Long getId() {
+        return id;
     }
 
     public UUID getOwnerId() {

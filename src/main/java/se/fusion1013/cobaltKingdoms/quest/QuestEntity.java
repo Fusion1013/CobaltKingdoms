@@ -42,6 +42,9 @@ public class QuestEntity {
     @DatabaseField(foreign = true, foreignAutoRefresh = true, foreignAutoCreate = true, columnName = "end_town")
     private TownEntity endTown;
 
+    @DatabaseField(columnName = "can_despawn")
+    private boolean canDespawn;
+
     private final ReentrantLock lock = new ReentrantLock();
 
     public QuestEntity() {
@@ -112,10 +115,18 @@ public class QuestEntity {
     }
 
     public boolean isValid() {
-        return getStartTown() != null && getEndTown() != null;
+        return getQuestData().isValid();
     }
 
     public IQuestData getQuestData() {
         return DataManager.getInstance().getDao(IQuestRepository.class).getQuestData(id, questType);
+    }
+
+    public boolean canDespawn() {
+        return canDespawn;
+    }
+
+    public void setCanDespawn(boolean canDespawn) {
+        this.canDespawn = canDespawn;
     }
 }

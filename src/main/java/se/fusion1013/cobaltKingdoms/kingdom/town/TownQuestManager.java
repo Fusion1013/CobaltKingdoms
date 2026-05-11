@@ -64,7 +64,7 @@ public class TownQuestManager extends Manager<CobaltKingdoms> {
         TownLevelConfig levelConfig = town.getLevelConfig();
         if (quests.size() >= levelConfig.getMaxSimultaneousQuests()) return;
 
-        List<TownEntity> list = townRepository.getTowns().stream().filter(t -> !t.getUuid().equals(town.getUuid())).toList();
+        List<TownEntity> list = townRepository.getTowns().stream().filter(t -> !t.getId().equals(town.getId())).toList();
         if (list.isEmpty()) return;
 
         ItemDeliveryQuestEntity quest = ItemDeliveryQuestEntity.createRandom(town, list.get(random.nextInt(list.size())));
@@ -81,13 +81,15 @@ public class TownQuestManager extends Manager<CobaltKingdoms> {
             return;
         }
 
-        List<QuestEntity> townQuests = questRepository.getQuests(town).stream().filter(q -> q.getStatus() == QuestStatus.NEW).toList();
+        List<QuestEntity> townQuests = questRepository.getQuests().stream()
+                .filter(q -> q.getQuestData().shouldShowInMenu(town, null))
+                .toList();
         CobaltKingdoms.getInstance().getLogger().info("Found quests: " + townQuests.size());
         for (QuestEntity quest : townQuests) {// Summon new quest giver entity
             int xPos = random.nextInt(-6, 6);
             int yPos = random.nextInt(-6, 6);
 
-            QuestManager.getInstance().summonQuestGiver(townCenter.clone().add(xPos, 0, yPos), quest);
+            QuestManager.getInstance().summonQuestMarker(townCenter.clone().add(xPos, 0, yPos), quest);
         }
 
     }
