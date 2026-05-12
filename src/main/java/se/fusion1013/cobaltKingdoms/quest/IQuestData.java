@@ -19,6 +19,8 @@ public interface IQuestData {
 
     Component getTitle();
 
+    String getSymbol();
+
     ItemStack getButtonItem();
 
     int getXpValue();

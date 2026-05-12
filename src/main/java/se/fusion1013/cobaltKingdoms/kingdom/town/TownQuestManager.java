@@ -7,13 +7,10 @@ import org.bukkit.configuration.file.FileConfiguration;
 import se.fusion1013.cobaltCore.database.system.DataManager;
 import se.fusion1013.cobaltCore.manager.Manager;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
-import se.fusion1013.cobaltKingdoms.config.town.TownLevelConfig;
 import se.fusion1013.cobaltKingdoms.database.kingdom.town.ITownRepository;
 import se.fusion1013.cobaltKingdoms.database.quest.IQuestRepository;
 import se.fusion1013.cobaltKingdoms.quest.QuestEntity;
 import se.fusion1013.cobaltKingdoms.quest.QuestManager;
-import se.fusion1013.cobaltKingdoms.quest.QuestStatus;
-import se.fusion1013.cobaltKingdoms.quest.item_delivery.ItemDeliveryQuestEntity;
 
 import java.util.List;
 import java.util.Random;
@@ -60,17 +57,7 @@ public class TownQuestManager extends Manager<CobaltKingdoms> {
     }
 
     private void createNewQuest(TownEntity town) { // TODO: Quests should be created from the QuestManager
-        List<QuestEntity> quests = questRepository.getQuests(town).stream().filter(q -> q.getStatus() == QuestStatus.NEW || q.getStatus() == QuestStatus.ACTIVE).toList();
-        TownLevelConfig levelConfig = town.getLevelConfig();
-        if (quests.size() >= levelConfig.getMaxSimultaneousQuests()) return;
-
-        List<TownEntity> list = townRepository.getTowns().stream().filter(t -> !t.getId().equals(town.getId())).toList();
-        if (list.isEmpty()) return;
-
-        ItemDeliveryQuestEntity quest = ItemDeliveryQuestEntity.createRandom(town, list.get(random.nextInt(list.size())));
-        questRepository.insertQuest(quest);
-
-        CobaltKingdoms.getInstance().getLogger().info("Created new quest");
+        QuestManager.getInstance().createRandomQuest(town);
     }
 
     private void trySpawnQuestEntities(TownEntity town) {

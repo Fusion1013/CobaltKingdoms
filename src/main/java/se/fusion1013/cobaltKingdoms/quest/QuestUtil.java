@@ -16,6 +16,20 @@ public class QuestUtil {
 
     private static final int MAX_ITEM_SAMPLE_ITERATIONS = 20;
 
+    public static String formatMaterialName(String input) {
+        String[] words = input.toLowerCase().split("_");
+
+        StringBuilder result = new StringBuilder();
+
+        for (String word : words) {
+            result.append(Character.toUpperCase(word.charAt(0)))
+                    .append(word.substring(1))
+                    .append(" ");
+        }
+
+        return result.toString().trim();
+    }
+
     /**
      * Generates a list of trade items based on specified parameters.
      *

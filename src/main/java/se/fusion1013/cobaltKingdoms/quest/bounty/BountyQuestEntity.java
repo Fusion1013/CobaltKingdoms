@@ -25,6 +25,8 @@ import se.fusion1013.cobaltKingdoms.quest.QuestStatus;
 
 import java.util.*;
 
+import static se.fusion1013.cobaltKingdoms.quest.QuestUtil.formatMaterialName;
+
 @DatabaseTable(tableName = "quest_bounty")
 public class BountyQuestEntity implements IQuestData {
 
@@ -81,6 +83,11 @@ public class BountyQuestEntity implements IQuestData {
     }
 
     @Override
+    public String getSymbol() {
+        return quest.getQuestType().symbol;
+    }
+
+    @Override
     public ItemStack getButtonItem() {
         if (!quest.isValid()) return new ItemStack(Material.BARRIER);
 
@@ -95,6 +102,14 @@ public class BountyQuestEntity implements IQuestData {
         List<String> lore = new ArrayList<>();
         lore.add("&zOffered by: &7" + ownerPlayerName);
         lore.add("&zTarget: &7" + targetPlayerName);
+
+        if (reward != null && reward.getItemMeta() != null) {
+            String name = reward.getItemMeta().hasDisplayName() ? reward.getItemMeta().getDisplayName() : formatMaterialName(reward.getType().name());
+            lore.add("&zReward: &7" + HexUtils.colorify(name) + " &7[&z" + reward.getAmount() + "&7]");
+        } else {
+            lore.add("&zReward: &7No reward");
+        }
+
 
         lore.add("");
         lore.add("&7" + reason);

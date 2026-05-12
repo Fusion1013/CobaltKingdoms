@@ -18,6 +18,7 @@ import se.fusion1013.cobaltKingdoms.quest.item_delivery.ItemDeliveryQuestEntity;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public class QuestRepositoryImpl implements IQuestRepository {
 
@@ -175,7 +176,7 @@ public class QuestRepositoryImpl implements IQuestRepository {
     }
 
     @Override
-    public List<BountyQuestEntity> getBounty(Player owner, PlayerProfile target) {
+    public List<BountyQuestEntity> getBounties(Player owner, PlayerProfile target) {
         QueryBuilder<BountyQuestEntity, Long> qb = bountyQuestDao.queryBuilder();
         try {
             qb.where()
@@ -185,6 +186,16 @@ public class QuestRepositoryImpl implements IQuestRepository {
             return qb.query();
         } catch (SQLException e) {
             CobaltKingdoms.getInstance().getLogger().severe("Error getting bounty: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public List<BountyQuestEntity> getBounties(UUID targetId) {
+        try {
+            return bountyQuestDao.queryForEq("target_player_id", targetId);
+        } catch (SQLException e) {
+            CobaltKingdoms.getInstance().getLogger().info("Error getting bounty: " + e.getMessage());
             return null;
         }
     }

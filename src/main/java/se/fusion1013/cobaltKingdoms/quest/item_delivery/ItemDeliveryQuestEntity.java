@@ -39,6 +39,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
+import static se.fusion1013.cobaltKingdoms.quest.QuestUtil.formatMaterialName;
+
 @DatabaseTable(tableName = "quests_item_delivery")
 public class ItemDeliveryQuestEntity implements IQuestData {
 
@@ -145,6 +147,7 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         List<ItemStack> rewards = QuestUtil.generateTradeItems(minRewardValue, maxRewardValue, minRewardItems, maxRewardItems, rewardPool);
 
         QuestEntity questEntity = new QuestEntity(QuestType.Deliver, new Date(), minReqValue, maxReqValue, minRewardValue, maxRewardValue, QuestStatus.NEW, startTown, endTown);
+        questEntity.setCanDespawn(false);
 
         return new ItemDeliveryQuestEntity(requiredItems, rewards, questEntity, endTown);
     }
@@ -391,6 +394,11 @@ public class ItemDeliveryQuestEntity implements IQuestData {
     }
 
     @Override
+    public String getSymbol() {
+        return quest.getQuestType().symbol;
+    }
+
+    @Override
     public ItemStack getButtonItem() {
         if (endTown == null || quest.getStartTown() == null) return new ItemStack(Material.BARRIER);
 
@@ -455,20 +463,6 @@ public class ItemDeliveryQuestEntity implements IQuestData {
     @Override
     public boolean isValid() {
         return quest.getStartTown() != null && quest.getEndTown() != null;
-    }
-
-    public static String formatMaterialName(String input) {
-        String[] words = input.toLowerCase().split("_");
-
-        StringBuilder result = new StringBuilder();
-
-        for (String word : words) {
-            result.append(Character.toUpperCase(word.charAt(0)))
-                    .append(word.substring(1))
-                    .append(" ");
-        }
-
-        return result.toString().trim();
     }
 
     private String getTimeUntil(Instant expirationTime) {

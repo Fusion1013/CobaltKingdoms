@@ -10,6 +10,7 @@ import se.fusion1013.cobaltKingdoms.quest.item_delivery.ItemDeliveryQuestEntity;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface IQuestRepository extends IDao {
 
@@ -42,5 +43,7 @@ public interface IQuestRepository extends IDao {
 
     void insertQuest(BountyQuestEntity quest);
 
-    List<BountyQuestEntity> getBounty(Player owner, PlayerProfile target);
+    List<BountyQuestEntity> getBounties(Player owner, PlayerProfile target);
+
+    List<BountyQuestEntity> getBounties(UUID targetId);
 }

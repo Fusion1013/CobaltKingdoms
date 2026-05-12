@@ -204,6 +204,8 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
             mannequin.getPersistentDataContainer().set(TOWN_ENTITY_KEY, PersistentDataType.LONG, town.getId());
             mannequin.setProfile(ResolvableProfile.resolvableProfile().name("Fusion1013").build());
             mannequin.customName(Component.text(town.getName()));
+            mannequin.setImmovable(true);
+            mannequin.setDescription(Component.empty());
         });
 
         CobaltKingdoms.getInstance().getLogger().info("Ticking town spawn listeners: " + onTownSpawn.size());
@@ -243,6 +245,11 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
             Location location = town.getLocation();
             World world = location.getWorld();
             world.spawnParticle(Particle.END_ROD, location, 3, .2, .2, .2, 0);
+
+            townRepository.getJails(town.getId()).forEach(jail -> {
+                Location jailLocation = jail.getLocation();
+                world.spawnParticle(Particle.CRIT, jailLocation, 3, .2, .2, .2, 0);
+            });
         });
     }
 
@@ -320,6 +327,10 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
     public List<TownJailEntity> getJails(Player player) {
         TownEntity playerTown = getPlayerTown(player);
         return townRepository.getJails(playerTown.getId());
+    }
+
+    public List<TownJailEntity> getJails(TownEntity town) {
+        return townRepository.getJails(town.getId());
     }
 
     public TownJailEntity getJail(Player player, String jailName) {

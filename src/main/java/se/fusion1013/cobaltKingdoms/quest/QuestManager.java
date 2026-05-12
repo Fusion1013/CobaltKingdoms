@@ -16,12 +16,14 @@ import org.jetbrains.annotations.NotNull;
 import se.fusion1013.cobaltCore.database.system.DataManager;
 import se.fusion1013.cobaltCore.manager.Manager;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
+import se.fusion1013.cobaltKingdoms.config.town.TownLevelConfig;
 import se.fusion1013.cobaltKingdoms.database.kingdom.town.ITownRepository;
 import se.fusion1013.cobaltKingdoms.database.quest.IQuestRepository;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownManager;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownMemberEntity;
 import se.fusion1013.cobaltKingdoms.quest.gui.QuestMenu;
+import se.fusion1013.cobaltKingdoms.quest.item_delivery.ItemDeliveryQuestEntity;
 import se.fusion1013.cobaltKingdoms.util.ItemSerializationUtils;
 
 import java.time.Duration;
@@ -55,37 +57,23 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
     }
 
     private void resolveInteractAtTownEntity(PlayerInteractAtEntityEvent event) {
-        CobaltKingdoms.getInstance().getLogger().info("--------------------------------");
         Entity rightClicked = event.getRightClicked();
         Player player = event.getPlayer();
-        CobaltKingdoms.getInstance().getLogger().info("Interact at town");
-        if (event.getHand() != EquipmentSlot.HAND) {
-            CobaltKingdoms.getInstance().getLogger().info("Wrong hand");
-            return;
-        }
+        if (event.getHand() != EquipmentSlot.HAND) return;
         TownEntity clickedTown = TownManager.getInstance().getTown(rightClicked);
-        if (clickedTown == null) {
-            CobaltKingdoms.getInstance().getLogger().info("Could not find town");
-            return;
-        }
+        if (clickedTown == null) return;
 
         boolean completed = false;
         Optional<List<ActivePlayerQuestEntity>> activePlayerQuestsByPlayer = questRepository.getActivePlayerQuestsByPlayer(player);
-        CobaltKingdoms.getInstance().getLogger().info("Are active quests? " + activePlayerQuestsByPlayer.isPresent());
+
         if (activePlayerQuestsByPlayer.isPresent()) {
             List<ActivePlayerQuestEntity> activePlayerQuestEntities = activePlayerQuestsByPlayer.get();
-            CobaltKingdoms.getInstance().getLogger().info("Found active quests " + activePlayerQuestEntities.size());
             for (ActivePlayerQuestEntity q : activePlayerQuestEntities) {
                 IQuestData questData = q.getQuest().getQuestData();
-                if (questData == null) {
-                    CobaltKingdoms.getInstance().getLogger().info("No quest data found");
-                    continue;
-                }
+                if (questData == null) continue;
 
                 completed = questData.tryComplete(player, player.getLocation(), clickedTown) || completed;
-                CobaltKingdoms.getInstance().getLogger().info("Completed: " + completed);
                 if (completed) {
-                    CobaltKingdoms.getInstance().getLogger().info("Complete a quest");
                     townRepository.increaseTownXp(q.getQuest().getStartTown().getId(), questData.getXpValue());
                     townRepository.increaseTownXp(clickedTown.getId(), questData.getXpValue() / 2);
                     questRepository.removeActivePlayerQuestById(q.getId());
@@ -129,6 +117,21 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
         world.playSound(rightClicked.getLocation(), Sound.BLOCK_DECORATED_POT_INSERT, 1, 1);
 
         rightClicked.remove();
+    }
+
+    public void createRandomQuest(TownEntity startTown) {
+        List<QuestEntity> quests = questRepository.getQuests(startTown).stream().filter(q -> (q.getStatus() == QuestStatus.NEW || q.getStatus() == QuestStatus.ACTIVE) && !q.canDespawn()).toList();
+        TownLevelConfig levelConfig = startTown.getLevelConfig();
+        if (quests.size() >= levelConfig.getMaxSimultaneousQuests()) return;
+
+        List<TownEntity> list = townRepository.getTowns().stream().filter(t -> !t.getId().equals(startTown.getId())).toList();
+        if (list.isEmpty()) return;
+
+        // TODO: Add other quest types
+        ItemDeliveryQuestEntity quest = ItemDeliveryQuestEntity.createRandom(startTown, list.get(random.nextInt(list.size())));
+        questRepository.insertQuest(quest);
+
+        CobaltKingdoms.getInstance().getLogger().info("Created new quest");
     }
 
     public QuestManager(CobaltKingdoms plugin) {
