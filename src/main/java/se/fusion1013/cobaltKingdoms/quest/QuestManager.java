@@ -19,11 +19,13 @@ import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.config.town.TownLevelConfig;
 import se.fusion1013.cobaltKingdoms.database.kingdom.town.ITownRepository;
 import se.fusion1013.cobaltKingdoms.database.quest.IQuestRepository;
+import se.fusion1013.cobaltKingdoms.database.quest.gather.IQuestGatherRepository;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownManager;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownMemberEntity;
 import se.fusion1013.cobaltKingdoms.quest.gui.QuestMenu;
 import se.fusion1013.cobaltKingdoms.quest.item_delivery.ItemDeliveryQuestEntity;
+import se.fusion1013.cobaltKingdoms.quest.item_gather.GatherQuestEntity;
 import se.fusion1013.cobaltKingdoms.util.ItemSerializationUtils;
 
 import java.time.Duration;
@@ -39,6 +41,7 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
     public static final NamespacedKey QUEST_GIVER_ID_KEY = new NamespacedKey(CobaltKingdoms.getInstance(), "quest_giver_id");
 
     private static final IQuestRepository questRepository = DataManager.getInstance().getDao(IQuestRepository.class);
+    private static final IQuestGatherRepository gatherQuestRepository = DataManager.getInstance().getDao(IQuestGatherRepository.class);
     private static final ITownRepository townRepository = DataManager.getInstance().getDao(ITownRepository.class);
 
     private static final Random random = new Random();
@@ -120,7 +123,9 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
     }
 
     public void createRandomQuest(TownEntity startTown) {
-        List<QuestEntity> quests = questRepository.getQuests(startTown).stream().filter(q -> (q.getStatus() == QuestStatus.NEW || q.getStatus() == QuestStatus.ACTIVE) && !q.canDespawn()).toList();
+        List<QuestEntity> quests = questRepository.getQuests(startTown).stream()
+                .filter(q -> (q.getStatus() == QuestStatus.NEW || q.getStatus() == QuestStatus.ACTIVE) && q.canDespawn())
+                .toList();
         TownLevelConfig levelConfig = startTown.getLevelConfig();
         if (quests.size() >= levelConfig.getMaxSimultaneousQuests()) return;
 
@@ -128,8 +133,14 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
         if (list.isEmpty()) return;
 
         // TODO: Add other quest types
-        ItemDeliveryQuestEntity quest = ItemDeliveryQuestEntity.createRandom(startTown, list.get(random.nextInt(list.size())));
-        questRepository.insertQuest(quest);
+        int selected = random.nextInt(0, 2);
+        if (selected == 0) {
+            ItemDeliveryQuestEntity quest = ItemDeliveryQuestEntity.createRandom(startTown, list.get(random.nextInt(list.size())));
+            questRepository.insertQuest(quest);
+        } else if (selected == 1) {
+            GatherQuestEntity quest = GatherQuestEntity.createRandom(startTown, startTown);
+            gatherQuestRepository.insertQuest(quest);
+        }
 
         CobaltKingdoms.getInstance().getLogger().info("Created new quest");
     }
@@ -227,7 +238,7 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
         CobaltKingdoms.getInstance().getLogger().info("Spawning quest giver at " + spawnLocationOnGround.toVector());
 
         Parrot questGiver = world.spawn(spawnLocationOnGround, Parrot.class, parrot -> {
-            parrot.setGlowing(true);
+            parrot.setGlowing(false);
             parrot.getPersistentDataContainer().set(QUEST_GIVER_ID_KEY, PersistentDataType.LONG, quest.getId());
             parrot.setCustomNameVisible(false);
             parrot.setVariant(quest.getQuestType().parrotVariant);

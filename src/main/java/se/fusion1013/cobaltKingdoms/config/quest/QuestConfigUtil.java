@@ -1,29 +1,18 @@
-package se.fusion1013.cobaltKingdoms.config;
+package se.fusion1013.cobaltKingdoms.config.quest;
 
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
-import se.fusion1013.cobaltCore.manager.Manager;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
+import se.fusion1013.cobaltKingdoms.config.ItemValueConfig;
 import se.fusion1013.cobaltKingdoms.quest.QuestItem;
 
 import java.util.*;
 import java.util.logging.Logger;
 
-public class KingdomsQuestConfig extends Manager<CobaltKingdoms> {
+public class QuestConfigUtil {
 
-    private static final YamlConfiguration config = KingdomsConfig.getConfig();
-    private static Map<QuestItem, Double> rewardPools = new HashMap<>();
-    private static Map<QuestItem, Double> requirementPools = new HashMap<>();
-
-    public KingdomsQuestConfig(CobaltKingdoms plugin) {
-        super(plugin);
-    }
-
-    private static Map<QuestItem, Double> loadQuestItemPool(String poolName) {
+    public static Map<QuestItem, Double> loadQuestItemPool(String poolName, ConfigurationSection questSection) {
         Logger logger = CobaltKingdoms.getInstance().getLogger();
-        Map<Integer, Map<QuestItem, Double>> levelPools = new HashMap<>();
 
-        ConfigurationSection questSection = config.getConfigurationSection("quest");
         ConfigurationSection poolSection = questSection.getConfigurationSection(poolName);
 
         if (poolSection == null) {
@@ -99,22 +88,4 @@ public class KingdomsQuestConfig extends Manager<CobaltKingdoms> {
         return itemPool;
     }
 
-    @Override
-    public void reload() {
-        rewardPools = loadQuestItemPool("reward_pool");
-        requirementPools = loadQuestItemPool("requirement_pool");
-    }
-
-    @Override
-    public void disable() {
-
-    }
-
-    public static Map<QuestItem, Double> getRequirementPool() {
-        return requirementPools;
-    }
-
-    public static Map<QuestItem, Double> getRewardPool() {
-        return rewardPools;
-    }
 }

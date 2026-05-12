@@ -5,15 +5,16 @@ import com.j256.ormlite.table.DatabaseTable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.*;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Camel;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
-import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -26,7 +27,6 @@ import se.fusion1013.cobaltCore.util.HexUtils;
 import se.fusion1013.cobaltCore.util.StringPlaceholders;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.config.KingdomsConfig;
-import se.fusion1013.cobaltKingdoms.config.KingdomsQuestConfig;
 import se.fusion1013.cobaltKingdoms.config.quest.QuestConfig;
 import se.fusion1013.cobaltKingdoms.config.quest.QuestItemDeliveryConfig;
 import se.fusion1013.cobaltKingdoms.config.town.TownConfig;
@@ -34,12 +34,13 @@ import se.fusion1013.cobaltKingdoms.config.town.TownLevelConfig;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
 import se.fusion1013.cobaltKingdoms.quest.*;
 import se.fusion1013.cobaltKingdoms.util.ItemSerializationUtils;
+import se.fusion1013.cobaltKingdoms.util.LargeItemStack;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
-import static se.fusion1013.cobaltKingdoms.quest.QuestUtil.formatMaterialName;
+import static se.fusion1013.cobaltKingdoms.quest.QuestUtil.*;
 
 @DatabaseTable(tableName = "quests_item_delivery")
 public class ItemDeliveryQuestEntity implements IQuestData {
@@ -140,44 +141,16 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         float minRewardValue = baseRewardValue * (1 - rewardFluctuation);
         float maxRewardValue = baseRewardValue * (1 + rewardFluctuation);
 
-        Map<QuestItem, Double> requirementPool = KingdomsQuestConfig.getRequirementPool();
-        Map<QuestItem, Double> rewardPool = KingdomsQuestConfig.getRewardPool();
+        Map<QuestItem, Double> requirementPool = questConfig.getRequirementPool();
+        Map<QuestItem, Double> rewardPool = questConfig.getRewardPool();
 
         List<ItemStack> requiredItems = QuestUtil.generateTradeItems(minReqValue, maxReqValue, minReqItems, maxReqItems, requirementPool);
         List<ItemStack> rewards = QuestUtil.generateTradeItems(minRewardValue, maxRewardValue, minRewardItems, maxRewardItems, rewardPool);
 
         QuestEntity questEntity = new QuestEntity(QuestType.Deliver, new Date(), minReqValue, maxReqValue, minRewardValue, maxRewardValue, QuestStatus.NEW, startTown, endTown);
-        questEntity.setCanDespawn(false);
+        questEntity.setCanDespawn(true);
 
         return new ItemDeliveryQuestEntity(requiredItems, rewards, questEntity, endTown);
-    }
-
-    private static float calculateScalingMultiplier(
-            double distance,
-            float minScalingDist,
-            float baseScalingDist,
-            float maxScalingDist,
-            float minScalingMult,
-            float maxScalingMult) {
-
-        distance = Math.max(minScalingDist, Math.min(maxScalingDist, distance));
-
-        float scaledMult;
-
-        if (distance <= baseScalingDist) {
-            float range = baseScalingDist - minScalingDist;
-            float distAboveMin = (float) distance - minScalingDist;
-            float ratio = distAboveMin / range;
-            float multRange = 1.0f - minScalingMult;
-            scaledMult = minScalingMult + (multRange * ratio);
-        } else {
-            float range = maxScalingDist - baseScalingDist;
-            float distAboveBase = (float) distance - baseScalingDist;
-            float ratio = distAboveBase / range;
-            float multRange = maxScalingMult - 1.0f;
-            scaledMult = 1.0f + (multRange * ratio);
-        }
-        return scaledMult;
     }
 
 
@@ -235,57 +208,6 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         return true;
     }
 
-    // TODO: Move to util class
-    public static void spawnRandomFirework(Location loc) {
-        Firework firework = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK_ROCKET);
-        FireworkMeta meta = firework.getFireworkMeta();
-
-        Random random = new Random();
-
-        // Pick 1-3 random colors
-        Color[] possibleColors = {
-                Color.AQUA, Color.BLUE, Color.FUCHSIA, Color.GREEN, Color.LIME,
-                Color.MAROON, Color.NAVY, Color.ORANGE, Color.PURPLE, Color.RED, Color.SILVER, Color.WHITE, Color.YELLOW
-        };
-
-        int colorCount = 1 + random.nextInt(3);
-        Color[] colors = new Color[colorCount];
-        for (int i = 0; i < colorCount; i++) {
-            colors[i] = possibleColors[random.nextInt(possibleColors.length)];
-        }
-
-        // Pick 1-2 random fade colors
-        int fadeCount = 1 + random.nextInt(2);
-        Color[] fades = new Color[fadeCount];
-        for (int i = 0; i < fadeCount; i++) {
-            fades[i] = possibleColors[random.nextInt(possibleColors.length)];
-        }
-
-        // Random firework type
-        FireworkEffect.Type[] types = FireworkEffect.Type.values();
-        FireworkEffect.Type type = types[random.nextInt(types.length)];
-
-        // Random trail & flicker
-        boolean flicker = random.nextBoolean();
-        boolean trail = random.nextBoolean();
-
-        // Build the effect
-        FireworkEffect effect = FireworkEffect.builder()
-                .withColor(colors)
-                .withFade(fades)
-                .with(type)
-                .flicker(flicker)
-                .trail(trail)
-                .build();
-
-        meta.addEffect(effect);
-
-        // Random power 1-3
-        meta.setPower(1 + random.nextInt(3));
-
-        firework.setFireworkMeta(meta);
-    }
-
     @Override
     public void start(@NotNull Player player, @NotNull Location location) {
         player.give(getInstructionsItem());
@@ -307,6 +229,8 @@ public class ItemDeliveryQuestEntity implements IQuestData {
                 0, false, false, false);
         camel.addPotionEffect(glowEffect);
         camel.setLeashHolder(player);
+
+        QuestUtil.giveQuestCompass(player, endTown.getLocation(), "Compass to " + endTown.getName());
 
         // Store required items in persistent data container
         PersistentDataContainer container = camel.getPersistentDataContainer();
@@ -425,16 +349,18 @@ public class ItemDeliveryQuestEntity implements IQuestData {
 
         // Add requested items
         lore.add("&z[x" + townLevelConfig.getQuestRequirementsMultiplier() + "] Requested Items:");
-        for (ItemStack requestedItem : getRequiredItems()) {
-            String name = requestedItem.getItemMeta().hasDisplayName() ? requestedItem.getItemMeta().getDisplayName() : formatMaterialName(requestedItem.getType().name());
-            lore.add("&7- " + HexUtils.colorify(name) + " &7[&z" + requestedItem.getAmount() + "&7]");
+        List<LargeItemStack> requiredItems = LargeItemStack.toLargeItemStacks(getRequiredItems());
+        for (LargeItemStack requestedItem : requiredItems) {
+            String name = requestedItem.item().getItemMeta().hasDisplayName() ? requestedItem.item().getItemMeta().getDisplayName() : formatMaterialName(requestedItem.item().getType().name());
+            lore.add("&7- " + HexUtils.colorify(name) + " &7[&z" + requestedItem.amount() + "&7]");
         }
         // Add rewards
         lore.add("");
         lore.add("&z[x" + townLevelConfig.getQuestRewardMultiplier() + "] Rewards:");
-        for (ItemStack rewardItem : getRewards()) {
-            String name = rewardItem.getItemMeta().hasDisplayName() ? rewardItem.getItemMeta().getDisplayName() : formatMaterialName(rewardItem.getType().name());
-            lore.add("&7- " + HexUtils.colorify(name) + " &7[&z" + rewardItem.getAmount() + "&7]");
+        List<LargeItemStack> rewardItems = LargeItemStack.toLargeItemStacks(getRewards());
+        for (LargeItemStack rewardItem : rewardItems) {
+            String name = rewardItem.item().getItemMeta().hasDisplayName() ? rewardItem.item().getItemMeta().getDisplayName() : formatMaterialName(rewardItem.item().getType().name());
+            lore.add("&7- " + HexUtils.colorify(name) + " &7[&z" + rewardItem.amount() + "&7]");
         }
 
         lore.add("");
@@ -451,11 +377,16 @@ public class ItemDeliveryQuestEntity implements IQuestData {
 
     @Override
     public int getXpValue() {
-        return 10;
+        double averageQuestRewardValue = (quest.getMinRewardValue() + quest.getMaxRewardValue()) / 2.0;
+        return (int) averageQuestRewardValue / 100;
     }
 
     @Override
     public boolean shouldShowInMenu(TownEntity town, Player player) {
+        if (town == null) return false;
+        if (quest.getStartTown() == null) return false;
+        if (quest.getEndTown() == null) return false;
+
         return town.getId().equals(quest.getStartTown().getId()) &&
                 quest.getStatus() == QuestStatus.NEW;
     }

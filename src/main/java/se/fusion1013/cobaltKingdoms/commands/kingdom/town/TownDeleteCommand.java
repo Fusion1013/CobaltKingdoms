@@ -2,7 +2,7 @@ package se.fusion1013.cobaltKingdoms.commands.kingdom.town;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
-import dev.jorel.commandapi.arguments.StringArgument;
+import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import dev.jorel.commandapi.executors.CommandArguments;
 import org.bukkit.entity.Player;
 import se.fusion1013.cobaltCore.locale.LocaleManager;
@@ -15,7 +15,7 @@ public class TownDeleteCommand {
 
     public static CommandAPICommand register() {
         return new CommandAPICommand("delete")
-                .withArguments(new StringArgument("town").replaceSuggestions(ArgumentSuggestions.strings(k -> TownManager.getInstance().getTownNames())))
+                .withArguments(new GreedyStringArgument("town").replaceSuggestions(ArgumentSuggestions.strings(k -> TownManager.getInstance().getTownNames())))
                 .executesPlayer(TownDeleteCommand::deleteTown);
     }
 

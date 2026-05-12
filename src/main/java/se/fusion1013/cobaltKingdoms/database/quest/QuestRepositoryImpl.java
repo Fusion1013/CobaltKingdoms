@@ -7,9 +7,11 @@ import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 import org.bukkit.entity.Player;
+import se.fusion1013.cobaltCore.database.system.DataManager;
 import se.fusion1013.cobaltCore.database.system.DataStorageType;
 import se.fusion1013.cobaltCore.database.system.implementations.SQLiteImplementation;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
+import se.fusion1013.cobaltKingdoms.database.quest.gather.IQuestGatherRepository;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
 import se.fusion1013.cobaltKingdoms.quest.*;
 import se.fusion1013.cobaltKingdoms.quest.bounty.BountyQuestEntity;
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+// TODO: Split into different repositories
 public class QuestRepositoryImpl implements IQuestRepository {
 
     private Dao<QuestEntity, Long> questDao;
@@ -43,7 +46,7 @@ public class QuestRepositoryImpl implements IQuestRepository {
             TableUtils.createTableIfNotExists(connectionSource, BountyQuestEntity.class);
 
         } catch (SQLException e) {
-            CobaltKingdoms.getInstance().getLogger().severe("Error initializing Town DAO: " + e.getMessage());
+            CobaltKingdoms.getInstance().getLogger().severe("Error initializing Quest DAO: " + e.getMessage());
         }
     }
 
@@ -106,7 +109,8 @@ public class QuestRepositoryImpl implements IQuestRepository {
                 case Deliver -> {
                     return itemDeliveryQuestDao.queryForEq("quest", questId).getFirst();
                 }
-                case Collect -> {
+                case Gather -> {
+                    return DataManager.getInstance().getDao(IQuestGatherRepository.class).getQuest(questId);
                 }
                 case Bounty -> {
                     return bountyQuestDao.queryForEq("quest", questId).getFirst();

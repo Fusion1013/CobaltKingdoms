@@ -3,6 +3,12 @@ package se.fusion1013.cobaltKingdoms.config.quest;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import se.fusion1013.cobaltKingdoms.config.AbstractConfig;
+import se.fusion1013.cobaltKingdoms.quest.QuestItem;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static se.fusion1013.cobaltKingdoms.config.quest.QuestConfigUtil.loadQuestItemPool;
 
 public class QuestConfig extends AbstractConfig {
 
@@ -25,6 +31,8 @@ public class QuestConfig extends AbstractConfig {
     private int maxRequirementsUniqueItems = 3;
 
     private QuestItemDeliveryConfig itemDeliveryConfig;
+    private Map<QuestItem, Double> rewardPools = new HashMap<>();
+    private Map<QuestItem, Double> requirementPools = new HashMap<>();
 
     private QuestConfig(String name) {
         super(name);
@@ -52,6 +60,9 @@ public class QuestConfig extends AbstractConfig {
 
         ConfigurationSection itemDelivery = config.getConfigurationSection("item_delivery");
         itemDeliveryConfig = new QuestItemDeliveryConfig(itemDelivery);
+
+        rewardPools = loadQuestItemPool("reward_pool", config);
+        requirementPools = loadQuestItemPool("requirement_pool", config);
     }
 
     public int getBaseRewardValue() {
@@ -108,5 +119,13 @@ public class QuestConfig extends AbstractConfig {
 
     public QuestItemDeliveryConfig getItemDeliveryConfig() {
         return itemDeliveryConfig;
+    }
+
+    public Map<QuestItem, Double> getRequirementPool() {
+        return requirementPools;
+    }
+
+    public Map<QuestItem, Double> getRewardPool() {
+        return rewardPools;
     }
 }

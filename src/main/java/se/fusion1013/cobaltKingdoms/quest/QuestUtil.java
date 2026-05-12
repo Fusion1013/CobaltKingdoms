@@ -3,12 +3,19 @@ package se.fusion1013.cobaltKingdoms.quest;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
+import org.bukkit.*;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Firework;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.CompassMeta;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import se.fusion1013.cobaltCore.util.HexUtils;
+import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
+import se.fusion1013.cobaltKingdoms.util.LargeItemStack;
 
 import java.util.*;
 
@@ -48,12 +55,14 @@ public class QuestUtil {
             Map<QuestItem, Double> stockList) {
 
         Random random = new Random();
-        List<ItemStack> generatedItems = new ArrayList<>();
+        List<LargeItemStack> generatedItems = new ArrayList<>();
         HashSet<QuestItem> usedItems = new HashSet<>();
-        HashMap<ItemStack, Double> itemStackValues = new HashMap<>();
+        HashMap<LargeItemStack, Double> itemStackValues = new HashMap<>();
         double totalValue = 0;
         int uniqueItemsCount = random.nextInt(maxUniqueItems - minUniqueItems + 1) + minUniqueItems;
         int iteration = 0;
+
+        double targetValuePerStack = minValue / uniqueItemsCount;
 
         // Loop until we have the target number of unique items and reach minValue
         // Or until we've tried MAX_ITEM_SAMPLE_ITERATIONS times
@@ -72,6 +81,11 @@ public class QuestUtil {
 
             // Ensure the minimum stack of this item will not push us over the maxValue
             double minStackVal = tradeItem.valuePerItem() * tradeItem.minQuantity();
+            double maxStackVal = tradeItem.valuePerItem() * tradeItem.maxQuantity();
+            double averageStackVal = (minStackVal + maxStackVal) / 2.0;
+
+            if (averageStackVal < targetValuePerStack) continue;
+
             if (totalValue + minStackVal <= maxValue) {
 
                 // Get the maximum stack quantity that can be added without exceeding maxValue
@@ -94,10 +108,11 @@ public class QuestUtil {
                 double stackValue = tradeItem.valuePerItem() * quantity;
 
                 totalValue += stackValue;
-                ItemStack itemStack = tradeItem.item();
-                itemStack.setAmount(Math.clamp(quantity, 1, 64));
+                ItemStack itemTemplate = tradeItem.item();
+                LargeItemStack itemStack = new LargeItemStack(itemTemplate, quantity);
 
                 generatedItems.add(itemStack);
+
                 usedItems.add(tradeItem);
                 itemStackValues.put(itemStack, stackValue);
             }
@@ -107,7 +122,7 @@ public class QuestUtil {
             if (iteration < MAX_ITEM_SAMPLE_ITERATIONS
                     && generatedItems.size() >= uniqueItemsCount && totalValue < minValue) {
                 // Find and remove the least valuable item stack
-                ItemStack leastValuable = generatedItems.stream()
+                LargeItemStack leastValuable = generatedItems.stream()
                         .min(Comparator.comparing(itemStackValues::get))
                         .get();
 
@@ -117,8 +132,101 @@ public class QuestUtil {
             }
         }
 
+        CobaltKingdoms.getInstance().getLogger().info("Generated trade items with value " + totalValue);
+
         // Final check: if totalValue is still below minValue, just return what was generated
-        return generatedItems;
+        return generatedItems.stream()
+                .flatMap(large -> large.getItems().stream())
+                .toList();
+    }
+
+    public static void spawnRandomFirework(Location loc) {
+        Firework firework = (Firework) loc.getWorld().spawnEntity(loc, EntityType.FIREWORK_ROCKET);
+        FireworkMeta meta = firework.getFireworkMeta();
+
+        Random random = new Random();
+
+        // Pick 1-3 random colors
+        Color[] possibleColors = {
+                Color.AQUA, Color.BLUE, Color.FUCHSIA, Color.GREEN, Color.LIME,
+                Color.MAROON, Color.NAVY, Color.ORANGE, Color.PURPLE, Color.RED, Color.SILVER, Color.WHITE, Color.YELLOW
+        };
+
+        int colorCount = 1 + random.nextInt(3);
+        Color[] colors = new Color[colorCount];
+        for (int i = 0; i < colorCount; i++) {
+            colors[i] = possibleColors[random.nextInt(possibleColors.length)];
+        }
+
+        // Pick 1-2 random fade colors
+        int fadeCount = 1 + random.nextInt(2);
+        Color[] fades = new Color[fadeCount];
+        for (int i = 0; i < fadeCount; i++) {
+            fades[i] = possibleColors[random.nextInt(possibleColors.length)];
+        }
+
+        // Random firework type
+        FireworkEffect.Type[] types = FireworkEffect.Type.values();
+        FireworkEffect.Type type = types[random.nextInt(types.length)];
+
+        // Random trail & flicker
+        boolean flicker = random.nextBoolean();
+        boolean trail = random.nextBoolean();
+
+        // Build the effect
+        FireworkEffect effect = FireworkEffect.builder()
+                .withColor(colors)
+                .withFade(fades)
+                .with(type)
+                .flicker(flicker)
+                .trail(trail)
+                .build();
+
+        meta.addEffect(effect);
+
+        // Random power 1-3
+        meta.setPower(1 + random.nextInt(3));
+
+        firework.setFireworkMeta(meta);
+    }
+
+    public static void giveQuestCompass(Player player, Location targetLocation, String title) {
+        // Create compass
+        ItemStack compass = new ItemStack(Material.COMPASS);
+        CompassMeta compassMeta = (CompassMeta) compass.getItemMeta();
+        compassMeta.setLodestone(targetLocation);
+        compassMeta.setLodestoneTracked(false);
+        compassMeta.setDisplayName(HexUtils.colorify("&z" + title));
+        compass.setItemMeta(compassMeta);
+        player.give(compass);
+    }
+
+    public static float calculateScalingMultiplier(
+            double distance,
+            float minScalingDist,
+            float baseScalingDist,
+            float maxScalingDist,
+            float minScalingMult,
+            float maxScalingMult) {
+
+        distance = Math.max(minScalingDist, Math.min(maxScalingDist, distance));
+
+        float scaledMult;
+
+        if (distance <= baseScalingDist) {
+            float range = baseScalingDist - minScalingDist;
+            float distAboveMin = (float) distance - minScalingDist;
+            float ratio = distAboveMin / range;
+            float multRange = 1.0f - minScalingMult;
+            scaledMult = minScalingMult + (multRange * ratio);
+        } else {
+            float range = maxScalingDist - baseScalingDist;
+            float distAboveBase = (float) distance - baseScalingDist;
+            float ratio = distAboveBase / range;
+            float multRange = maxScalingMult - 1.0f;
+            scaledMult = 1.0f + (multRange * ratio);
+        }
+        return scaledMult;
     }
 
     /**

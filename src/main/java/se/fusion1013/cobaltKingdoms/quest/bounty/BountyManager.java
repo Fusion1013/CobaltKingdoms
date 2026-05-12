@@ -133,7 +133,7 @@ public class BountyManager extends Manager<CobaltKingdoms> implements Listener {
             if (reward == null || reward.isEmpty()) return;
 
             killer.give(reward);
-        }, 20);
+        }, 1);
     }
 
     @EventHandler

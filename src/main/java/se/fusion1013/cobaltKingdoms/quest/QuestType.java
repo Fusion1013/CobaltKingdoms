@@ -7,7 +7,7 @@ public enum QuestType {
 
     Combat("⚔", NamedTextColor.RED, Parrot.Variant.RED),
     Deliver("\uD83D\uDCE6", NamedTextColor.DARK_GREEN, Parrot.Variant.GREEN),
-    Collect("\uD83C\uDF3F", NamedTextColor.BLUE, Parrot.Variant.BLUE),
+    Gather("\uD83C\uDF3F", NamedTextColor.BLUE, Parrot.Variant.BLUE),
     Bounty("⚔", NamedTextColor.DARK_RED, Parrot.Variant.RED);
 
     public final String symbol;

@@ -1,4 +1,4 @@
-package se.fusion1013.cobaltKingdoms.commands.bounty;
+package se.fusion1013.cobaltKingdoms.commands.quest.bounty;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import se.fusion1013.cobaltCore.util.CommandUtil;

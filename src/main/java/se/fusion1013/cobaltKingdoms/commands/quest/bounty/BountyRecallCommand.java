@@ -1,4 +1,4 @@
-package se.fusion1013.cobaltKingdoms.commands.bounty;
+package se.fusion1013.cobaltKingdoms.commands.quest.bounty;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import dev.jorel.commandapi.CommandAPICommand;

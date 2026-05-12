@@ -1,0 +1,8 @@
+internal_name: desert_temple_crown
+difficulty: 3
+location:
+  world: The-Great-Work-World
+  x: 1529
+  y: 38
+  z: -1139
+item: crown
