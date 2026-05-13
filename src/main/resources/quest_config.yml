@@ -39,7 +39,7 @@ item_delivery:
 
 combat:
   reward_multiplier: 1.5
-item_gather:
+artifact_hunt:
   reward_multiplier: 2
 
 # Quest reward items. Item values will be stored in a different file

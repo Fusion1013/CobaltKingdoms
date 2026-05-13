@@ -1,4 +1,4 @@
-package se.fusion1013.cobaltKingdoms.commands.quest.gather;
+package se.fusion1013.cobaltKingdoms.commands.quest.artifact_hunt;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.*;
@@ -10,16 +10,16 @@ import se.fusion1013.cobaltCore.locale.LocaleManager;
 import se.fusion1013.cobaltCore.util.StringPlaceholders;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.Response;
-import se.fusion1013.cobaltKingdoms.quest.item_gather.GatherQuestManager;
+import se.fusion1013.cobaltKingdoms.quest.artifact_hunt.ArtifactHuntQuestManager;
 
-public class QuestGatherGoalCreateCommand {
+public class QuestArtifactHuntGoalCreateCommand {
     public static CommandAPICommand register() {
         return new CommandAPICommand("create")
                 .withArguments(new StringArgument("name"))
                 .withArguments(new IntegerArgument("difficulty"))
                 .withArguments(new LocationArgument("location", LocationType.BLOCK_POSITION))
                 .withArguments(new StringArgument("item").replaceSuggestions(ArgumentSuggestions.strings(k -> CustomItemManager.getCustomItemNames())))
-                .executesPlayer(QuestGatherGoalCreateCommand::createGoal);
+                .executesPlayer(QuestArtifactHuntGoalCreateCommand::createGoal);
     }
 
     private static void createGoal(Player player, CommandArguments args) {
@@ -34,7 +34,7 @@ public class QuestGatherGoalCreateCommand {
     }
 
     private static void tryCreateGoal(Player player, String name, Integer difficulty, Location location, String itemName) {
-        Response response = GatherQuestManager.getInstance().createQuestGoal(name, difficulty, location, itemName);
+        Response response = ArtifactHuntQuestManager.getInstance().createQuestGoal(name, difficulty, location, itemName);
 
         if (response.ok()) {
             LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), player, "kingdoms.commands.quest.gather.goal.create", StringPlaceholders.builder()

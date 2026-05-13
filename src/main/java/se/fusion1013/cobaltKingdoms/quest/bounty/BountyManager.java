@@ -47,7 +47,7 @@ public class BountyManager extends Manager<CobaltKingdoms> implements Listener {
         TownEntity town = TownManager.getInstance().getPlayerTown(owner);
         if (town == null) return Response.error("You need to be a part of a town to create a bounty");
 
-        QuestEntity quest = new QuestEntity(QuestType.Bounty, new Date(), 0, 0, 0, 0, QuestStatus.NEW, town, town);
+        QuestEntity quest = new QuestEntity(QuestType.BOUNTY, new Date(), 0, 0, 0, 0, QuestStatus.NEW, town, town);
         quest.setCanDespawn(false);
 
         BountyQuestEntity bounty = new BountyQuestEntity();

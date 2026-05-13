@@ -190,12 +190,23 @@ public class QuestUtil {
         firework.setFireworkMeta(meta);
     }
 
-    public static void giveQuestCompass(Player player, Location targetLocation, String title) {
+    public static void clearQuestItems(Player player, Long questId) {
+        for (ItemStack item : player.getInventory()) {
+            if (item == null || item.isEmpty()) continue;
+            if (!item.getPersistentDataContainer().has(QuestManager.QUEST_ID_KEY)) continue;
+            Long id = item.getPersistentDataContainer().get(QuestManager.QUEST_ID_KEY, PersistentDataType.LONG);
+            if (!id.equals(questId)) continue;
+            item.setAmount(0);
+        }
+    }
+
+    public static void giveQuestCompass(Player player, Location targetLocation, String title, Long questId) {
         // Create compass
         ItemStack compass = new ItemStack(Material.COMPASS);
         CompassMeta compassMeta = (CompassMeta) compass.getItemMeta();
         compassMeta.setLodestone(targetLocation);
         compassMeta.setLodestoneTracked(false);
+        compassMeta.getPersistentDataContainer().set(QuestManager.QUEST_ID_KEY, PersistentDataType.LONG, questId);
         compassMeta.setDisplayName(HexUtils.colorify("&z" + title));
         compass.setItemMeta(compassMeta);
         player.give(compass);

@@ -11,7 +11,7 @@ import se.fusion1013.cobaltCore.database.system.DataManager;
 import se.fusion1013.cobaltCore.database.system.DataStorageType;
 import se.fusion1013.cobaltCore.database.system.implementations.SQLiteImplementation;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
-import se.fusion1013.cobaltKingdoms.database.quest.gather.IQuestGatherRepository;
+import se.fusion1013.cobaltKingdoms.database.quest.artifact_hunt.IQuestArtifactHuntRepository;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
 import se.fusion1013.cobaltKingdoms.quest.*;
 import se.fusion1013.cobaltKingdoms.quest.bounty.BountyQuestEntity;
@@ -104,15 +104,15 @@ public class QuestRepositoryImpl implements IQuestRepository {
     public IQuestData getQuestData(Long questId, QuestType questType) {
         try {
             switch (questType) {
-                case Combat -> {
+                case COMBAT -> {
                 }
-                case Deliver -> {
+                case DELIVER -> {
                     return itemDeliveryQuestDao.queryForEq("quest", questId).getFirst();
                 }
-                case Gather -> {
-                    return DataManager.getInstance().getDao(IQuestGatherRepository.class).getQuest(questId);
+                case ARTIFACT_HUNT -> {
+                    return DataManager.getInstance().getDao(IQuestArtifactHuntRepository.class).getQuest(questId);
                 }
-                case Bounty -> {
+                case BOUNTY -> {
                     return bountyQuestDao.queryForEq("quest", questId).getFirst();
                 }
             }

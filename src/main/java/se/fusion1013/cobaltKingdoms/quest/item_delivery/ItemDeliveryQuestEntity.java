@@ -147,7 +147,7 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         List<ItemStack> requiredItems = QuestUtil.generateTradeItems(minReqValue, maxReqValue, minReqItems, maxReqItems, requirementPool);
         List<ItemStack> rewards = QuestUtil.generateTradeItems(minRewardValue, maxRewardValue, minRewardItems, maxRewardItems, rewardPool);
 
-        QuestEntity questEntity = new QuestEntity(QuestType.Deliver, new Date(), minReqValue, maxReqValue, minRewardValue, maxRewardValue, QuestStatus.NEW, startTown, endTown);
+        QuestEntity questEntity = new QuestEntity(QuestType.DELIVER, new Date(), minReqValue, maxReqValue, minRewardValue, maxRewardValue, QuestStatus.NEW, startTown, endTown);
         questEntity.setCanDespawn(true);
 
         return new ItemDeliveryQuestEntity(requiredItems, rewards, questEntity, endTown);
@@ -178,6 +178,8 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         }
 
         if (player != null) {
+            QuestUtil.clearQuestItems(player, quest.getId());
+
             // Give rewards to the player
             for (ItemStack reward : getRewards()) {
                 HashMap<Integer, ItemStack> leftover = player.getInventory().addItem(reward);
@@ -230,7 +232,7 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         camel.addPotionEffect(glowEffect);
         camel.setLeashHolder(player);
 
-        QuestUtil.giveQuestCompass(player, endTown.getLocation(), "Compass to " + endTown.getName());
+        QuestUtil.giveQuestCompass(player, endTown.getLocation(), "Compass to " + endTown.getName(), quest.getId());
 
         // Store required items in persistent data container
         PersistentDataContainer container = camel.getPersistentDataContainer();
@@ -281,6 +283,8 @@ public class ItemDeliveryQuestEntity implements IQuestData {
                 .appendNewline()
                 .append(costReward)
                 .decoration(TextDecoration.ITALIC, false));
+
+        meta.getPersistentDataContainer().set(QuestManager.QUEST_ID_KEY, PersistentDataType.LONG, quest.getId());
 
         itemStack.setItemMeta(meta);
         return itemStack;

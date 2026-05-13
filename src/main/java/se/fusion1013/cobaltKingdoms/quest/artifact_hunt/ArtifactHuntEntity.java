@@ -1,4 +1,4 @@
-package se.fusion1013.cobaltKingdoms.quest.item_gather;
+package se.fusion1013.cobaltKingdoms.quest.artifact_hunt;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
@@ -8,6 +8,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -26,6 +27,7 @@ import se.fusion1013.cobaltKingdoms.config.town.TownLevelConfig;
 import se.fusion1013.cobaltKingdoms.database.ItemStackListPersister;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
 import se.fusion1013.cobaltKingdoms.quest.*;
+import se.fusion1013.cobaltKingdoms.quest.item_delivery.QuestItemDeliveryUtil;
 import se.fusion1013.cobaltKingdoms.util.ItemStackList;
 import se.fusion1013.cobaltKingdoms.util.LargeItemStack;
 
@@ -35,8 +37,8 @@ import java.util.*;
 
 import static se.fusion1013.cobaltKingdoms.quest.QuestUtil.*;
 
-@DatabaseTable(tableName = "quests_gather")
-public class GatherQuestEntity implements IQuestData {
+@DatabaseTable(tableName = "quests_artifact_hunt")
+public class ArtifactHuntEntity implements IQuestData {
 
     @DatabaseField(generatedId = true, columnName = "id")
     private Long id;
@@ -48,15 +50,15 @@ public class GatherQuestEntity implements IQuestData {
     private QuestEntity quest;
 
     @DatabaseField(foreign = true, foreignAutoCreate = false, foreignAutoRefresh = true)
-    private GatherQuestGoalEntity goal;
+    private ArtifactHuntQuestGoalEntity goal;
 
-    public GatherQuestEntity() {
+    public ArtifactHuntEntity() {
     }
 
-    public static GatherQuestEntity createRandom(TownEntity startTown, TownEntity endTown) {
+    public static ArtifactHuntEntity createRandom(TownEntity startTown, TownEntity endTown) {
         QuestConfig questConfig = KingdomsConfig.getQuestConfig();
 
-        int difficulty = 0;
+        int difficulty = 0; // TODO: Weighted randomize
 
         // Base values
         float baseRewardValue = questConfig.getBaseRewardValue();
@@ -85,16 +87,16 @@ public class GatherQuestEntity implements IQuestData {
 
         List<ItemStack> rewards = QuestUtil.generateTradeItems(minRewardValue, maxRewardValue, minRewardItems, maxRewardItems, rewardPool);
 
-        QuestEntity questEntity = new QuestEntity(QuestType.Gather, new Date(), -1, -1, minRewardValue, maxRewardValue, QuestStatus.NEW, startTown, endTown);
+        QuestEntity questEntity = new QuestEntity(QuestType.ARTIFACT_HUNT, new Date(), -1, -1, minRewardValue, maxRewardValue, QuestStatus.NEW, startTown, endTown);
         questEntity.setCanDespawn(true);
 
-        GatherQuestGoalEntity randomGoal = GatherQuestManager.getInstance().getRandomGoal(difficulty);
+        ArtifactHuntQuestGoalEntity randomGoal = ArtifactHuntQuestManager.getInstance().getRandomGoal(difficulty);
 
-        GatherQuestEntity gatherQuest = new GatherQuestEntity();
-        gatherQuest.setQuest(questEntity);
-        gatherQuest.setGoal(randomGoal);
-        gatherQuest.setRewards(rewards);
-        return gatherQuest;
+        ArtifactHuntEntity artifactHuntQuest = new ArtifactHuntEntity();
+        artifactHuntQuest.setQuest(questEntity);
+        artifactHuntQuest.setGoal(randomGoal);
+        artifactHuntQuest.setRewards(rewards);
+        return artifactHuntQuest;
     }
 
     @Override
@@ -141,6 +143,7 @@ public class GatherQuestEntity implements IQuestData {
         endLocation.getWorld().playSound(endLocation, Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
 
         player.getInventory().setItemInMainHand(ItemStack.empty());
+        QuestUtil.clearQuestItems(player, quest.getId());
 
         return true;
     }
@@ -155,6 +158,8 @@ public class GatherQuestEntity implements IQuestData {
         ItemStack itemStack = customItem.getItemStack();
         if (itemStack == null) return;
 
+        player.give(getInstructionsItem());
+
         ItemMeta itemMeta = itemStack.getItemMeta();
         itemMeta.getPersistentDataContainer().set(QuestManager.QUEST_ID_KEY, PersistentDataType.LONG, quest.getId());
         itemStack.setItemMeta(itemMeta);
@@ -168,7 +173,7 @@ public class GatherQuestEntity implements IQuestData {
             item.setVelocity(new Vector());
         });
 
-        giveQuestCompass(player, goalLocation, "Artifact Compass");
+        giveQuestCompass(player, goalLocation, "Artifact Compass", quest.getId());
 
         // Broadcast message
         LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.gather.start", StringPlaceholders.builder()
@@ -179,7 +184,29 @@ public class GatherQuestEntity implements IQuestData {
 
     @Override
     public ItemStack getInstructionsItem() {
-        return null;
+        ItemStack itemStack = new ItemStack(Material.WRITTEN_BOOK);
+        BookMeta meta = (BookMeta) itemStack.getItemMeta();
+
+        ICustomItem customItem = CustomItemManager.getCustomItem(goal.getItemName());
+        ItemStack targetItem = customItem.getItemStack();
+
+        meta.title(getTitle());
+        meta.customName(getTitle());
+        meta.setAuthor("Quest");
+
+        String itemDisplayName = targetItem.getItemMeta().getDisplayName();
+        itemDisplayName = HexUtils.stripColorCodes(itemDisplayName);
+
+        String content = "&z&lArtifact Hunt\n\n" +
+                "&z&lArtifact: &8" + itemDisplayName + "\n\n" +
+                "&z&lReward: &8" + QuestItemDeliveryUtil.toComponent(rewards.list());
+
+        meta.addPage(HexUtils.colorify(content));
+
+        meta.getPersistentDataContainer().set(QuestManager.QUEST_ID_KEY, PersistentDataType.LONG, quest.getId());
+
+        itemStack.setItemMeta(meta);
+        return itemStack;
     }
 
     @Override
@@ -220,8 +247,11 @@ public class GatherQuestEntity implements IQuestData {
         lore.add("&zCoords: &7" + coordinates);
 
         ICustomItem targetItem = CustomItemManager.getCustomItem(goal.getItemName());
-        if (targetItem != null) lore.add("&zItem: &7" + targetItem.getItemStack().getItemMeta().getDisplayName());
-        else {
+        if (targetItem != null) {
+            String customItemDisplayName = targetItem.getItemStack().getItemMeta().getDisplayName();
+            customItemDisplayName = HexUtils.stripColorCodes(customItemDisplayName);
+            lore.add("&zItem: &7" + customItemDisplayName);
+        } else {
             lore.add("Could not find target item, report as a bug");
             lore.add("with the following information:");
             lore.add("QuestID: " + quest.getId());
@@ -292,11 +322,11 @@ public class GatherQuestEntity implements IQuestData {
         this.quest = quest;
     }
 
-    public GatherQuestGoalEntity getGoal() {
+    public ArtifactHuntQuestGoalEntity getGoal() {
         return goal;
     }
 
-    public void setGoal(GatherQuestGoalEntity goal) {
+    public void setGoal(ArtifactHuntQuestGoalEntity goal) {
         this.goal = goal;
     }
 }

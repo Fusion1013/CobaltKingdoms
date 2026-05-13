@@ -116,6 +116,8 @@
   "kingdoms.commands.town.info.header": "&7---- [ &z%town%&7 ] ----",
   "kingdoms.commands.town.info.item": "&7 - &z%key%&7: %value%",
   "kingdoms.commands.town.info_fail": "&7Failed to show info for town: %reason%",
+  "kingdoms.commands.town.modify.set": "&7Set &z%action% &7for &z%town% &7to &z%value%",
+  "kingdoms.commands.town.modify.set_fail": "&7Failed to set value: %reason%",
   "kingdoms.commands.town.jail.create": "&7Create new jail &z%jail%",
   "kingdoms.commands.town.jail.create_fail": "&7Failed to create new jail: %reason%",
   "kingdoms.commands.town.jail.delete": "&7Deleted jail &z%jail%",

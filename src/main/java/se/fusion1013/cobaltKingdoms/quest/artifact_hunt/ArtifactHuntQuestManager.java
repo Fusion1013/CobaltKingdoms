@@ -1,32 +1,32 @@
-package se.fusion1013.cobaltKingdoms.quest.item_gather;
+package se.fusion1013.cobaltKingdoms.quest.artifact_hunt;
 
 import org.bukkit.Location;
 import se.fusion1013.cobaltCore.database.system.DataManager;
 import se.fusion1013.cobaltCore.manager.Manager;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.Response;
-import se.fusion1013.cobaltKingdoms.database.quest.gather.IQuestGatherRepository;
+import se.fusion1013.cobaltKingdoms.database.quest.artifact_hunt.IQuestArtifactHuntRepository;
 
 import java.util.List;
 import java.util.Random;
 
-public class GatherQuestManager extends Manager<CobaltKingdoms> {
+public class ArtifactHuntQuestManager extends Manager<CobaltKingdoms> {
 
     private static final Random random = new Random();
     private static final DataManager dataManager = DataManager.getInstance();
-    private static final IQuestGatherRepository gatherQuestRepository = dataManager.getDao(IQuestGatherRepository.class);
+    private static final IQuestArtifactHuntRepository artifactHuntQuestRepository = dataManager.getDao(IQuestArtifactHuntRepository.class);
 
     public Response createQuestGoal(String name, int difficulty, Location location, String itemName) {
-        GatherQuestGoalEntity goal = new GatherQuestGoalEntity();
+        ArtifactHuntQuestGoalEntity goal = new ArtifactHuntQuestGoalEntity();
         goal.setName(name);
         goal.setDifficulty(difficulty);
         goal.setLocation(location);
         goal.setItemName(itemName);
-        gatherQuestRepository.createGoal(goal);
+        artifactHuntQuestRepository.createGoal(goal);
         return Response.ok("Created new goal");
     }
 
-    public GatherQuestManager(CobaltKingdoms plugin) {
+    public ArtifactHuntQuestManager(CobaltKingdoms plugin) {
         super(plugin);
     }
 
@@ -40,23 +40,23 @@ public class GatherQuestManager extends Manager<CobaltKingdoms> {
 
     }
 
-    private static GatherQuestManager INSTANCE;
+    private static ArtifactHuntQuestManager INSTANCE;
 
-    public static GatherQuestManager getInstance() {
+    public static ArtifactHuntQuestManager getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new GatherQuestManager(CobaltKingdoms.getInstance());
+            INSTANCE = new ArtifactHuntQuestManager(CobaltKingdoms.getInstance());
         }
         return INSTANCE;
     }
 
     // ##%%##%%## GETTERS / SETTERS ##%%##%%## //
 
-    public List<GatherQuestGoalEntity> getGoals() {
-        return gatherQuestRepository.getGoals();
+    public List<ArtifactHuntQuestGoalEntity> getGoals() {
+        return artifactHuntQuestRepository.getGoals();
     }
 
-    public GatherQuestGoalEntity getRandomGoal(int difficulty) {
-        List<GatherQuestGoalEntity> goals = gatherQuestRepository.getGoals(difficulty);
+    public ArtifactHuntQuestGoalEntity getRandomGoal(int difficulty) {
+        List<ArtifactHuntQuestGoalEntity> goals = artifactHuntQuestRepository.getGoals(difficulty);
         if (goals.isEmpty()) return null;
         return goals.get(random.nextInt(goals.size()));
     }

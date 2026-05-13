@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
+import se.fusion1013.cobaltCore.util.HexUtils;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownManager;
 
@@ -146,6 +147,7 @@ public class QuestItemDeliveryUtil {
     public static @NotNull String toComponent(List<ItemStack> cost) {
         return cost.stream()
                 .map(QuestItemDeliveryUtil::formatItem)
+                .map(HexUtils::stripColorCodes)
                 .collect(Collectors.joining(", "));
     }
 

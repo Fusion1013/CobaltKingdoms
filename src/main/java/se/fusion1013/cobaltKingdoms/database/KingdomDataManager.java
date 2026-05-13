@@ -13,8 +13,8 @@ import se.fusion1013.cobaltKingdoms.database.player.CharacterProfileDaoSQLite;
 import se.fusion1013.cobaltKingdoms.database.player.ICharacterProfileDao;
 import se.fusion1013.cobaltKingdoms.database.quest.IQuestRepository;
 import se.fusion1013.cobaltKingdoms.database.quest.QuestRepositoryImpl;
-import se.fusion1013.cobaltKingdoms.database.quest.gather.IQuestGatherRepository;
-import se.fusion1013.cobaltKingdoms.database.quest.gather.QuestGatherRepository;
+import se.fusion1013.cobaltKingdoms.database.quest.artifact_hunt.IQuestArtifactHuntRepository;
+import se.fusion1013.cobaltKingdoms.database.quest.artifact_hunt.QuestArtifactHuntRepository;
 
 public class KingdomDataManager extends Manager<CobaltKingdoms> {
 
@@ -30,7 +30,7 @@ public class KingdomDataManager extends Manager<CobaltKingdoms> {
         dataManager.registerDao(new LetterDaoSQLite(), ILetterDao.class);
         dataManager.registerDao(new TownRepositoryImpl(), ITownRepository.class);
         dataManager.registerDao(new QuestRepositoryImpl(), IQuestRepository.class);
-        dataManager.registerDao(new QuestGatherRepository(), IQuestGatherRepository.class);
+        dataManager.registerDao(new QuestArtifactHuntRepository(), IQuestArtifactHuntRepository.class);
     }
 
     @Override

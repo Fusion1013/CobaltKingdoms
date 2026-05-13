@@ -19,13 +19,13 @@ import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.config.town.TownLevelConfig;
 import se.fusion1013.cobaltKingdoms.database.kingdom.town.ITownRepository;
 import se.fusion1013.cobaltKingdoms.database.quest.IQuestRepository;
-import se.fusion1013.cobaltKingdoms.database.quest.gather.IQuestGatherRepository;
+import se.fusion1013.cobaltKingdoms.database.quest.artifact_hunt.IQuestArtifactHuntRepository;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownManager;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownMemberEntity;
+import se.fusion1013.cobaltKingdoms.quest.artifact_hunt.ArtifactHuntEntity;
 import se.fusion1013.cobaltKingdoms.quest.gui.QuestMenu;
 import se.fusion1013.cobaltKingdoms.quest.item_delivery.ItemDeliveryQuestEntity;
-import se.fusion1013.cobaltKingdoms.quest.item_gather.GatherQuestEntity;
 import se.fusion1013.cobaltKingdoms.util.ItemSerializationUtils;
 
 import java.time.Duration;
@@ -41,7 +41,7 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
     public static final NamespacedKey QUEST_GIVER_ID_KEY = new NamespacedKey(CobaltKingdoms.getInstance(), "quest_giver_id");
 
     private static final IQuestRepository questRepository = DataManager.getInstance().getDao(IQuestRepository.class);
-    private static final IQuestGatherRepository gatherQuestRepository = DataManager.getInstance().getDao(IQuestGatherRepository.class);
+    private static final IQuestArtifactHuntRepository artifactHuntQuestRepository = DataManager.getInstance().getDao(IQuestArtifactHuntRepository.class);
     private static final ITownRepository townRepository = DataManager.getInstance().getDao(ITownRepository.class);
 
     private static final Random random = new Random();
@@ -138,8 +138,8 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
             ItemDeliveryQuestEntity quest = ItemDeliveryQuestEntity.createRandom(startTown, list.get(random.nextInt(list.size())));
             questRepository.insertQuest(quest);
         } else if (selected == 1) {
-            GatherQuestEntity quest = GatherQuestEntity.createRandom(startTown, startTown);
-            gatherQuestRepository.insertQuest(quest);
+            ArtifactHuntEntity quest = ArtifactHuntEntity.createRandom(startTown, startTown);
+            artifactHuntQuestRepository.insertQuest(quest);
         }
 
         CobaltKingdoms.getInstance().getLogger().info("Created new quest");

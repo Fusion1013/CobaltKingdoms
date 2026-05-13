@@ -9,10 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import se.fusion1013.cobaltCore.database.system.DataStorageType;
 import se.fusion1013.cobaltCore.database.system.implementations.SQLiteImplementation;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownJailEntity;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownMemberEntity;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownMemberRole;
+import se.fusion1013.cobaltKingdoms.kingdom.town.*;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -23,6 +20,7 @@ public class TownRepositoryImpl implements ITownRepository {
 
     private Dao<TownEntity, Long> townDao;
     private Dao<TownMemberEntity, Long> townMemberDao;
+    private Dao<TownAppearanceEntity, Long> townAppearanceDao;
     private Dao<TownJailEntity, Long> townJailDao;
 
     @Override
@@ -30,10 +28,12 @@ public class TownRepositoryImpl implements ITownRepository {
         try {
             ConnectionSource connectionSource = SQLiteImplementation.getConnectionSource();
 
+            townAppearanceDao = DaoManager.createDao(connectionSource, TownAppearanceEntity.class);
             townDao = DaoManager.createDao(connectionSource, TownEntity.class);
             townMemberDao = DaoManager.createDao(connectionSource, TownMemberEntity.class);
             townJailDao = DaoManager.createDao(connectionSource, TownJailEntity.class);
 
+            TableUtils.createTableIfNotExists(connectionSource, TownAppearanceEntity.class);
             TableUtils.createTableIfNotExists(connectionSource, TownEntity.class);
             TableUtils.createTableIfNotExists(connectionSource, TownMemberEntity.class);
             TableUtils.createTableIfNotExists(connectionSource, TownJailEntity.class);
@@ -47,6 +47,7 @@ public class TownRepositoryImpl implements ITownRepository {
     public void updateTown(TownEntity townData) {
         try {
             townDao.update(townData);
+            townAppearanceDao.update(townData.getAppearance());
         } catch (SQLException e) {
             CobaltKingdoms.getInstance().getLogger().severe("Error updating town: " + e.getMessage());
         }

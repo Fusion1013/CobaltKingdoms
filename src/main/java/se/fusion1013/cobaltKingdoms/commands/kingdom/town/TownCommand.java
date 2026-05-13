@@ -26,6 +26,7 @@ public class TownCommand {
                 .withSubcommand(TownLeaveCommand.register())
                 .withSubcommand(TownInfoCommand.register())
                 .withSubcommand(TownSetCommand.register())
+                .withSubcommand(TownModifyCommand.register())
 
                 .withSubcommand(TownJailCommand.register())
 

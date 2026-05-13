@@ -45,7 +45,11 @@ public class TownEntity {
     @DatabaseField(columnName = "experience")
     private int experience;
 
+    @DatabaseField(columnName = "appearance", foreign = true, foreignAutoRefresh = true, foreignAutoCreate = true)
+    private TownAppearanceEntity appearance;
+
     public TownEntity() {
+        appearance = new TownAppearanceEntity();
     }
 
     public TownEntity(String ownerId, String name, String kingdomId, double centerX, double centerY, double centerZ, String worldId) {
@@ -56,6 +60,7 @@ public class TownEntity {
         this.centerY = centerY;
         this.centerZ = centerZ;
         this.worldId = worldId;
+        appearance = new TownAppearanceEntity();
     }
 
     public TownEntity(String townName, UUID kingdomId, @NotNull UUID playerId, Location location) {
@@ -66,6 +71,7 @@ public class TownEntity {
         this.centerY = location.y();
         this.centerZ = location.z();
         this.worldId = location.getWorld().getUID().toString();
+        appearance = new TownAppearanceEntity();
     }
 
     public void moveTo(Location location) {
@@ -154,5 +160,16 @@ public class TownEntity {
     public TownLevelConfig getLevelConfig() {
         TownConfig townConfig = KingdomsConfig.getTownConfig();
         return townConfig.getTownLevelConfig(experience);
+    }
+
+    public TownAppearanceEntity getAppearance() {
+        if (appearance == null) {
+            appearance = new TownAppearanceEntity();
+        }
+        return appearance;
+    }
+
+    public void setAppearance(TownAppearanceEntity appearance) {
+        this.appearance = appearance;
     }
 }

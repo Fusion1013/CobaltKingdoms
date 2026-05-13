@@ -33,8 +33,8 @@ import se.fusion1013.cobaltKingdoms.player.PlayerManager;
 import se.fusion1013.cobaltKingdoms.player.character.CharacterProfileManager;
 import se.fusion1013.cobaltKingdoms.quest.QuestManager;
 import se.fusion1013.cobaltKingdoms.quest.QuestMenuListener;
+import se.fusion1013.cobaltKingdoms.quest.artifact_hunt.ArtifactHuntQuestManager;
 import se.fusion1013.cobaltKingdoms.quest.bounty.BountyManager;
-import se.fusion1013.cobaltKingdoms.quest.item_gather.GatherQuestManager;
 import se.fusion1013.cobaltKingdoms.villager.VillagerEvents;
 import se.fusion1013.cobaltKingdoms.villager.VillagerManager;
 
@@ -92,7 +92,7 @@ public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin, Voicecha
         CobaltCore.getInstance().getManager(this, TownQuestManager.class);
         CobaltCore.getInstance().getManager(this, QuestMenuListener.class);
         CobaltCore.getInstance().getManager(this, BountyManager.class);
-        CobaltCore.getInstance().getManager(this, GatherQuestManager.class);
+        CobaltCore.getInstance().getManager(this, ArtifactHuntQuestManager.class);
     }
 
     @Override

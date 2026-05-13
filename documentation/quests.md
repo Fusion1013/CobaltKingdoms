@@ -19,6 +19,6 @@ Go to a location and kill the things there. For example, go to location a and ki
 
 Go to a location and kill a boss. The boss locations should be predefined arenas. These quests should be rare.
 
-### Gather
+### Artifact Hunt
 
 Go to a location and collect some items, then return to the town. Could lead players into a dungeon.

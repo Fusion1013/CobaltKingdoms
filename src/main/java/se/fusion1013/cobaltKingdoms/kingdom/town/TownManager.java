@@ -190,6 +190,54 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
         return Response.ok("Valid town location");
     }
 
+    public Response modifySkin(Player player, String townName, String skin) {
+        TownEntity town = getTown(townName);
+        if (town == null) return Response.error("Could not find town");
+
+        Response response = hasTownEditPermissions(player, town);
+        if (response.error()) return response;
+
+        TownAppearanceEntity appearance = town.getAppearance();
+        appearance.setSkin(skin);
+        town.setAppearance(appearance);
+
+        townRepository.updateTown(town);
+
+        return Response.ok("Modified town skin");
+    }
+
+    public Response modifyChatGreeting(Player player, String townName, String greeting) {
+        TownEntity town = getTown(townName);
+        if (town == null) return Response.error("Could not find town");
+
+        Response response = hasTownEditPermissions(player, town);
+        if (response.error()) return response;
+
+        TownAppearanceEntity appearance = town.getAppearance();
+        appearance.setChatGreeting(greeting);
+        town.setAppearance(appearance);
+
+        townRepository.updateTown(town);
+
+        return Response.ok("Modified town chat greeting");
+    }
+
+    public Response modifyTitleGreeting(Player player, String townName, String greeting) {
+        TownEntity town = getTown(townName);
+        if (town == null) return Response.error("Could not find town");
+
+        Response response = hasTownEditPermissions(player, town);
+        if (response.error()) return response;
+
+        TownAppearanceEntity appearance = town.getAppearance();
+        appearance.setTitleGreeting(greeting);
+        town.setAppearance(appearance);
+
+        townRepository.updateTown(town);
+
+        return Response.ok("Modified town title greeting");
+    }
+
     private void spawnTownEntity(TownEntity town) {
         Location location = town.getLocation();
         World world = location.getWorld();
@@ -197,12 +245,14 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
         Collection<Mannequin> nearbyEntitiesByType = world.getNearbyEntitiesByType(Mannequin.class, location, 5, v -> v.getPersistentDataContainer().has(TOWN_ENTITY_KEY));
         if (!nearbyEntitiesByType.isEmpty()) return;
 
+        String skin = town.getAppearance() == null ? "" : town.getAppearance().getSkin() == null ? "" : town.getAppearance().getSkin();
+
         world.spawn(location, Mannequin.class, mannequin -> {
             mannequin.setInvulnerable(true);
             mannequin.setAI(false);
             mannequin.setGlowing(true);
             mannequin.getPersistentDataContainer().set(TOWN_ENTITY_KEY, PersistentDataType.LONG, town.getId());
-            mannequin.setProfile(ResolvableProfile.resolvableProfile().name("Fusion1013").build());
+            mannequin.setProfile(ResolvableProfile.resolvableProfile().name(skin).build());
             mannequin.customName(Component.text(town.getName()));
             mannequin.setImmovable(true);
             mannequin.setDescription(Component.empty());

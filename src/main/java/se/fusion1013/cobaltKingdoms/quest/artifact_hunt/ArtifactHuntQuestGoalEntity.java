@@ -1,12 +1,12 @@
-package se.fusion1013.cobaltKingdoms.quest.item_gather;
+package se.fusion1013.cobaltKingdoms.quest.artifact_hunt;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import org.bukkit.Location;
 import se.fusion1013.cobaltKingdoms.database.LocationPersister;
 
-@DatabaseTable(tableName = "quest_gather_goal")
-public class GatherQuestGoalEntity {
+@DatabaseTable(tableName = "quest_artifact_hunt_goal")
+public class ArtifactHuntQuestGoalEntity {
 
     @DatabaseField(generatedId = true)
     private Long id;
@@ -23,7 +23,7 @@ public class GatherQuestGoalEntity {
     @DatabaseField(columnName = "item_name")
     private String itemName;
 
-    public GatherQuestGoalEntity() {
+    public ArtifactHuntQuestGoalEntity() {
     }
 
     public Long getId() {

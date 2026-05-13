@@ -13,7 +13,7 @@ import java.util.UUID;
 @DatabaseTable(tableName = "quest_player_active")
 public class ActivePlayerQuestEntity {
 
-    private static final int MISSION_DURATION = 72 * 60 * 60 * 1000; // 72 hours in milliseconds
+    private static final int MISSION_DURATION = 2 * 60 * 60 * 1000; // 72 hours in milliseconds
 
     @DatabaseField(generatedId = true)
     private Long id;
