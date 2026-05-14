@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import se.fusion1013.cobaltKingdoms.Response;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
 
 public interface IQuestData {
@@ -28,4 +29,10 @@ public interface IQuestData {
     boolean shouldShowInMenu(TownEntity town, Player player);
 
     boolean isValid();
+
+    void fail(Player player, QuestFailReason reason);
+
+    Response canClaim(Player player);
+
+    int getDuration();
 }

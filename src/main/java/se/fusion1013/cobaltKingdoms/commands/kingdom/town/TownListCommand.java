@@ -21,7 +21,7 @@ public class TownListCommand {
         for (TownEntity town : TownManager.getInstance().getTowns()) {
             LocaleManager.getInstance().sendMessage("", player, "kingdoms.commands.town.list.item", StringPlaceholders.builder()
                     .addPlaceholder("town", town.getName())
-                    .addPlaceholder("location", town.getLocation().toVector().toString())
+                    .addPlaceholder("location", town.getLocation().toBlockLocation().toVector().toString())
                     .build());
         }
     }

@@ -22,6 +22,7 @@ import java.util.*;
 public class QuestUtil {
 
     private static final int MAX_ITEM_SAMPLE_ITERATIONS = 20;
+    private static final Random random = new Random();
 
     public static String formatMaterialName(String input) {
         String[] words = input.toLowerCase().split("_");
@@ -52,17 +53,22 @@ public class QuestUtil {
             float maxValue,
             int minUniqueItems,
             int maxUniqueItems,
-            Map<QuestItem, Double> stockList) {
+            Map<QuestItem, Double> stockList,
+            List<ItemStack> blacklist) {
 
-        Random random = new Random();
         List<LargeItemStack> generatedItems = new ArrayList<>();
         HashSet<QuestItem> usedItems = new HashSet<>();
         HashMap<LargeItemStack, Double> itemStackValues = new HashMap<>();
         double totalValue = 0;
         int uniqueItemsCount = random.nextInt(maxUniqueItems - minUniqueItems + 1) + minUniqueItems;
         int iteration = 0;
+        blacklist = blacklist.stream().map(i -> {
+            ItemStack newItem = i.clone();
+            newItem.setAmount(1);
+            return newItem;
+        }).toList();
 
-        double targetValuePerStack = minValue / uniqueItemsCount;
+        double targetValuePerStack = minValue / (uniqueItemsCount * 1.25);
 
         // Loop until we have the target number of unique items and reach minValue
         // Or until we've tried MAX_ITEM_SAMPLE_ITERATIONS times
@@ -76,6 +82,10 @@ public class QuestUtil {
 
             // If we already have this item, skip it
             if (usedItems.contains(tradeItem)) {
+                continue;
+            }
+
+            if (blacklist.contains(tradeItem.getItem())) {
                 continue;
             }
 
@@ -246,7 +256,7 @@ public class QuestUtil {
      * @param stockList Map of QuestItems and their probabilities.
      * @return A randomly sampled QuestItem.
      */
-    private static QuestItem sampleRandomItem(Map<QuestItem, Double> stockList) {
+    public static QuestItem sampleRandomItem(Map<QuestItem, Double> stockList) {
         Random random = new Random();
         double randomValue = random.nextDouble();
         double cumulativeProbability = 0.0;
@@ -283,4 +293,85 @@ public class QuestUtil {
         return itemStack;
     }
 
+    /**
+     *
+     * @param upper .
+     * @param bias  Higher => stronger bias towards lower numbers.
+     * @return .
+     */
+    public static int getRandomWeighted(int upper, double bias) {
+        return (int) (Math.pow(random.nextDouble(), bias) * (upper + 1));
+    }
+
+    public static String formatDuration(long millis) {
+
+        long days = millis / (24 * 60 * 60 * 1000);
+        millis %= (24 * 60 * 60 * 1000);
+
+        long hours = millis / (60 * 60 * 1000);
+        millis %= (60 * 60 * 1000);
+
+        long minutes = millis / (60 * 1000);
+        millis %= (60 * 1000);
+
+        long seconds = millis / 1000;
+
+        StringBuilder sb = new StringBuilder();
+
+        if (days > 0) {
+            sb.append(days).append("d ");
+        }
+
+        if (hours > 0) {
+            sb.append(hours).append("h ");
+        }
+
+        if (minutes > 0) {
+            sb.append(minutes).append("m ");
+        }
+
+        if (seconds > 0 || sb.length() == 0) {
+            sb.append(seconds).append("s");
+        }
+
+        return sb.toString().trim();
+    }
+
+    public static List<String> wrapText(String text, int maxLineLength) {
+
+        List<String> result = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        String[] words = text.split(" ");
+
+        int currentLength = 0;
+
+        for (String word : words) {
+
+            // +1 for the space
+            int additionalLength = word.length() + (currentLength == 0 ? 0 : 1);
+
+            if (currentLength + additionalLength > maxLineLength) {
+
+                result.add(current.toString());
+                current = new StringBuilder();
+                current.append(word);
+
+                currentLength = word.length();
+
+            } else {
+
+                if (currentLength > 0) {
+                    current.append(" ");
+                }
+
+                current.append(word);
+
+                currentLength += additionalLength;
+            }
+        }
+
+        if (!current.isEmpty()) result.add(current.toString());
+
+        return result;
+    }
 }

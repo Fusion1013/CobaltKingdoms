@@ -2,11 +2,11 @@ package se.fusion1013.cobaltKingdoms.kingdom.town;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import se.fusion1013.cobaltCore.database.system.DataManager;
 import se.fusion1013.cobaltCore.manager.Manager;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
+import se.fusion1013.cobaltKingdoms.config.KingdomsConfig;
+import se.fusion1013.cobaltKingdoms.config.town.TownConfig;
 import se.fusion1013.cobaltKingdoms.database.kingdom.town.ITownRepository;
 import se.fusion1013.cobaltKingdoms.database.quest.IQuestRepository;
 import se.fusion1013.cobaltKingdoms.quest.QuestEntity;
@@ -41,13 +41,8 @@ public class TownQuestManager extends Manager<CobaltKingdoms> {
     }
 
     private void loadConfigValues() {
-        FileConfiguration config = CobaltKingdoms.getInstance().getConfig();
-        ConfigurationSection townConfig = config.getConfigurationSection("town");
-        if (townConfig == null) return;
-
-        int questSpawnDelayMinutes = townConfig.getInt("quest_spawn_delay_m");
-        int questSpawnDelaySeconds = townConfig.getInt("quest_spawn_delay_s");
-        this.QuestSpawnDelay = 20 * questSpawnDelaySeconds + 20 * 60 * questSpawnDelayMinutes;
+        TownConfig townConfig = KingdomsConfig.getTownConfig();
+        this.QuestSpawnDelay = 20 * townConfig.getQuestSpawnDelaySeconds();
     }
 
     private void createNewQuests() {

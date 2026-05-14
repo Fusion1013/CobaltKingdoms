@@ -1,9 +1,7 @@
 package se.fusion1013.cobaltKingdoms.database.quest;
 
-import com.destroystokyo.paper.profile.PlayerProfile;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
-import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 import org.bukkit.entity.Player;
@@ -12,15 +10,14 @@ import se.fusion1013.cobaltCore.database.system.DataStorageType;
 import se.fusion1013.cobaltCore.database.system.implementations.SQLiteImplementation;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.database.quest.artifact_hunt.IQuestArtifactHuntRepository;
+import se.fusion1013.cobaltKingdoms.database.quest.bounty.IBountyRepository;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
 import se.fusion1013.cobaltKingdoms.quest.*;
-import se.fusion1013.cobaltKingdoms.quest.bounty.BountyQuestEntity;
 import se.fusion1013.cobaltKingdoms.quest.item_delivery.ItemDeliveryQuestEntity;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 // TODO: Split into different repositories
 public class QuestRepositoryImpl implements IQuestRepository {
@@ -28,7 +25,6 @@ public class QuestRepositoryImpl implements IQuestRepository {
     private Dao<QuestEntity, Long> questDao;
     private Dao<ItemDeliveryQuestEntity, Long> itemDeliveryQuestDao;
     private Dao<ActivePlayerQuestEntity, Long> activePlayerQuestDao;
-    private Dao<BountyQuestEntity, Long> bountyQuestDao;
 
     @Override
     public void init() {
@@ -38,12 +34,10 @@ public class QuestRepositoryImpl implements IQuestRepository {
             questDao = DaoManager.createDao(connectionSource, QuestEntity.class);
             itemDeliveryQuestDao = DaoManager.createDao(connectionSource, ItemDeliveryQuestEntity.class);
             activePlayerQuestDao = DaoManager.createDao(connectionSource, ActivePlayerQuestEntity.class);
-            bountyQuestDao = DaoManager.createDao(connectionSource, BountyQuestEntity.class);
 
             TableUtils.createTableIfNotExists(connectionSource, QuestEntity.class);
             TableUtils.createTableIfNotExists(connectionSource, ItemDeliveryQuestEntity.class);
             TableUtils.createTableIfNotExists(connectionSource, ActivePlayerQuestEntity.class);
-            TableUtils.createTableIfNotExists(connectionSource, BountyQuestEntity.class);
 
         } catch (SQLException e) {
             CobaltKingdoms.getInstance().getLogger().severe("Error initializing Quest DAO: " + e.getMessage());
@@ -113,7 +107,7 @@ public class QuestRepositoryImpl implements IQuestRepository {
                     return DataManager.getInstance().getDao(IQuestArtifactHuntRepository.class).getQuest(questId);
                 }
                 case BOUNTY -> {
-                    return bountyQuestDao.queryForEq("quest", questId).getFirst();
+                    return DataManager.getInstance().getDao(IBountyRepository.class).getBountyByQuest(questId);
                 }
             }
         } catch (SQLException ex) {
@@ -167,40 +161,6 @@ public class QuestRepositoryImpl implements IQuestRepository {
         } catch (SQLException e) {
             CobaltKingdoms.getInstance().getLogger().severe("Error getting active player quests: " + e.getMessage());
             return List.of();
-        }
-    }
-
-    @Override
-    public void insertQuest(BountyQuestEntity quest) {
-        try {
-            bountyQuestDao.create(quest);
-        } catch (SQLException e) {
-            CobaltKingdoms.getInstance().getLogger().severe("Error inserting bounty quest: " + e.getMessage());
-        }
-    }
-
-    @Override
-    public List<BountyQuestEntity> getBounties(Player owner, PlayerProfile target) {
-        QueryBuilder<BountyQuestEntity, Long> qb = bountyQuestDao.queryBuilder();
-        try {
-            qb.where()
-                    .eq("owner_player_id", owner.getUniqueId())
-                    .and()
-                    .eq("target_player_id", target.getId());
-            return qb.query();
-        } catch (SQLException e) {
-            CobaltKingdoms.getInstance().getLogger().severe("Error getting bounty: " + e.getMessage());
-            return null;
-        }
-    }
-
-    @Override
-    public List<BountyQuestEntity> getBounties(UUID targetId) {
-        try {
-            return bountyQuestDao.queryForEq("target_player_id", targetId);
-        } catch (SQLException e) {
-            CobaltKingdoms.getInstance().getLogger().info("Error getting bounty: " + e.getMessage());
-            return null;
         }
     }
 

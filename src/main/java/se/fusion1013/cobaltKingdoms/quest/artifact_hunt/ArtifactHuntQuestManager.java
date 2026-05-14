@@ -6,22 +6,24 @@ import se.fusion1013.cobaltCore.manager.Manager;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.Response;
 import se.fusion1013.cobaltKingdoms.database.quest.artifact_hunt.IQuestArtifactHuntRepository;
+import se.fusion1013.cobaltKingdoms.quest.QuestUtil;
 
 import java.util.List;
 import java.util.Random;
 
 public class ArtifactHuntQuestManager extends Manager<CobaltKingdoms> {
-
     private static final Random random = new Random();
+
     private static final DataManager dataManager = DataManager.getInstance();
     private static final IQuestArtifactHuntRepository artifactHuntQuestRepository = dataManager.getDao(IQuestArtifactHuntRepository.class);
 
-    public Response createQuestGoal(String name, int difficulty, Location location, String itemName) {
+    public Response createQuestGoal(String name, int difficulty, Location location, String itemName, String description) {
         ArtifactHuntQuestGoalEntity goal = new ArtifactHuntQuestGoalEntity();
         goal.setName(name);
         goal.setDifficulty(difficulty);
         goal.setLocation(location);
         goal.setItemName(itemName);
+        goal.setDescription(description);
         artifactHuntQuestRepository.createGoal(goal);
         return Response.ok("Created new goal");
     }
@@ -49,8 +51,8 @@ public class ArtifactHuntQuestManager extends Manager<CobaltKingdoms> {
         return INSTANCE;
     }
 
-    // ##%%##%%## GETTERS / SETTERS ##%%##%%## //
 
+    // ##%%##%%## GETTERS / SETTERS ##%%##%%## //
     public List<ArtifactHuntQuestGoalEntity> getGoals() {
         return artifactHuntQuestRepository.getGoals();
     }
@@ -59,5 +61,13 @@ public class ArtifactHuntQuestManager extends Manager<CobaltKingdoms> {
         List<ArtifactHuntQuestGoalEntity> goals = artifactHuntQuestRepository.getGoals(difficulty);
         if (goals.isEmpty()) return null;
         return goals.get(random.nextInt(goals.size()));
+    }
+
+    public ArtifactHuntQuestGoalEntity getRandomGoal() {
+        int highestDifficulty = artifactHuntQuestRepository.getHighestDifficulty();
+        if (highestDifficulty < 0) return null;
+
+        int selectedDifficulty = QuestUtil.getRandomWeighted(highestDifficulty, 1.5);
+        return getRandomGoal(selectedDifficulty);
     }
 }

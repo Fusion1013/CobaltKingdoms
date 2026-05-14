@@ -11,7 +11,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import se.fusion1013.cobaltCore.database.system.DataManager;
 import se.fusion1013.cobaltCore.locale.LocaleManager;
+import se.fusion1013.cobaltCore.util.StringPlaceholders;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
+import se.fusion1013.cobaltKingdoms.Response;
 import se.fusion1013.cobaltKingdoms.config.KingdomsConfig;
 import se.fusion1013.cobaltKingdoms.config.town.TownConfig;
 import se.fusion1013.cobaltKingdoms.config.town.TownLevelConfig;
@@ -59,7 +61,7 @@ public class QuestMenu extends Menu {
 
                 @Override
                 public void onClick(Player player) {
-                    checkMissionRequirements(player, startTown, quest, questData);
+                    checkQuestRequirements(player, startTown, quest, questData);
                 }
             });
 
@@ -67,10 +69,13 @@ public class QuestMenu extends Menu {
         }
     }
 
-    private void checkMissionRequirements(Player player, TownEntity town, QuestEntity quest, IQuestData questData) {
-        if (quest.getStatus() != QuestStatus.NEW) {
+    private void checkQuestRequirements(Player player, TownEntity town, QuestEntity quest, IQuestData questData) {
+        Response canClaim = quest.canClaim(player);
+        if (canClaim.error()) {
             player.playSound(player, Sound.BLOCK_NOTE_BLOCK_BASEDRUM, 1, 1);
-            LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), player, "kingdoms.quests.fail_already_claimed");
+            LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), player, "kingdoms.quests.claim_fail", StringPlaceholders.builder()
+                    .addPlaceholder("reason", canClaim.message())
+                    .build());
             return;
         }
 

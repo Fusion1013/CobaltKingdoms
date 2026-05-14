@@ -20,14 +20,15 @@ import se.fusion1013.cobaltCore.locale.LocaleManager;
 import se.fusion1013.cobaltCore.util.HexUtils;
 import se.fusion1013.cobaltCore.util.StringPlaceholders;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
+import se.fusion1013.cobaltKingdoms.Response;
 import se.fusion1013.cobaltKingdoms.config.KingdomsConfig;
+import se.fusion1013.cobaltKingdoms.config.quest.QuestArtifactHuntConfig;
 import se.fusion1013.cobaltKingdoms.config.quest.QuestConfig;
 import se.fusion1013.cobaltKingdoms.config.town.TownConfig;
 import se.fusion1013.cobaltKingdoms.config.town.TownLevelConfig;
 import se.fusion1013.cobaltKingdoms.database.ItemStackListPersister;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
 import se.fusion1013.cobaltKingdoms.quest.*;
-import se.fusion1013.cobaltKingdoms.quest.item_delivery.QuestItemDeliveryUtil;
 import se.fusion1013.cobaltKingdoms.util.ItemStackList;
 import se.fusion1013.cobaltKingdoms.util.LargeItemStack;
 
@@ -57,40 +58,41 @@ public class ArtifactHuntEntity implements IQuestData {
 
     public static ArtifactHuntEntity createRandom(TownEntity startTown, TownEntity endTown) {
         QuestConfig questConfig = KingdomsConfig.getQuestConfig();
+        QuestArtifactHuntConfig artifactHuntConfig = questConfig.getArtifactHuntConfig();
 
-        int difficulty = 0; // TODO: Weighted randomize
+        ArtifactHuntQuestGoalEntity randomGoal = ArtifactHuntQuestManager.getInstance().getRandomGoal();
+        if (randomGoal == null) return null;
 
         // Base values
         float baseRewardValue = questConfig.getBaseRewardValue();
         float rewardFluctuation = (float) questConfig.getRewardFluctuationFraction();
 
-        int minRewardItems = questConfig.getMinRewardUniqueItems();
-        int maxRewardItems = questConfig.getMaxRewardUniqueItems();
+        int minRewardItems = artifactHuntConfig.getMinRewardUniqueItems() > 0 ? artifactHuntConfig.getMinRewardUniqueItems() : questConfig.getMinRewardUniqueItems();
+        int maxRewardItems = artifactHuntConfig.getMaxRewardUniqueItems() > 0 ? artifactHuntConfig.getMaxRewardUniqueItems() : questConfig.getMaxRewardUniqueItems();
 
         float minRewardScalingMult = (float) questConfig.getMinRewardScalingMultiplier();
         float maxRewardScalingMult = (float) questConfig.getMaxRewardScalingMultiplier();
 
         float rewardScalingMult = calculateScalingMultiplier(
-                difficulty,
+                randomGoal.getDifficulty() + 3,
                 0,
                 1,
-                6,
+                16,
                 minRewardScalingMult,
                 maxRewardScalingMult);
 
-        baseRewardValue *= (float) (rewardScalingMult * startTown.getLevelConfig().getQuestRewardMultiplier()) * 2;
+        baseRewardValue *= (float) (rewardScalingMult * (startTown.getLevelConfig().getQuestRewardMultiplier() + artifactHuntConfig.getRewardMultiplier())) * 2;
 
         float minRewardValue = baseRewardValue * (1 - rewardFluctuation);
         float maxRewardValue = baseRewardValue * (1 + rewardFluctuation);
 
         Map<QuestItem, Double> rewardPool = questConfig.getRewardPool();
 
-        List<ItemStack> rewards = QuestUtil.generateTradeItems(minRewardValue, maxRewardValue, minRewardItems, maxRewardItems, rewardPool);
+        List<ItemStack> rewards = QuestUtil.generateTradeItems(minRewardValue, maxRewardValue, minRewardItems, maxRewardItems, rewardPool, List.of());
+        if (rewards.isEmpty()) return null;
 
         QuestEntity questEntity = new QuestEntity(QuestType.ARTIFACT_HUNT, new Date(), -1, -1, minRewardValue, maxRewardValue, QuestStatus.NEW, startTown, endTown);
         questEntity.setCanDespawn(true);
-
-        ArtifactHuntQuestGoalEntity randomGoal = ArtifactHuntQuestManager.getInstance().getRandomGoal(difficulty);
 
         ArtifactHuntEntity artifactHuntQuest = new ArtifactHuntEntity();
         artifactHuntQuest.setQuest(questEntity);
@@ -158,8 +160,6 @@ public class ArtifactHuntEntity implements IQuestData {
         ItemStack itemStack = customItem.getItemStack();
         if (itemStack == null) return;
 
-        player.give(getInstructionsItem());
-
         ItemMeta itemMeta = itemStack.getItemMeta();
         itemMeta.getPersistentDataContainer().set(QuestManager.QUEST_ID_KEY, PersistentDataType.LONG, quest.getId());
         itemStack.setItemMeta(itemMeta);
@@ -199,7 +199,14 @@ public class ArtifactHuntEntity implements IQuestData {
 
         String content = "&z&lArtifact Hunt\n\n" +
                 "&z&lArtifact: &8" + itemDisplayName + "\n\n" +
-                "&z&lReward: &8" + QuestItemDeliveryUtil.toComponent(rewards.list());
+                "&z&lReward: &8";
+
+        List<LargeItemStack> rewardItems = LargeItemStack.toLargeItemStacks(getRewards());
+        for (LargeItemStack rewardItem : rewardItems) {
+            String name = rewardItem.item().getItemMeta().hasDisplayName() ? rewardItem.item().getItemMeta().getDisplayName() : formatMaterialName(rewardItem.item().getType().name());
+            content += "\n&7- " + HexUtils.stripColorCodes(name) + " &7[&z" + rewardItem.amount() + "&7]";
+        }
+
 
         meta.addPage(HexUtils.colorify(content));
 
@@ -230,6 +237,7 @@ public class ArtifactHuntEntity implements IQuestData {
     @Override
     public ItemStack getButtonItem() {
         if (quest.getEndTown() == null || quest.getStartTown() == null) return new ItemStack(Material.BARRIER);
+        if (goal == null) return new ItemStack(Material.BARRIER);
 
         String coordinates = String.format("[%d, %d, %d]",
                 goal.getLocation().getBlockX(),
@@ -250,11 +258,18 @@ public class ArtifactHuntEntity implements IQuestData {
         if (targetItem != null) {
             String customItemDisplayName = targetItem.getItemStack().getItemMeta().getDisplayName();
             customItemDisplayName = HexUtils.stripColorCodes(customItemDisplayName);
-            lore.add("&zItem: &7" + customItemDisplayName);
+            lore.add("&zArtifact: &7" + customItemDisplayName);
         } else {
             lore.add("Could not find target item, report as a bug");
             lore.add("with the following information:");
             lore.add("QuestID: " + quest.getId());
+        }
+
+        lore.add("&zTime Limit: &7" + QuestUtil.formatDuration(getDuration()));
+
+        if (goal.getDescription() != null && !goal.getDescription().isEmpty()) {
+            lore.add("");
+            lore.addAll(QuestUtil.wrapText(goal.getDescription(), 35).stream().map(s -> "&7" + s).toList());
         }
 
         TownConfig townConfig = KingdomsConfig.getTownConfig();
@@ -267,7 +282,7 @@ public class ArtifactHuntEntity implements IQuestData {
         List<LargeItemStack> rewardItems = LargeItemStack.toLargeItemStacks(getRewards());
         for (LargeItemStack rewardItem : rewardItems) {
             String name = rewardItem.item().getItemMeta().hasDisplayName() ? rewardItem.item().getItemMeta().getDisplayName() : formatMaterialName(rewardItem.item().getType().name());
-            lore.add("&7- " + HexUtils.colorify(name) + " &7[&z" + rewardItem.amount() + "&7]");
+            lore.add("&7- " + HexUtils.stripColorCodes(name) + " &7[&z" + rewardItem.amount() + "&7]");
         }
 
         lore.add("");
@@ -300,6 +315,24 @@ public class ArtifactHuntEntity implements IQuestData {
     @Override
     public boolean isValid() {
         return true;
+    }
+
+    @Override
+    public void fail(Player player, QuestFailReason reason) {
+        LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.artifact_hunt.fail", StringPlaceholders.builder()
+                .addPlaceholder("player", player.getDisplayName())
+                .build());
+    }
+
+    @Override
+    public Response canClaim(Player player) {
+        if (quest.getStatus() == QuestStatus.NEW) return Response.ok("Can claim");
+        return Response.error("Quest is not new");
+    }
+
+    @Override
+    public int getDuration() {
+        return 1000 * 60 * 60 * 4;
     }
 
     public Long getId() {

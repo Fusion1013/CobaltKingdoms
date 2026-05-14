@@ -24,4 +24,7 @@ public interface IQuestArtifactHuntRepository extends IDao {
     void insertQuest(ArtifactHuntEntity quest);
 
     ArtifactHuntEntity getQuest(Long questId);
+
+    int getHighestDifficulty();
+
 }

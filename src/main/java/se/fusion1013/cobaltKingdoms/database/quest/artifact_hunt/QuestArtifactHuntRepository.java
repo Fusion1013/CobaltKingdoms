@@ -101,4 +101,22 @@ public class QuestArtifactHuntRepository implements IQuestArtifactHuntRepository
             return null;
         }
     }
+
+    @Override
+    public int getHighestDifficulty() {
+        ArtifactHuntQuestGoalEntity highest = null;
+        try {
+            highest = artifactHuntGoalDao.queryBuilder()
+                    .orderBy("difficulty", false) // false = descending
+                    .limit(1L)
+                    .queryForFirst();
+        } catch (SQLException e) {
+            logger.severe("Failed to get highest difficulty: " + e.getMessage());
+        }
+
+        if (highest != null) {
+            return highest.getDifficulty();
+        }
+        return -1;
+    }
 }

@@ -23,6 +23,9 @@ public class ArtifactHuntQuestGoalEntity {
     @DatabaseField(columnName = "item_name")
     private String itemName;
 
+    @DatabaseField(columnName = "description")
+    private String description;
+
     public ArtifactHuntQuestGoalEntity() {
     }
 
@@ -60,5 +63,13 @@ public class ArtifactHuntQuestGoalEntity {
 
     public void setItemName(String itemName) {
         this.itemName = itemName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

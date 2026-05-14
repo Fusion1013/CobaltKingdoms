@@ -1,10 +1,10 @@
 package se.fusion1013.cobaltKingdoms.kingdom.town;
 
+import com.destroystokyo.paper.profile.ProfileProperty;
 import io.papermc.paper.datacomponent.item.ResolvableProfile;
+import io.papermc.paper.entity.LookAnchor;
 import net.kyori.adventure.text.Component;
 import org.bukkit.*;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Mannequin;
 import org.bukkit.entity.Player;
@@ -24,10 +24,7 @@ import se.fusion1013.cobaltKingdoms.kingdom.KingdomInfo;
 import se.fusion1013.cobaltKingdoms.kingdom.KingdomManager;
 import se.fusion1013.cobaltKingdoms.quest.QuestManager;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class TownManager extends Manager<CobaltKingdoms> implements Listener {
@@ -37,7 +34,7 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
 
     private static final List<Consumer<TownEntity>> onTownSpawn = new ArrayList<>();
 
-    private int TownVerificationTimer = 20 * 60;
+    private TownConfig TOWN_CONFIG;
 
     // ##%%##%%## TOWN ##%%##%%## //
 
@@ -190,6 +187,8 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
         return Response.ok("Valid town location");
     }
 
+    // ##%%##%%## COSMETICS ##%%##%%## //
+
     public Response modifySkin(Player player, String townName, String skin) {
         TownEntity town = getTown(townName);
         if (town == null) return Response.error("Could not find town");
@@ -202,8 +201,26 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
         town.setAppearance(appearance);
 
         townRepository.updateTown(town);
+        removeTownEntities(town);
 
         return Response.ok("Modified town skin");
+    }
+
+    public Response modifyTexture(Player player, String townName, String texture) {
+        TownEntity town = getTown(townName);
+        if (town == null) return Response.error("Could not find town");
+
+        Response response = hasTownEditPermissions(player, town);
+        if (response.error()) return response;
+
+        TownAppearanceEntity appearance = town.getAppearance();
+        appearance.setTexture(texture);
+        town.setAppearance(appearance);
+
+        townRepository.updateTown(town);
+        removeTownEntities(town);
+
+        return Response.ok("Modified town texture");
     }
 
     public Response modifyChatGreeting(Player player, String townName, String greeting) {
@@ -218,6 +235,7 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
         town.setAppearance(appearance);
 
         townRepository.updateTown(town);
+        removeTownEntities(town);
 
         return Response.ok("Modified town chat greeting");
     }
@@ -234,6 +252,7 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
         town.setAppearance(appearance);
 
         townRepository.updateTown(town);
+        removeTownEntities(town);
 
         return Response.ok("Modified town title greeting");
     }
@@ -243,7 +262,12 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
         World world = location.getWorld();
 
         Collection<Mannequin> nearbyEntitiesByType = world.getNearbyEntitiesByType(Mannequin.class, location, 5, v -> v.getPersistentDataContainer().has(TOWN_ENTITY_KEY));
-        if (!nearbyEntitiesByType.isEmpty()) return;
+        if (!nearbyEntitiesByType.isEmpty()) {
+            for (Mannequin mannequin : nearbyEntitiesByType) {
+                rotateTownEntity(mannequin);
+            }
+            return;
+        }
 
         String skin = town.getAppearance() == null ? "" : town.getAppearance().getSkin() == null ? "" : town.getAppearance().getSkin();
 
@@ -252,10 +276,17 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
             mannequin.setAI(false);
             mannequin.setGlowing(true);
             mannequin.getPersistentDataContainer().set(TOWN_ENTITY_KEY, PersistentDataType.LONG, town.getId());
-            mannequin.setProfile(ResolvableProfile.resolvableProfile().name(skin).build());
+
+            String texture = town.getAppearance().getTexture();
+            if (texture == null || texture.isEmpty()) {
+                mannequin.setProfile(ResolvableProfile.resolvableProfile().name(skin).build());
+            } else {
+                mannequin.setProfile(ResolvableProfile.resolvableProfile().addProperty(new ProfileProperty("textures", texture)).build());
+            }
+
             mannequin.customName(Component.text(town.getName()));
             mannequin.setImmovable(true);
-            mannequin.setDescription(Component.empty());
+            mannequin.setDescription(Component.text("Town"));
         });
 
         CobaltKingdoms.getInstance().getLogger().info("Ticking town spawn listeners: " + onTownSpawn.size());
@@ -263,6 +294,18 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
             townEntityConsumer.accept(town);
         }
 
+    }
+
+    private void rotateTownEntity(Mannequin mannequin) {
+        Location location = mannequin.getLocation();
+        World world = location.getWorld();
+        Collection<Player> nearbyPlayers = world.getNearbyPlayers(location, 6);
+        if (nearbyPlayers.isEmpty()) return;
+
+        Optional<Player> first = nearbyPlayers.stream().findFirst();
+        Player player = first.get();
+
+        mannequin.lookAt(player.getEyeLocation(), LookAnchor.EYES);
     }
 
     public boolean isTown(Entity entity, Long townId) {
@@ -286,7 +329,7 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
         loadConfigValues();
 
         Bukkit.getScheduler().runTaskTimer(CobaltKingdoms.getInstance(), this::displayTownParticles, 1, 10);
-        Bukkit.getScheduler().runTaskTimer(CobaltKingdoms.getInstance(), this::tickTownVerification, 1, TownVerificationTimer);
+        Bukkit.getScheduler().runTaskTimer(CobaltKingdoms.getInstance(), this::tickTownVerification, 1, this.TOWN_CONFIG.getTownVerificationTimer());
         Bukkit.getPluginManager().registerEvents(this, CobaltKingdoms.getInstance());
     }
 
@@ -319,17 +362,11 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
             double distance = p.getLocation().distanceSquared(town.getLocation());
             if (distance < closestPlayerDistance) closestPlayerDistance = distance;
         }
-        return closestPlayerDistance < 16 * 16;
+        return closestPlayerDistance < this.TOWN_CONFIG.getTownSpawnDistance() * this.TOWN_CONFIG.getTownSpawnDistance();
     }
 
     private void loadConfigValues() {
-        FileConfiguration config = CobaltKingdoms.getInstance().getConfig();
-        ConfigurationSection townConfig = config.getConfigurationSection("town");
-        if (townConfig == null) return;
-
-        int townVerificationTimerMinutes = townConfig.getInt("town_verification_timer_m");
-        int townVerificationTimerSeconds = townConfig.getInt("town_verification_timer_s");
-        this.TownVerificationTimer = 20 * townVerificationTimerSeconds + 20 * 60 * townVerificationTimerMinutes;
+        TOWN_CONFIG = KingdomsConfig.getTownConfig();
     }
 
     @Override

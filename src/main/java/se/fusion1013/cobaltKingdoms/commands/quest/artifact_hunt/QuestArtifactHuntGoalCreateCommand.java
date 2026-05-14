@@ -19,6 +19,7 @@ public class QuestArtifactHuntGoalCreateCommand {
                 .withArguments(new IntegerArgument("difficulty"))
                 .withArguments(new LocationArgument("location", LocationType.BLOCK_POSITION))
                 .withArguments(new StringArgument("item").replaceSuggestions(ArgumentSuggestions.strings(k -> CustomItemManager.getCustomItemNames())))
+                .withOptionalArguments(new GreedyStringArgument("description"))
                 .executesPlayer(QuestArtifactHuntGoalCreateCommand::createGoal);
     }
 
@@ -27,14 +28,15 @@ public class QuestArtifactHuntGoalCreateCommand {
         Integer difficulty = (Integer) args.get("difficulty");
         Location location = (Location) args.get("location");
         String itemName = (String) args.get("item");
+        String description = args.get("description") != null ? (String) args.get("description") : "";
 
         if (name == null || difficulty == null || location == null || itemName == null) return;
 
-        tryCreateGoal(player, name, difficulty, location, itemName);
+        tryCreateGoal(player, name, difficulty, location, itemName, description);
     }
 
-    private static void tryCreateGoal(Player player, String name, Integer difficulty, Location location, String itemName) {
-        Response response = ArtifactHuntQuestManager.getInstance().createQuestGoal(name, difficulty, location, itemName);
+    private static void tryCreateGoal(Player player, String name, Integer difficulty, Location location, String itemName, String description) {
+        Response response = ArtifactHuntQuestManager.getInstance().createQuestGoal(name, difficulty, location, itemName, description);
 
         if (response.ok()) {
             LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), player, "kingdoms.commands.quest.gather.goal.create", StringPlaceholders.builder()

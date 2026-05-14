@@ -11,6 +11,8 @@ public class BountyCommand {
                 .withPermission(CommandUtil.getPermissionString(CobaltKingdoms.getInstance(), "bounty"))
                 .withSubcommand(BountyCreateCommand.register())
                 .withSubcommand(BountyRecallCommand.register())
+                .withSubcommand(BountyEnableDisableCommand.registerEnable())
+                .withSubcommand(BountyEnableDisableCommand.registerDisable())
                 .register();
     }
 

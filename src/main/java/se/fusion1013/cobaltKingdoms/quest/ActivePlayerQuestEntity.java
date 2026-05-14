@@ -13,8 +13,6 @@ import java.util.UUID;
 @DatabaseTable(tableName = "quest_player_active")
 public class ActivePlayerQuestEntity {
 
-    private static final int MISSION_DURATION = 2 * 60 * 60 * 1000; // 72 hours in milliseconds
-
     @DatabaseField(generatedId = true)
     private Long id;
 
@@ -56,7 +54,8 @@ public class ActivePlayerQuestEntity {
 
     public static ActivePlayerQuestEntity initiateMission(Player player, QuestEntity quest) {
         Date startTime = new Date();
-        Date expiryTime = new Date(startTime.getTime() + MISSION_DURATION);
+        int duration = quest.getQuestData().getDuration();
+        Date expiryTime = new Date(startTime.getTime() + duration);
         return new ActivePlayerQuestEntity(quest, player.getUniqueId(), startTime, expiryTime);
     }
 

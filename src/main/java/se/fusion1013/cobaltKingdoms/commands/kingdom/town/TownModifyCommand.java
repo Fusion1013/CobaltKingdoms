@@ -17,6 +17,7 @@ public class TownModifyCommand {
         return new CommandAPICommand("modify")
                 .withPermission(CommandUtil.getPermissionString(CobaltKingdoms.getInstance(), "modify"))
                 .withSubcommand(TownModifyCommand.modifySkinCommand())
+                .withSubcommand(TownModifyCommand.modifyTextureCommand())
                 .withSubcommand(TownModifyCommand.modifyChatGreetingCommand())
                 .withSubcommand(TownModifyCommand.modifyTitleGreetingCommand());
     }
@@ -26,16 +27,33 @@ public class TownModifyCommand {
     private static CommandAPICommand modifySkinCommand() {
         return new CommandAPICommand("skin")
                 .withArguments(TownCommand.TOWN_NAME_ARGUMENT)
-                .withArguments(new StringArgument("skin"))
+                .withOptionalArguments(new StringArgument("skin"))
                 .executesPlayer(TownModifyCommand::tryModifySkin);
     }
 
     private static void tryModifySkin(Player player, CommandArguments args) {
         String townName = (String) args.get("town");
-        String skin = (String) args.get("skin");
+        String skin = args.get("skin") != null ? (String) args.get("skin") : "";
 
         Response response = TownManager.getInstance().modifySkin(player, townName, skin);
         printResponse(response, player, townName, "Skin", skin);
+    }
+
+    // ##%%##%%## TEXTURE ##%%##%%## //
+
+    private static CommandAPICommand modifyTextureCommand() {
+        return new CommandAPICommand("texture")
+                .withArguments(TownCommand.TOWN_NAME_ARGUMENT)
+                .withOptionalArguments(new StringArgument("texture"))
+                .executesPlayer(TownModifyCommand::tryModifyTexture);
+    }
+
+    private static void tryModifyTexture(Player player, CommandArguments args) {
+        String townName = (String) args.get("town");
+        String texture = args.get("texture") != null ? (String) args.get("texture") : "";
+
+        Response response = TownManager.getInstance().modifyTexture(player, townName, texture);
+        printResponse(response, player, townName, "Texture", texture);
     }
 
     // ##%%##%%## CHAT GREETING ##%%##%%## //

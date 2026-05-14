@@ -26,6 +26,7 @@ public class QuestArtifactHuntGoalListCommand {
             LocaleManager.getInstance().sendMessage("", player, "kingdoms.commands.quest.gather.goal.list.item", StringPlaceholders.builder()
                     .addPlaceholder("goal", goal.getName())
                     .addPlaceholder("location", goal.getLocation().toVector().toString())
+                    .addPlaceholder("difficulty", goal.getDifficulty())
                     .build());
         }
     }

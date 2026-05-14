@@ -12,6 +12,9 @@ public class TownAppearanceEntity {
     @DatabaseField(columnName = "skin")
     private String skin;
 
+    @DatabaseField(columnName = "texture")
+    private String texture;
+
     @DatabaseField(columnName = "title_greeting")
     private String titleGreeting;
 
@@ -31,6 +34,14 @@ public class TownAppearanceEntity {
 
     public void setSkin(String skin) {
         this.skin = skin;
+    }
+
+    public String getTexture() {
+        return texture;
+    }
+
+    public void setTexture(String texture) {
+        this.texture = texture;
     }
 
     public String getTitleGreeting() {

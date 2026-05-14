@@ -2,7 +2,9 @@ package se.fusion1013.cobaltKingdoms.quest;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import org.bukkit.entity.Player;
 import se.fusion1013.cobaltCore.database.system.DataManager;
+import se.fusion1013.cobaltKingdoms.Response;
 import se.fusion1013.cobaltKingdoms.database.quest.IQuestRepository;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
 
@@ -128,5 +130,9 @@ public class QuestEntity {
 
     public void setCanDespawn(boolean canDespawn) {
         this.canDespawn = canDespawn;
+    }
+
+    public Response canClaim(Player player) {
+        return getQuestData().canClaim(player);
     }
 }

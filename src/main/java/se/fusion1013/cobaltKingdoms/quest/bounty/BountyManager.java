@@ -16,6 +16,7 @@ import se.fusion1013.cobaltCore.util.StringPlaceholders;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.Response;
 import se.fusion1013.cobaltKingdoms.database.quest.IQuestRepository;
+import se.fusion1013.cobaltKingdoms.database.quest.bounty.IBountyRepository;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownJailEntity;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownManager;
@@ -24,6 +25,8 @@ import se.fusion1013.cobaltKingdoms.quest.QuestEntity;
 import se.fusion1013.cobaltKingdoms.quest.QuestStatus;
 import se.fusion1013.cobaltKingdoms.quest.QuestType;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -34,9 +37,10 @@ public class BountyManager extends Manager<CobaltKingdoms> implements Listener {
     private static final Random random = new Random();
     private static final DataManager dataManager = DataManager.getInstance();
     private static final IQuestRepository questRepository = dataManager.getDao(IQuestRepository.class);
+    private static final IBountyRepository bountyRepository = dataManager.getDao(IBountyRepository.class);
 
     public Response create(Player owner, PlayerProfile target, String reason, ItemStack reward) {
-        List<BountyQuestEntity> oldBounty = questRepository.getBounties(owner, target)
+        List<BountyQuestEntity> oldBounty = bountyRepository.getBounties(owner, target)
                 .stream().filter(bq -> {
                     QuestEntity quest = bq.getQuest();
                     if (quest.getStatus() == QuestStatus.NEW) return true;
@@ -57,7 +61,7 @@ public class BountyManager extends Manager<CobaltKingdoms> implements Listener {
         bounty.setReason(reason);
         bounty.setReward(reward);
 
-        questRepository.insertQuest(bounty);
+        bountyRepository.insertQuest(bounty);
         LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.bounty.create_broadcast", StringPlaceholders.builder()
                 .addPlaceholder("player", owner.getName())
                 .addPlaceholder("target", target.getName())
@@ -67,7 +71,7 @@ public class BountyManager extends Manager<CobaltKingdoms> implements Listener {
     }
 
     public Response recall(Player owner, PlayerProfile target) {
-        List<BountyQuestEntity> oldBounty = questRepository.getBounties(owner, target)
+        List<BountyQuestEntity> oldBounty = bountyRepository.getBounties(owner, target)
                 .stream().filter(bq -> {
                     QuestEntity quest = bq.getQuest();
                     if (quest.getStatus() == QuestStatus.NEW) return true;
@@ -83,18 +87,26 @@ public class BountyManager extends Manager<CobaltKingdoms> implements Listener {
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
-        Player player = event.getPlayer();
-        Player killer = player.getKiller();
+        Player deadPlayer = event.getPlayer();
+        Player killer = deadPlayer.getKiller();
 
         if (killer == null) return;
 
-        // Check if player has active bounty
-        List<BountyQuestEntity> bounties = questRepository.getBounties(player.getUniqueId());
+        // Check if dead player has active bounty
+        List<BountyQuestEntity> bounties = bountyRepository.getBounties(deadPlayer.getUniqueId());
         if (bounties.isEmpty()) return;
 
-        BountyQuestEntity bounty = bounties.stream()
+        List<BountyQuestEntity> filteredBounties = bounties.stream()
                 .filter(q -> q.getQuest().getStatus() == QuestStatus.NEW || q.getQuest().getStatus() == QuestStatus.ACTIVE)
-                .toList().getFirst();
+                .toList();
+        if (filteredBounties.isEmpty()) return;
+
+        for (BountyQuestEntity bounty : filteredBounties) {
+            tryCompleteBounty(bounty, killer, deadPlayer);
+        }
+    }
+
+    private void tryCompleteBounty(BountyQuestEntity bounty, Player killer, Player deadPlayer) {
         if (bounty == null) return;
 
         QuestEntity quest = bounty.getQuest();
@@ -108,24 +120,31 @@ public class BountyManager extends Manager<CobaltKingdoms> implements Listener {
 
         if (!hasQuest) return;
 
-        // Find jail
-        TownEntity startTown = quest.getStartTown();
-        if (startTown == null) return;
-
-        List<TownJailEntity> jails = TownManager.getInstance().getJails(startTown);
-        if (jails.isEmpty()) return;
-
-        TownJailEntity jail = jails.get(random.nextInt(jails.size()));
-        if (jail == null) return;
+        setPlayerRespawnJail(quest.getStartTown(), deadPlayer);
 
         Bukkit.getScheduler().runTaskLater(CobaltKingdoms.getInstance(), () -> {
             bounty.tryComplete(killer, killer.getLocation(), null);
 
+            ItemStack bountyCoin = BountyQuestUtil.getBountyItem(deadPlayer);
+            if (bountyCoin != null) {
+                killer.give(bountyCoin);
+            }
+
             questRepository.updateStatus(quest.getId(), QuestStatus.COMPLETED);
-            player.setRespawnLocation(jail.getLocation(), true);
+            questRepository.removeActivePlayerQuestById(quest.getId());
+
+            // Increment status
+            BountyPlayerStatusEntity killerBountyStatus = bountyRepository.getPlayerBountyStatus(killer);
+            killerBountyStatus.incrementCompleted();
+            bountyRepository.insertPlayerBountyStatus(killerBountyStatus);
+
+            BountyPlayerStatusEntity targetBountyStatus = bountyRepository.getPlayerBountyStatus(deadPlayer);
+            targetBountyStatus.incrementKilled();
+            bountyRepository.insertPlayerBountyStatus(targetBountyStatus);
+
             LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.bounty.complete", StringPlaceholders.builder()
                     .addPlaceholder("killer", killer.getName())
-                    .addPlaceholder("target", player.getName())
+                    .addPlaceholder("target", deadPlayer.getName())
                     .build());
             killer.playSound(killer, Sound.UI_TOAST_CHALLENGE_COMPLETE, 1, 1);
 
@@ -136,16 +155,31 @@ public class BountyManager extends Manager<CobaltKingdoms> implements Listener {
         }, 1);
     }
 
+    private void setPlayerRespawnJail(TownEntity town, Player player) {
+        if (town == null) return;
+
+        List<TownJailEntity> jails = TownManager.getInstance().getJails(town);
+        if (jails.isEmpty()) return;
+
+        TownJailEntity jail = jails.get(random.nextInt(jails.size()));
+        if (jail == null) return;
+
+        player.setRespawnLocation(jail.getLocation(), true);
+    }
+
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
-        List<BountyQuestEntity> bounties = questRepository.getBounties(player.getUniqueId());
+        List<BountyQuestEntity> bounties = bountyRepository.getBounties(player.getUniqueId());
         if (bounties.isEmpty()) return;
 
-        BountyQuestEntity bounty = bounties.stream()
+        List<BountyQuestEntity> filteredBounties = bounties.stream()
                 .filter(q -> q.getQuest().getStatus() == QuestStatus.NEW || q.getQuest().getStatus() == QuestStatus.ACTIVE)
-                .toList().getFirst();
+                .toList();
+        if (filteredBounties.isEmpty()) return;
+
+        BountyQuestEntity bounty = filteredBounties.getFirst();
         if (bounty == null) return;
 
         LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), player, "kingdoms.quests.bounty.join_warning", StringPlaceholders.builder()
@@ -174,5 +208,35 @@ public class BountyManager extends Manager<CobaltKingdoms> implements Listener {
             INSTANCE = new BountyManager(CobaltKingdoms.getInstance());
         }
         return INSTANCE;
+    }
+
+    public Response setPlayerBountiesEnabled(Player sender, boolean enabled) {
+        BountyPlayerStatusEntity playerBountyStatus = bountyRepository.getPlayerBountyStatus(sender);
+
+        Date updateTimestamp = playerBountyStatus.getUpdateTimestamp();
+        if (updateTimestamp != null) {
+            // Check if player can update their status
+            Duration waitTime = Duration.ofDays(7);
+            Instant updateTimeInstant = updateTimestamp.toInstant();
+
+            Instant endTime = updateTimeInstant.plus(waitTime);
+            Instant currentTime = Instant.now();
+
+            Duration remaining = Duration.between(currentTime, endTime);
+
+            long days = remaining.toDays();
+            long hours = remaining.toHoursPart();
+            long minutes = remaining.toMinutesPart();
+
+            String formatted = String.format("%d days, %d hours, %d minutes",
+                    days, hours, minutes);
+
+            if (endTime.isAfter(currentTime))
+                return Response.error("You cannot change your bounty status for another " + formatted);
+        }
+
+        playerBountyStatus.setBountiesEnabled(enabled);
+        bountyRepository.insertPlayerBountyStatus(playerBountyStatus);
+        return Response.ok("Updated status");
     }
 }

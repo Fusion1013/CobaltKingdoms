@@ -26,6 +26,7 @@ import se.fusion1013.cobaltCore.locale.LocaleManager;
 import se.fusion1013.cobaltCore.util.HexUtils;
 import se.fusion1013.cobaltCore.util.StringPlaceholders;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
+import se.fusion1013.cobaltKingdoms.Response;
 import se.fusion1013.cobaltKingdoms.config.KingdomsConfig;
 import se.fusion1013.cobaltKingdoms.config.quest.QuestConfig;
 import se.fusion1013.cobaltKingdoms.config.quest.QuestItemDeliveryConfig;
@@ -134,7 +135,7 @@ public class ItemDeliveryQuestEntity implements IQuestData {
                 maxRewardScalingMult);
 
         baseReqValue *= (float) (reqScalingMult * startTown.getLevelConfig().getQuestRequirementsMultiplier());
-        baseRewardValue *= (float) (rewardScalingMult * startTown.getLevelConfig().getQuestRewardMultiplier());
+        baseRewardValue *= (float) (rewardScalingMult * (startTown.getLevelConfig().getQuestRewardMultiplier() + itemDeliveryConfig.getRewardMultiplier()));
 
         float minReqValue = baseReqValue * (1 - reqFluctuation);
         float maxReqValue = baseReqValue * (1 + reqFluctuation);
@@ -144,8 +145,10 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         Map<QuestItem, Double> requirementPool = questConfig.getRequirementPool();
         Map<QuestItem, Double> rewardPool = questConfig.getRewardPool();
 
-        List<ItemStack> requiredItems = QuestUtil.generateTradeItems(minReqValue, maxReqValue, minReqItems, maxReqItems, requirementPool);
-        List<ItemStack> rewards = QuestUtil.generateTradeItems(minRewardValue, maxRewardValue, minRewardItems, maxRewardItems, rewardPool);
+        List<ItemStack> rewards = QuestUtil.generateTradeItems(minRewardValue, maxRewardValue, minRewardItems, maxRewardItems, rewardPool, List.of());
+        List<ItemStack> requiredItems = QuestUtil.generateTradeItems(minReqValue, maxReqValue, minReqItems, maxReqItems, requirementPool, rewards);
+
+        if (rewards.isEmpty() || requiredItems.isEmpty()) return null;
 
         QuestEntity questEntity = new QuestEntity(QuestType.DELIVER, new Date(), minReqValue, maxReqValue, minRewardValue, maxRewardValue, QuestStatus.NEW, startTown, endTown);
         questEntity.setCanDespawn(true);
@@ -212,8 +215,6 @@ public class ItemDeliveryQuestEntity implements IQuestData {
 
     @Override
     public void start(@NotNull Player player, @NotNull Location location) {
-        player.give(getInstructionsItem());
-
         for (ItemStack requiredItem : getRequiredItems()) {
             player.getInventory().removeItem(requiredItem);
         }
@@ -345,6 +346,7 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         List<String> lore = new ArrayList<>();
         lore.add("&zCoords: &7" + coordinates);
         lore.add("&zDistance: &7" + distance);
+        lore.add("&zTime Limit: &7" + QuestUtil.formatDuration(getDuration()));
         lore.add("");
 
         TownConfig townConfig = KingdomsConfig.getTownConfig();
@@ -356,7 +358,7 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         List<LargeItemStack> requiredItems = LargeItemStack.toLargeItemStacks(getRequiredItems());
         for (LargeItemStack requestedItem : requiredItems) {
             String name = requestedItem.item().getItemMeta().hasDisplayName() ? requestedItem.item().getItemMeta().getDisplayName() : formatMaterialName(requestedItem.item().getType().name());
-            lore.add("&7- " + HexUtils.colorify(name) + " &7[&z" + requestedItem.amount() + "&7]");
+            lore.add("&7- " + HexUtils.stripColorCodes(name) + " &7[&z" + requestedItem.amount() + "&7]");
         }
         // Add rewards
         lore.add("");
@@ -364,7 +366,7 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         List<LargeItemStack> rewardItems = LargeItemStack.toLargeItemStacks(getRewards());
         for (LargeItemStack rewardItem : rewardItems) {
             String name = rewardItem.item().getItemMeta().hasDisplayName() ? rewardItem.item().getItemMeta().getDisplayName() : formatMaterialName(rewardItem.item().getType().name());
-            lore.add("&7- " + HexUtils.colorify(name) + " &7[&z" + rewardItem.amount() + "&7]");
+            lore.add("&7- " + HexUtils.stripColorCodes(name) + " &7[&z" + rewardItem.amount() + "&7]");
         }
 
         lore.add("");
@@ -398,6 +400,24 @@ public class ItemDeliveryQuestEntity implements IQuestData {
     @Override
     public boolean isValid() {
         return quest.getStartTown() != null && quest.getEndTown() != null;
+    }
+
+    @Override
+    public void fail(Player player, QuestFailReason reason) {
+        LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.delivery.fail", StringPlaceholders.builder()
+                .addPlaceholder("player", player.getDisplayName())
+                .build());
+    }
+
+    @Override
+    public Response canClaim(Player player) {
+        if (quest.getStatus() == QuestStatus.NEW) return Response.ok("Claim quest");
+        return Response.error("Quest is not new");
+    }
+
+    @Override
+    public int getDuration() {
+        return 1000 * 60 * 60 * 2;
     }
 
     private String getTimeUntil(Instant expirationTime) {

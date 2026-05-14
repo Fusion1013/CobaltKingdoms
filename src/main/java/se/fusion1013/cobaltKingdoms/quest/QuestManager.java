@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -122,6 +123,27 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
         rightClicked.remove();
     }
 
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        Player player = event.getPlayer();
+        Optional<List<ActivePlayerQuestEntity>> activeQuestsOptional = questRepository.getActivePlayerQuestsByPlayer(player);
+        if (activeQuestsOptional.isEmpty()) return;
+
+        List<ActivePlayerQuestEntity> activeQuests = activeQuestsOptional.get();
+        if (activeQuests.isEmpty()) return;
+
+        // Fail all active quests
+        for (ActivePlayerQuestEntity activeQuest : activeQuests) {
+            QuestEntity quest = activeQuest.getQuest();
+            if (quest.getStatus() != QuestStatus.ACTIVE) continue;
+
+            quest.getQuestData().fail(player, QuestFailReason.DEATH);
+            questRepository.removeActivePlayerQuestById(quest.getId());
+            questRepository.updateStatus(quest.getId(), QuestStatus.FAILED);
+        }
+
+    }
+
     public void createRandomQuest(TownEntity startTown) {
         List<QuestEntity> quests = questRepository.getQuests(startTown).stream()
                 .filter(q -> (q.getStatus() == QuestStatus.NEW || q.getStatus() == QuestStatus.ACTIVE) && q.canDespawn())
@@ -132,13 +154,15 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
         List<TownEntity> list = townRepository.getTowns().stream().filter(t -> !t.getId().equals(startTown.getId())).toList();
         if (list.isEmpty()) return;
 
-        // TODO: Add other quest types
-        int selected = random.nextInt(0, 2);
-        if (selected == 0) {
+        String randomQuest = levelConfig.getRandomQuest();
+
+        if (randomQuest.equalsIgnoreCase("delivery")) {
             ItemDeliveryQuestEntity quest = ItemDeliveryQuestEntity.createRandom(startTown, list.get(random.nextInt(list.size())));
+            if (quest == null) return;
             questRepository.insertQuest(quest);
-        } else if (selected == 1) {
+        } else if (randomQuest.equalsIgnoreCase("artifact_hunt")) {
             ArtifactHuntEntity quest = ArtifactHuntEntity.createRandom(startTown, startTown);
+            if (quest == null) return;
             artifactHuntQuestRepository.insertQuest(quest);
         }
 
@@ -226,6 +250,7 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
 
     public void summonQuestMarker(@NotNull Location spawnPosition, QuestEntity quest) {
         if (!spawnPosition.isChunkLoaded()) return;
+        if (true) return; // Run this off for now
 
         IQuestData questData = questRepository.getQuestData(quest.getId(), quest.getQuestType());
         if (questData == null) return;
@@ -286,5 +311,13 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
                                 + "mission was not in the active mission database");
             }
         }
+    }
+
+    public List<QuestEntity> getAllQuests() {
+        return questRepository.getQuests();
+    }
+
+    public void setQuestStatus(Long questId, QuestStatus status) {
+        questRepository.updateStatus(questId, status);
     }
 }

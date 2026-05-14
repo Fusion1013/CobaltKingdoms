@@ -15,6 +15,8 @@ import se.fusion1013.cobaltKingdoms.database.quest.IQuestRepository;
 import se.fusion1013.cobaltKingdoms.database.quest.QuestRepositoryImpl;
 import se.fusion1013.cobaltKingdoms.database.quest.artifact_hunt.IQuestArtifactHuntRepository;
 import se.fusion1013.cobaltKingdoms.database.quest.artifact_hunt.QuestArtifactHuntRepository;
+import se.fusion1013.cobaltKingdoms.database.quest.bounty.BountyRepositoryImpl;
+import se.fusion1013.cobaltKingdoms.database.quest.bounty.IBountyRepository;
 
 public class KingdomDataManager extends Manager<CobaltKingdoms> {
 
@@ -31,6 +33,7 @@ public class KingdomDataManager extends Manager<CobaltKingdoms> {
         dataManager.registerDao(new TownRepositoryImpl(), ITownRepository.class);
         dataManager.registerDao(new QuestRepositoryImpl(), IQuestRepository.class);
         dataManager.registerDao(new QuestArtifactHuntRepository(), IQuestArtifactHuntRepository.class);
+        dataManager.registerDao(new BountyRepositoryImpl(), IBountyRepository.class);
     }
 
     @Override

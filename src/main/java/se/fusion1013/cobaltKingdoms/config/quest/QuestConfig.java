@@ -31,6 +31,8 @@ public class QuestConfig extends AbstractConfig {
     private int maxRequirementsUniqueItems = 3;
 
     private QuestItemDeliveryConfig itemDeliveryConfig;
+    private QuestArtifactHuntConfig artifactHuntConfig;
+
     private Map<QuestItem, Double> rewardPools = new HashMap<>();
     private Map<QuestItem, Double> requirementPools = new HashMap<>();
 
@@ -60,6 +62,9 @@ public class QuestConfig extends AbstractConfig {
 
         ConfigurationSection itemDelivery = config.getConfigurationSection("item_delivery");
         itemDeliveryConfig = new QuestItemDeliveryConfig(itemDelivery);
+
+        ConfigurationSection artifactHunt = config.getConfigurationSection("artifact_hunt");
+        artifactHuntConfig = new QuestArtifactHuntConfig(artifactHunt);
 
         rewardPools = loadQuestItemPool("reward_pool", config);
         requirementPools = loadQuestItemPool("requirement_pool", config);
@@ -127,5 +132,9 @@ public class QuestConfig extends AbstractConfig {
 
     public Map<QuestItem, Double> getRewardPool() {
         return rewardPools;
+    }
+
+    public QuestArtifactHuntConfig getArtifactHuntConfig() {
+        return artifactHuntConfig;
     }
 }
