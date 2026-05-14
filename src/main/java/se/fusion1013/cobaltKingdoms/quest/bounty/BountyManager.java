@@ -131,7 +131,6 @@ public class BountyManager extends Manager<CobaltKingdoms> implements Listener {
             }
 
             questRepository.updateStatus(quest.getId(), QuestStatus.COMPLETED);
-            questRepository.removeActivePlayerQuestById(quest.getId());
 
             // Increment status
             BountyPlayerStatusEntity killerBountyStatus = bountyRepository.getPlayerBountyStatus(killer);

@@ -3,9 +3,6 @@ package se.fusion1013.cobaltKingdoms.quest.bounty;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -82,11 +79,9 @@ public class BountyQuestEntity implements IQuestData {
     }
 
     @Override
-    public Component getTitle() {
-        if (!quest.isValid()) return Component.text("Something went wrong");
-        Component typeSymbol = Component.text(" [" + quest.getQuestType().symbol + "] ").color(quest.getQuestType().textColor);
-        Component titleText = Component.text("Bounty for " + targetPlayerName).color(NamedTextColor.GRAY);
-        return typeSymbol.append(titleText).append(typeSymbol).decoration(TextDecoration.ITALIC, false);
+    public String getTitle() {
+        if (!quest.isValid()) return "Something went wrong";
+        return QuestUtil.formatTitle("Bounty for " + targetPlayerName, quest.getQuestType().symbol);
     }
 
     @Override
@@ -104,7 +99,7 @@ public class BountyQuestEntity implements IQuestData {
         PlayerProfile targetProfile = Bukkit.createProfile(targetPlayerId);
         meta.setPlayerProfile(targetProfile);
 
-        meta.displayName(getTitle());
+        meta.setDisplayName(getTitle());
 
         List<String> lore = new ArrayList<>();
         lore.add("&zOffered by: &7" + ownerPlayerName);

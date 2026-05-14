@@ -72,7 +72,11 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
 
         if (activePlayerQuestsByPlayer.isPresent()) {
             List<ActivePlayerQuestEntity> activePlayerQuestEntities = activePlayerQuestsByPlayer.get();
-            for (ActivePlayerQuestEntity q : activePlayerQuestEntities) {
+            List<ActivePlayerQuestEntity> activePlayerQuestEntitiesFiltered = activePlayerQuestEntities.stream()
+                    .filter(q -> q.getQuest().getStatus() == QuestStatus.ACTIVE)
+                    .toList();
+
+            for (ActivePlayerQuestEntity q : activePlayerQuestEntitiesFiltered) {
                 IQuestData questData = q.getQuest().getQuestData();
                 if (questData == null) continue;
 
@@ -80,7 +84,6 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
                 if (completed) {
                     townRepository.increaseTownXp(q.getQuest().getStartTown().getId(), questData.getXpValue());
                     townRepository.increaseTownXp(clickedTown.getId(), questData.getXpValue() / 2);
-                    questRepository.removeActivePlayerQuestById(q.getId());
                     questRepository.updateStatus(q.getQuest().getId(), QuestStatus.COMPLETED);
                 }
             }
@@ -138,7 +141,6 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
             if (quest.getStatus() != QuestStatus.ACTIVE) continue;
 
             quest.getQuestData().fail(player, QuestFailReason.DEATH);
-            questRepository.removeActivePlayerQuestById(quest.getId());
             questRepository.updateStatus(quest.getId(), QuestStatus.FAILED);
         }
 
@@ -222,7 +224,11 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
 
         // Iterate over quests that are active
         List<ActivePlayerQuestEntity> activeQuests = questRepository.getActiveQuests();
-        for (ActivePlayerQuestEntity quest : activeQuests) {
+        List<ActivePlayerQuestEntity> activeQuestsFiltered = activeQuests.stream()
+                .filter(q -> q.getQuest().getStatus() == QuestStatus.NEW || q.getQuest().getStatus() == QuestStatus.ACTIVE)
+                .toList();
+
+        for (ActivePlayerQuestEntity quest : activeQuestsFiltered) {
             Instant expiryTime = quest.getExpiryTime().toInstant();
             if (expiryTime.isAfter(Instant.now())) continue;
             if (!quest.getQuest().canDespawn()) continue;
@@ -267,7 +273,7 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
             parrot.getPersistentDataContainer().set(QUEST_GIVER_ID_KEY, PersistentDataType.LONG, quest.getId());
             parrot.setCustomNameVisible(false);
             parrot.setVariant(quest.getQuestType().parrotVariant);
-            parrot.customName(questData.getTitle());
+            parrot.setCustomName(questData.getTitle());
         });
         world.spawnParticle(Particle.CLOUD, spawnLocationOnGround, 5, .1, .1, .1, 0);
         world.playSound(spawnLocationOnGround, Sound.BLOCK_DECORATED_POT_INSERT, 1, 1);
@@ -304,7 +310,6 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
                 }
 
                 questRepository.updateStatus(questId, QuestStatus.FAILED);
-                questRepository.removeActivePlayerQuestById(activePlayerQuest.get().getId());
             } else {
                 CobaltKingdoms.getInstance().getLogger().warning(
                         "Deceased entity had mission metadata, but the "

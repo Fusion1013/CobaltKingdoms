@@ -2,9 +2,6 @@ package se.fusion1013.cobaltKingdoms.quest.artifact_hunt;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -190,8 +187,8 @@ public class ArtifactHuntEntity implements IQuestData {
         ICustomItem customItem = CustomItemManager.getCustomItem(goal.getItemName());
         ItemStack targetItem = customItem.getItemStack();
 
-        meta.title(getTitle());
-        meta.customName(getTitle());
+        meta.setTitle(getTitle());
+        meta.setDisplayName(getTitle());
         meta.setAuthor("Quest");
 
         String itemDisplayName = targetItem.getItemMeta().getDisplayName();
@@ -222,11 +219,9 @@ public class ArtifactHuntEntity implements IQuestData {
     }
 
     @Override
-    public Component getTitle() {
-        if (quest.getEndTown() == null || quest.getStartTown() == null) return Component.text("Something went wrong");
-        Component typeSymbol = Component.text(" [" + quest.getQuestType().symbol + "] ").color(quest.getQuestType().textColor);
-        Component titleText = Component.text("Artifact Hunt").color(NamedTextColor.GRAY);
-        return typeSymbol.append(titleText).append(typeSymbol).decoration(TextDecoration.ITALIC, false);
+    public String getTitle() {
+        if (quest.getEndTown() == null || quest.getStartTown() == null) return "Something went wrong";
+        return HexUtils.colorify(QuestUtil.formatTitle("Artifact Hunt", quest.getQuestType().symbol));
     }
 
     @Override
@@ -249,7 +244,7 @@ public class ArtifactHuntEntity implements IQuestData {
 
         meta.setItemModel(new NamespacedKey("thegreatwork", "quest/scroll_orange"));
 
-        meta.displayName(getTitle());
+        meta.setDisplayName(getTitle());
 
         List<String> lore = new ArrayList<>();
         lore.add("&zCoords: &7" + coordinates);

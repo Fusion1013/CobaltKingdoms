@@ -32,6 +32,7 @@ public interface IQuestRepository extends IDao {
 
     Optional<ActivePlayerQuestEntity> getActivePlayerQuestByQuestId(Long questId);
 
+    @Deprecated
     void removeActivePlayerQuestById(Long id);
 
     Optional<List<ActivePlayerQuestEntity>> getActivePlayerQuestsByPlayer(Player player);

@@ -264,7 +264,7 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
         Collection<Mannequin> nearbyEntitiesByType = world.getNearbyEntitiesByType(Mannequin.class, location, 5, v -> v.getPersistentDataContainer().has(TOWN_ENTITY_KEY));
         if (!nearbyEntitiesByType.isEmpty()) {
             for (Mannequin mannequin : nearbyEntitiesByType) {
-                rotateTownEntity(mannequin);
+                updateTownEntity(mannequin);
             }
             return;
         }
@@ -274,7 +274,6 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
         world.spawn(location, Mannequin.class, mannequin -> {
             mannequin.setInvulnerable(true);
             mannequin.setAI(false);
-            mannequin.setGlowing(true);
             mannequin.getPersistentDataContainer().set(TOWN_ENTITY_KEY, PersistentDataType.LONG, town.getId());
 
             String texture = town.getAppearance().getTexture();
@@ -296,11 +295,16 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
 
     }
 
-    private void rotateTownEntity(Mannequin mannequin) {
+    private void updateTownEntity(Mannequin mannequin) {
         Location location = mannequin.getLocation();
         World world = location.getWorld();
-        Collection<Player> nearbyPlayers = world.getNearbyPlayers(location, 6);
-        if (nearbyPlayers.isEmpty()) return;
+        Collection<Player> nearbyPlayers = world.getNearbyPlayers(location, 12);
+        if (nearbyPlayers.isEmpty()) {
+            mannequin.setGlowing(false);
+            return;
+        } else {
+            mannequin.setGlowing(true);
+        }
 
         Optional<Player> first = nearbyPlayers.stream().findFirst();
         Player player = first.get();

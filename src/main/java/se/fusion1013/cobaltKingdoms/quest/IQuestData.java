@@ -1,6 +1,5 @@
 package se.fusion1013.cobaltKingdoms.quest;
 
-import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -18,7 +17,7 @@ public interface IQuestData {
 
     boolean validateQuest(Player player);
 
-    Component getTitle();
+    String getTitle();
 
     String getSymbol();
 

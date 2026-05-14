@@ -374,4 +374,8 @@ public class QuestUtil {
 
         return result;
     }
+
+    public static String formatTitle(String title, String symbol) {
+        return "&y" + title;
+    }
 }

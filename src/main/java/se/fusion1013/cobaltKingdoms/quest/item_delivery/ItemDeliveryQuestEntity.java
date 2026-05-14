@@ -3,8 +3,6 @@ package se.fusion1013.cobaltKingdoms.quest.item_delivery;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -222,7 +220,7 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         // Spawn and setup camel
         Location spawnLocation = player.getLocation();
         Camel camel = (Camel) player.getWorld().spawnEntity(spawnLocation, EntityType.CAMEL);
-        camel.customName(Component.text("Trade Caravan"));
+        camel.customName(Component.text("Trade Caravan to " + quest.getEndTown().getName()));
         float caravan_health = 40;
         Objects.requireNonNull(camel.getAttribute(Attribute.MAX_HEALTH)).setBaseValue(caravan_health);
         camel.setHealth(caravan_health);
@@ -253,37 +251,9 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         ItemStack itemStack = new ItemStack(Material.WRITTEN_BOOK);
         BookMeta meta = (BookMeta) itemStack.getItemMeta();
 
-        meta.title(getTitle());
-        meta.customName(getTitle());
+        meta.setTitle(getTitle());
+        meta.setDisplayName(getTitle());
         meta.setAuthor("Quest");
-
-        Component title = getTitle();
-        Component requiredItemsComponent = Component.text(QuestItemDeliveryUtil.toComponent(getRequiredItems())).color(NamedTextColor.DARK_GRAY);
-        Component rewardItemsComponent = Component.text(QuestItemDeliveryUtil.toComponent(getRewards())).color(NamedTextColor.DARK_GRAY);
-        Component fromTown = Component.text(quest.getStartTown().getName()).color(NamedTextColor.DARK_GRAY);
-        Component toTown = Component.text(quest.getEndTown().getName()).color(NamedTextColor.DARK_GRAY);
-
-        Component fromToTowns = Component.text("From: ").color(NamedTextColor.GOLD)
-                .append(fromTown)
-                .appendNewline()
-                .append(Component.text("To: ").color(NamedTextColor.GOLD))
-                .append(toTown);
-
-        Component costReward = Component.text("Cost: ").color(NamedTextColor.GOLD)
-                .append(requiredItemsComponent)
-                .appendNewline()
-                .appendNewline()
-                .append(Component.text("Reward: ").color(NamedTextColor.GOLD))
-                .append(rewardItemsComponent);
-
-        meta.addPages(title
-                .appendNewline()
-                .appendNewline()
-                .append(fromToTowns)
-                .appendNewline()
-                .appendNewline()
-                .append(costReward)
-                .decoration(TextDecoration.ITALIC, false));
 
         meta.getPersistentDataContainer().set(QuestManager.QUEST_ID_KEY, PersistentDataType.LONG, quest.getId());
 
@@ -315,11 +285,9 @@ public class ItemDeliveryQuestEntity implements IQuestData {
     }
 
     @Override
-    public Component getTitle() {
-        if (quest.getEndTown() == null || quest.getStartTown() == null) return Component.text("Something went wrong");
-        Component typeSymbol = Component.text(" [" + quest.getQuestType().symbol + "] ").color(quest.getQuestType().textColor);
-        Component titleText = Component.text("Delivery to " + quest.getEndTown().getName()).color(NamedTextColor.GRAY);
-        return typeSymbol.append(titleText).append(typeSymbol).decoration(TextDecoration.ITALIC, false);
+    public String getTitle() {
+        if (quest.getEndTown() == null || quest.getStartTown() == null) return "Something went wrong";
+        return HexUtils.colorify(QuestUtil.formatTitle("Delivery to " + endTown.getName(), quest.getQuestType().symbol));
     }
 
     @Override
@@ -341,7 +309,7 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         final ItemStack item = new ItemStack(Material.FILLED_MAP);
         final ItemMeta meta = item.getItemMeta();
 
-        meta.displayName(getTitle());
+        meta.setDisplayName(getTitle());
 
         List<String> lore = new ArrayList<>();
         lore.add("&zCoords: &7" + coordinates);
