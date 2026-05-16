@@ -2,6 +2,7 @@ package se.fusion1013.cobaltKingdoms.commands.kingdom.town;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
+import dev.jorel.commandapi.arguments.StringArgument;
 import dev.jorel.commandapi.executors.CommandArguments;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -16,15 +17,17 @@ public class TownCreateCommand {
 
     public static CommandAPICommand register() {
         return new CommandAPICommand("create")
-                .withArguments(new GreedyStringArgument("name"))
+                .withArguments(new StringArgument("id"))
+                .withArguments(new GreedyStringArgument("display_name"))
                 .executesPlayer(TownCreateCommand::createTown);
     }
 
     private static void createTown(Player player, CommandArguments args) {
-        String townName = (String) args.get("name");
+        String townName = (String) args.get("id");
+        String townDisplayName = (String) args.get("display_name");
         Location location = player.getLocation();
 
-        Response response = TownManager.getInstance().createTown(townName, player, location);
+        Response response = TownManager.getInstance().createTown(townName, townDisplayName, player, location);
 
         if (response.type() == ResponseType.OK) {
             LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), player, "kingdoms.commands.town.create", StringPlaceholders.builder()

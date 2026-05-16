@@ -140,8 +140,8 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         float minRewardValue = baseRewardValue * (1 - rewardFluctuation);
         float maxRewardValue = baseRewardValue * (1 + rewardFluctuation);
 
-        Map<QuestItem, Double> requirementPool = questConfig.getRequirementPool();
-        Map<QuestItem, Double> rewardPool = questConfig.getRewardPool();
+        Map<QuestItem, Double> requirementPool = itemDeliveryConfig.getRequirementPool();
+        Map<QuestItem, Double> rewardPool = itemDeliveryConfig.getRewardPool();
 
         List<ItemStack> rewards = QuestUtil.generateTradeItems(minRewardValue, maxRewardValue, minRewardItems, maxRewardItems, rewardPool, List.of());
         List<ItemStack> requiredItems = QuestUtil.generateTradeItems(minReqValue, maxReqValue, minReqItems, maxReqItems, requirementPool, rewards);
@@ -159,8 +159,8 @@ public class ItemDeliveryQuestEntity implements IQuestData {
     public boolean tryComplete(Player player, @NotNull Location location, TownEntity clickedTown) {
         if (!clickedTown.getId().equals(quest.getEndTown().getId())) {
             CobaltKingdoms.getInstance().getLogger().info("Wrong end town:");
-            CobaltKingdoms.getInstance().getLogger().info(" - " + clickedTown.getName());
-            CobaltKingdoms.getInstance().getLogger().info(" - " + quest.getEndTown().getName());
+            CobaltKingdoms.getInstance().getLogger().info(" - " + clickedTown.getDisplayName());
+            CobaltKingdoms.getInstance().getLogger().info(" - " + quest.getEndTown().getDisplayName());
             return false;
         }
 
@@ -191,8 +191,8 @@ public class ItemDeliveryQuestEntity implements IQuestData {
             // Broadcast message
             LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.finish", StringPlaceholders.builder()
                     .addPlaceholder("player", player.getName())
-                    .addPlaceholder("start_town", quest.getStartTown().getName())
-                    .addPlaceholder("end_town", quest.getEndTown().getName())
+                    .addPlaceholder("start_town", quest.getStartTown().getDisplayName())
+                    .addPlaceholder("end_town", quest.getEndTown().getDisplayName())
                     .build());
         }
 
@@ -220,7 +220,7 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         // Spawn and setup camel
         Location spawnLocation = player.getLocation();
         Camel camel = (Camel) player.getWorld().spawnEntity(spawnLocation, EntityType.CAMEL);
-        camel.customName(Component.text("Trade Caravan to " + quest.getEndTown().getName()));
+        camel.customName(Component.text("Trade Caravan to " + quest.getEndTown().getDisplayName()));
         float caravan_health = 40;
         Objects.requireNonNull(camel.getAttribute(Attribute.MAX_HEALTH)).setBaseValue(caravan_health);
         camel.setHealth(caravan_health);
@@ -231,7 +231,7 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         camel.addPotionEffect(glowEffect);
         camel.setLeashHolder(player);
 
-        QuestUtil.giveQuestCompass(player, endTown.getLocation(), "Compass to " + endTown.getName(), quest.getId());
+        QuestUtil.giveQuestCompass(player, endTown.getLocation(), endTown.getDisplayName(), quest.getId());
 
         // Store required items in persistent data container
         PersistentDataContainer container = camel.getPersistentDataContainer();
@@ -241,8 +241,8 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         // Broadcast message
         LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.start", StringPlaceholders.builder()
                 .addPlaceholder("player", player.getName())
-                .addPlaceholder("start_town", quest.getStartTown().getName())
-                .addPlaceholder("end_town", quest.getEndTown().getName())
+                .addPlaceholder("start_town", quest.getStartTown().getDisplayName())
+                .addPlaceholder("end_town", quest.getEndTown().getDisplayName())
                 .build());
     }
 
@@ -277,7 +277,7 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), player, "kingdoms.quests.fail_missing_items.header");
         for (ItemStack item : missingItems) {
             LocaleManager.getInstance().sendMessage("", player, "kingdoms.quests.fail_missing_items.item", StringPlaceholders.builder()
-                    .addPlaceholder("item", item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : formatMaterialName(item.getType().name()))
+                    .addPlaceholder("item", item.getItemMeta().hasDisplayName() ? HexUtils.stripColorCodes(item.getItemMeta().getDisplayName()) : formatMaterialName(item.getType().name()))
                     .addPlaceholder("amount", item.getAmount())
                     .build());
         }
@@ -287,7 +287,7 @@ public class ItemDeliveryQuestEntity implements IQuestData {
     @Override
     public String getTitle() {
         if (quest.getEndTown() == null || quest.getStartTown() == null) return "Something went wrong";
-        return HexUtils.colorify(QuestUtil.formatTitle("Delivery to " + endTown.getName(), quest.getQuestType().symbol));
+        return HexUtils.colorify(QuestUtil.formatTitle("Delivery to " + endTown.getDisplayName(), quest.getQuestType().symbol));
     }
 
     @Override

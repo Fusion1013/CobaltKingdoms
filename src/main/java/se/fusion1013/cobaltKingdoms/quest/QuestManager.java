@@ -80,11 +80,12 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
                 IQuestData questData = q.getQuest().getQuestData();
                 if (questData == null) continue;
 
-                completed = questData.tryComplete(player, player.getLocation(), clickedTown) || completed;
+                completed = questData.tryComplete(player, player.getLocation(), clickedTown);
                 if (completed) {
                     townRepository.increaseTownXp(q.getQuest().getStartTown().getId(), questData.getXpValue());
                     townRepository.increaseTownXp(clickedTown.getId(), questData.getXpValue() / 2);
                     questRepository.updateStatus(q.getQuest().getId(), QuestStatus.COMPLETED);
+                    break;
                 }
             }
         }
@@ -167,8 +168,6 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
             if (quest == null) return;
             artifactHuntQuestRepository.insertQuest(quest);
         }
-
-        CobaltKingdoms.getInstance().getLogger().info("Created new quest");
     }
 
     public QuestManager(CobaltKingdoms plugin) {

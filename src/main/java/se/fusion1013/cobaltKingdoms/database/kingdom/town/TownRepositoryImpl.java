@@ -123,7 +123,7 @@ public class TownRepositoryImpl implements ITownRepository {
             return results.getFirst();
 
         } catch (SQLException e) {
-            CobaltKingdoms.getInstance().getLogger().severe("Error fetching town by owner: " + e.getMessage());
+            CobaltKingdoms.getInstance().getLogger().severe("Error fetching town by name: " + e.getMessage());
             return null;
         }
     }

@@ -2,6 +2,12 @@ package se.fusion1013.cobaltKingdoms.config.quest;
 
 import org.bukkit.configuration.ConfigurationSection;
 import se.fusion1013.cobaltKingdoms.config.AbstractConfig;
+import se.fusion1013.cobaltKingdoms.quest.QuestItem;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static se.fusion1013.cobaltKingdoms.config.quest.QuestConfigUtil.loadQuestItemPool;
 
 public class QuestArtifactHuntConfig extends AbstractConfig {
 
@@ -9,6 +15,8 @@ public class QuestArtifactHuntConfig extends AbstractConfig {
 
     private int minRewardUniqueItems = -1;
     private int maxRewardUniqueItems = -1;
+
+    private Map<QuestItem, Double> rewardPools = new HashMap<>();
 
     public QuestArtifactHuntConfig(ConfigurationSection yaml) {
         super("quest_config");
@@ -19,6 +27,8 @@ public class QuestArtifactHuntConfig extends AbstractConfig {
         rewardMultiplier = yaml.getDouble("reward_multiplier", 1.0);
         minRewardUniqueItems = yaml.getInt("min_reward_unique_items", -1);
         maxRewardUniqueItems = yaml.getInt("max_reward_unique_items", -1);
+
+        rewardPools = loadQuestItemPool("reward_pool", yaml);
     }
 
     public double getRewardMultiplier() {
@@ -31,5 +41,9 @@ public class QuestArtifactHuntConfig extends AbstractConfig {
 
     public int getMaxRewardUniqueItems() {
         return maxRewardUniqueItems;
+    }
+
+    public Map<QuestItem, Double> getRewardPool() {
+        return rewardPools;
     }
 }

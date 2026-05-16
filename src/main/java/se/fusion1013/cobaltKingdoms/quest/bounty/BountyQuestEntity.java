@@ -99,12 +99,16 @@ public class BountyQuestEntity implements IQuestData {
         PlayerProfile targetProfile = Bukkit.createProfile(targetPlayerId);
         meta.setPlayerProfile(targetProfile);
 
-        meta.setDisplayName(getTitle());
+        meta.setDisplayName(HexUtils.colorify(getTitle()));
 
         List<String> lore = new ArrayList<>();
         lore.add("&zOffered by: &7" + ownerPlayerName);
         lore.add("&zTarget: &7" + targetPlayerName);
         lore.add("&zTime Limit: &7" + QuestUtil.formatDuration(getDuration()));
+
+        lore.add("");
+        lore.addAll(QuestUtil.wrapText(reason, 30).stream().map(k -> "&7" + k).toList());
+        lore.add("");
 
         List<ItemStack> rewards = new ArrayList<>();
         ItemStack bountyCoin = BountyQuestUtil.getBountyItem(targetPlayerId, targetPlayerName);
@@ -115,15 +119,11 @@ public class BountyQuestEntity implements IQuestData {
             lore.add("&zReward:");
             for (ItemStack rewardItem : rewards) {
                 String name = rewardItem.getItemMeta().hasDisplayName() ? rewardItem.getItemMeta().getDisplayName() : formatMaterialName(rewardItem.getType().name());
-                lore.add("&7- " + HexUtils.colorify(name) + " &7[&z" + rewardItem.getAmount() + "&7]");
+                lore.add("&7- " + HexUtils.stripColorCodes(name) + " &7[&z" + rewardItem.getAmount() + "&7]");
             }
         } else {
             lore.add("&zReward: &7No reward");
         }
-
-
-        lore.add("");
-        lore.add("&7" + reason);
 
         lore.replaceAll(HexUtils::colorify);
 

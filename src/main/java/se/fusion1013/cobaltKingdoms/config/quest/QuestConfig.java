@@ -3,12 +3,6 @@ package se.fusion1013.cobaltKingdoms.config.quest;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import se.fusion1013.cobaltKingdoms.config.AbstractConfig;
-import se.fusion1013.cobaltKingdoms.quest.QuestItem;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static se.fusion1013.cobaltKingdoms.config.quest.QuestConfigUtil.loadQuestItemPool;
 
 public class QuestConfig extends AbstractConfig {
 
@@ -33,8 +27,8 @@ public class QuestConfig extends AbstractConfig {
     private QuestItemDeliveryConfig itemDeliveryConfig;
     private QuestArtifactHuntConfig artifactHuntConfig;
 
-    private Map<QuestItem, Double> rewardPools = new HashMap<>();
-    private Map<QuestItem, Double> requirementPools = new HashMap<>();
+//    private final Map<QuestItem, Double> rewardPools = new HashMap<>();
+//    private final Map<QuestItem, Double> requirementPools = new HashMap<>();
 
     private QuestConfig(String name) {
         super(name);
@@ -66,8 +60,9 @@ public class QuestConfig extends AbstractConfig {
         ConfigurationSection artifactHunt = config.getConfigurationSection("artifact_hunt");
         artifactHuntConfig = new QuestArtifactHuntConfig(artifactHunt);
 
-        rewardPools = loadQuestItemPool("reward_pool", config);
-        requirementPools = loadQuestItemPool("requirement_pool", config);
+        // Maybe make it so that it combines this with the more specific one
+//        rewardPools = loadQuestItemPool("reward_pool", config);
+//        requirementPools = loadQuestItemPool("requirement_pool", config);
     }
 
     public int getBaseRewardValue() {
@@ -126,13 +121,13 @@ public class QuestConfig extends AbstractConfig {
         return itemDeliveryConfig;
     }
 
-    public Map<QuestItem, Double> getRequirementPool() {
-        return requirementPools;
-    }
-
-    public Map<QuestItem, Double> getRewardPool() {
-        return rewardPools;
-    }
+//    public Map<QuestItem, Double> getRequirementPool() {
+//        return requirementPools;
+//    }
+//
+//    public Map<QuestItem, Double> getRewardPool() {
+//        return rewardPools;
+//    }
 
     public QuestArtifactHuntConfig getArtifactHuntConfig() {
         return artifactHuntConfig;

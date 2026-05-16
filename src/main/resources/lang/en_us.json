@@ -150,6 +150,6 @@
   "kingdoms.quests.delivery.finish": "&z%player% &7finished a delivery to &z%end_town%",
   "kingdoms.quests.delivery.fail": "&z%player% &7failed a delivery",
   "kingdoms.quests.artifact_hunt.start": "&z%player% &7started an artifact hunt for &z%item%",
-  "kingdoms.quests.artifact_hunt.finish": "&z%player% &7finished a gathering quest to &z%end_town%",
+  "kingdoms.quests.artifact_hunt.finish": "&z%player% &7finished an Artifact Hunt to &z%end_town%",
   "kingdoms.quests.artifact_hunt.fail": "&z%player% &7failed an artifact hunt"
 }

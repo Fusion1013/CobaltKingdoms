@@ -13,7 +13,6 @@ import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import se.fusion1013.cobaltCore.util.HexUtils;
-import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
 import se.fusion1013.cobaltKingdoms.util.LargeItemStack;
 
@@ -141,8 +140,6 @@ public class QuestUtil {
                 itemStackValues.remove(leastValuable);
             }
         }
-
-        CobaltKingdoms.getInstance().getLogger().info("Generated trade items with value " + totalValue);
 
         // Final check: if totalValue is still below minValue, just return what was generated
         return generatedItems.stream()
@@ -284,7 +281,7 @@ public class QuestUtil {
 
         meta.lore(
                 List.of(
-                        Component.text("Deliver to " + handInTown.getName()).color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
+                        Component.text("Deliver to " + handInTown.getDisplayName()).color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
                 )
         );
         meta.getPersistentDataContainer().set(QuestManager.QUEST_ID_KEY, PersistentDataType.LONG, questId);

@@ -6,7 +6,9 @@ import org.bukkit.entity.Player;
 import se.fusion1013.cobaltCore.util.CommandUtil;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.config.KingdomsConfig;
+import se.fusion1013.cobaltKingdoms.config.quest.QuestArtifactHuntConfig;
 import se.fusion1013.cobaltKingdoms.config.quest.QuestConfig;
+import se.fusion1013.cobaltKingdoms.config.quest.QuestItemDeliveryConfig;
 import se.fusion1013.cobaltKingdoms.quest.*;
 
 import java.util.HashMap;
@@ -35,12 +37,20 @@ public class QuestDebugCommand {
 
     private static void sampleItemDistribution(Player player, CommandArguments args) {
         QuestConfig questConfig = KingdomsConfig.getQuestConfig();
+        QuestArtifactHuntConfig artifactHuntConfig = questConfig.getArtifactHuntConfig();
+        QuestItemDeliveryConfig itemDeliveryConfig = questConfig.getItemDeliveryConfig();
 
+        CobaltKingdoms.getInstance().getLogger().info("ARTIFACT HUNT");
+        CobaltKingdoms.getInstance().getLogger().info("---- SAMPLING REWARD POOL ----");
+        samplePool(artifactHuntConfig.getRewardPool());
+
+
+        CobaltKingdoms.getInstance().getLogger().info("ITEM DELIVERY");
         CobaltKingdoms.getInstance().getLogger().info("---- SAMPLING REQUIREMENT POOL ----");
-        samplePool(questConfig.getRequirementPool());
+        samplePool(itemDeliveryConfig.getRequirementPool());
 
         CobaltKingdoms.getInstance().getLogger().info("---- SAMPLING REWARD POOL ----");
-        samplePool(questConfig.getRewardPool());
+        samplePool(itemDeliveryConfig.getRewardPool());
     }
 
     private static void samplePool(Map<QuestItem, Double> pool) {

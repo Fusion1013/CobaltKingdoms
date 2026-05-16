@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import se.fusion1013.cobaltCore.CobaltCore;
 import se.fusion1013.cobaltCore.locale.LocaleManager;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 
@@ -34,6 +35,8 @@ public class PigeonEvents implements Listener {
     private static void sendLetter(PlayerEditBookEvent event, BookMeta bookMeta, Player sendingPlayer) {
         if (bookMeta.getItemModel() == null) return;
         if (!bookMeta.getItemModel().getKey().contains("letter")) return;
+        if (bookMeta.getPersistentDataContainer().has(new NamespacedKey(CobaltCore.getInstance(), "bounty_letter")))
+            return;
 
         String title = bookMeta.getTitle();
         if (title == null) return;

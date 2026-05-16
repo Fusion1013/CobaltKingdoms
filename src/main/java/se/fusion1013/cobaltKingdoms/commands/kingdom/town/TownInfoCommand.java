@@ -41,7 +41,7 @@ public class TownInfoCommand {
         List<TownMemberEntity> townMembers = TownManager.getInstance().getTownMembers(town.getId());
 
         LocaleManager.getInstance().sendMessage("", player, "kingdoms.commands.town.info.header", StringPlaceholders.builder()
-                .addPlaceholder("town", town.getName())
+                .addPlaceholder("town", town.getDisplayName())
                 .build());
 
         sendItem(player, "Position", town.getLocation().toVector().toString());

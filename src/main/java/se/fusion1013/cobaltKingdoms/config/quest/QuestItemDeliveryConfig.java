@@ -2,6 +2,12 @@ package se.fusion1013.cobaltKingdoms.config.quest;
 
 import org.bukkit.configuration.ConfigurationSection;
 import se.fusion1013.cobaltKingdoms.config.AbstractConfig;
+import se.fusion1013.cobaltKingdoms.quest.QuestItem;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static se.fusion1013.cobaltKingdoms.config.quest.QuestConfigUtil.loadQuestItemPool;
 
 public class QuestItemDeliveryConfig extends AbstractConfig {
 
@@ -14,6 +20,9 @@ public class QuestItemDeliveryConfig extends AbstractConfig {
     private int minRequirementsScalingDistance = 500;
     private int baseRequirementsScalingDistance = 1000;
     private int maxRequirementsScalingDistance = 5000;
+
+    private Map<QuestItem, Double> rewardPools = new HashMap<>();
+    private Map<QuestItem, Double> requirementPools = new HashMap<>();
 
     public QuestItemDeliveryConfig(ConfigurationSection yaml) {
         super("quest_config");
@@ -30,6 +39,9 @@ public class QuestItemDeliveryConfig extends AbstractConfig {
         minRequirementsScalingDistance = config.getInt("min_requirements_scaling_distance", 500);
         baseRequirementsScalingDistance = config.getInt("base_requirements_scaling_distance", 1000);
         maxRequirementsScalingDistance = config.getInt("max_requirements_scaling_distance", 5000);
+
+        rewardPools = loadQuestItemPool("reward_pool", config);
+        requirementPools = loadQuestItemPool("requirement_pool", config);
     }
 
     public double getRewardMultiplier() {
@@ -58,5 +70,13 @@ public class QuestItemDeliveryConfig extends AbstractConfig {
 
     public int getMaxRequirementsScalingDistance() {
         return maxRequirementsScalingDistance;
+    }
+
+    public Map<QuestItem, Double> getRewardPool() {
+        return rewardPools;
+    }
+
+    public Map<QuestItem, Double> getRequirementPool() {
+        return requirementPools;
     }
 }

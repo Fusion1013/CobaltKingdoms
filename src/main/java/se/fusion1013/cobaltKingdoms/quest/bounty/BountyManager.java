@@ -2,13 +2,18 @@ package se.fusion1013.cobaltKingdoms.quest.bounty;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerEditBookEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
+import se.fusion1013.cobaltCore.CobaltCore;
 import se.fusion1013.cobaltCore.database.system.DataManager;
 import se.fusion1013.cobaltCore.locale.LocaleManager;
 import se.fusion1013.cobaltCore.manager.Manager;
@@ -40,6 +45,11 @@ public class BountyManager extends Manager<CobaltKingdoms> implements Listener {
     private static final IBountyRepository bountyRepository = dataManager.getDao(IBountyRepository.class);
 
     public Response create(Player owner, PlayerProfile target, String reason, ItemStack reward) {
+        BountyPlayerStatusEntity playerBountyStatus = bountyRepository.getPlayerBountyStatus(target.getId(), target.getName());
+        if (!playerBountyStatus.isBountiesEnabled()) return Response.error("Target does not have bounties enabled");
+
+        if (owner.getUniqueId().equals(target.getId())) return Response.error("Cannot create a bounty for yourself");
+
         List<BountyQuestEntity> oldBounty = bountyRepository.getBounties(owner, target)
                 .stream().filter(bq -> {
                     QuestEntity quest = bq.getQuest();
@@ -48,8 +58,10 @@ public class BountyManager extends Manager<CobaltKingdoms> implements Listener {
                 }).toList();
         if (!oldBounty.isEmpty()) return Response.error("You already have an active bounty for that player");
 
-        TownEntity town = TownManager.getInstance().getPlayerTown(owner);
-        if (town == null) return Response.error("You need to be a part of a town to create a bounty");
+        List<TownEntity> towns = TownManager.getInstance().getPlayerTowns(owner);
+        if (towns == null || towns.isEmpty())
+            return Response.error("You need to be a part of a town to create a bounty");
+        TownEntity town = towns.getFirst();
 
         QuestEntity quest = new QuestEntity(QuestType.BOUNTY, new Date(), 0, 0, 0, 0, QuestStatus.NEW, town, town);
         quest.setCanDespawn(false);
@@ -235,7 +247,37 @@ public class BountyManager extends Manager<CobaltKingdoms> implements Listener {
         }
 
         playerBountyStatus.setBountiesEnabled(enabled);
+        playerBountyStatus.setUpdateTimestamp(new Date());
         bountyRepository.insertPlayerBountyStatus(playerBountyStatus);
         return Response.ok("Updated status");
+    }
+
+    @EventHandler
+    public void onPlayerEditBook(PlayerEditBookEvent event) {
+        if (!event.isSigning()) return;
+
+        Player sendingPlayer = event.getPlayer();
+        BookMeta bookMeta = event.getNewBookMeta();
+
+        if (!bookMeta.getPersistentDataContainer().has(new NamespacedKey(CobaltCore.getInstance(), "bounty_letter")))
+            return;
+
+        String targetName = bookMeta.getTitle();
+        if (targetName == null) {
+            event.setCancelled(true);
+            return;
+        }
+
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(targetName);
+        Response response = create(sendingPlayer, offlinePlayer.getPlayerProfile(), bookMeta.getPage(1), null);
+        if (response.ok()) {
+            sendingPlayer.getInventory().getItemInMainHand().setAmount(0);
+        } else {
+            event.setCancelled(true);
+            LocaleManager.getInstance().sendMessage(CobaltKingdoms.getInstance(), sendingPlayer, "kingdoms.quests.bounty.create_fail", StringPlaceholders.builder()
+                    .addPlaceholder("reason", response.message())
+                    .build());
+        }
+
     }
 }

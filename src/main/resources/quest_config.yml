@@ -1,6 +1,6 @@
 # General quest settings
-base_reward_value: 1024
-base_requirements_value: 512
+base_reward_value: 500
+base_requirements_value: 250
 
 # How much the reward and requirements can fluctuate for any given missions
 # Making these numbers too low (i.e. <0.1) may result in no rewards for some missions
@@ -8,46 +8,448 @@ reward_fluctuation_fraction: 0.2 # 0.2 = plus or minus 20% reward
 requirements_fluctuation_fraction: 0.2 # 0.2 = plus or minus 20% requirements
 
 # Minimum and maximum multipliers for the reward and requirements value based on distance travelled to complete the mission
-min_reward_scaling_multiplier: 0.1 # 0.5
-max_reward_scaling_multiplier: 10.0 # 4.0
+min_reward_scaling_multiplier: 0.2 # 0.5
+max_reward_scaling_multiplier: 5.0 # 4.0
 
-min_requirements_scaling_multiplier: 0.4
-max_requirements_scaling_multiplier: 3.0
+min_requirements_scaling_multiplier: 0.6
+max_requirements_scaling_multiplier: 2.0
 
 # Minimum and maximum unique number of items in the required and reward lists
 min_reward_unique_items: 1
-max_reward_unique_items: 4
+max_reward_unique_items: 6
 
 min_requirements_unique_items: 1
-max_requirements_unique_items: 3
+max_requirements_unique_items: 4
 
 # Settings for specific quest types
 item_delivery:
-  reward_multiplier: 1.0 # TODO: Do I need reward values? Only item delivery has input items...
+  reward_multiplier: 1.0
 
   # Reward and requirements multiplier equals:
   #   1 - when mission distance is `base_X_scaling_distance`
   #   `min_X_scaling_multiplier` - when mission distance <= `min_X_scaling_distance`
   #   `max_X_scaling_multiplier` - when mission distance >= `max_X_scaling_distance`
-  min_reward_scaling_distance: 500
-  base_reward_scaling_distance: 1000
-  max_reward_scaling_distance: 5000
+  min_reward_scaling_distance: 250
+  base_reward_scaling_distance: 800
+  max_reward_scaling_distance: 2700
 
-  min_requirements_scaling_distance: 500
-  base_requirements_scaling_distance: 1000
-  max_requirements_scaling_distance: 5000
+  min_requirements_scaling_distance: 250
+  base_requirements_scaling_distance: 800
+  max_requirements_scaling_distance: 2700
+
+  reward_pool:
+    unique:
+      weight: 1
+      items:
+        - item: SPONGE
+          weight: 2
+          max_amount: 32
+        - item: NAUTILUS_SHELL
+          weight: 3
+          max_amount: 4
+        - item: HEART_OF_THE_SEA
+
+    valuables:
+      weight: 4
+      items:
+        - item: QUARTZ
+          min_amount: 8
+          max_amount: 256
+        - item: COAL
+          min_amount: 8
+          max_amount: 256
+        - item: LAPIS_LAZULI
+          min_amount: 8
+          max_amount: 256
+        - item: REDSTONE
+          min_amount: 8
+          max_amount: 128
+        - item: COPPER_INGOT
+          min_amount: 8
+          max_amount: 192
+        - item: IRON_INGOT
+          min_amount: 4
+          max_amount: 128
+        - item: GOLD_INGOT
+          min_amount: 2
+          max_amount: 128
+        - item: EMERALD
+          max_amount: 64
+        - item: DIAMOND
+          max_amount: 32
+
+    tnt:
+      weight: 2
+      items:
+        - item: TNT
+          max_amount: 64
+
+    wood:
+      weight: 3
+      min_amount: 8
+      max_amount: 512
+      items:
+        - item: OAK_LOG
+          weight: 4
+        - item: SPRUCE_LOG
+          weight: 2
+        - item: BIRCH_LOG
+        - item: ACACIA_LOG
+        - item: DARK_OAK_LOG
+          weight: 3
+        - item: CHERRY_LOG
+          weight: 2
+        - item: MANGROVE_LOG
+
+    building_materials:
+      weight: 2
+      min_amount: 64
+      max_amount: 512
+      items:
+        - item: COBBLESTONE
+          max_amount: 1024
+        - item: SAND
+          max_amount: 1024
+        - item: STONE
+        - item: SANDSTONE
+        - item: GLASS
+        - item: ICE
+          min_amount: 8
+          max_amount: 128
+        - item: PRISMARINE
+          max_amount: 256
+        - item: DARK_PRISMARINE
+          max_amount: 256
+        - item: GLOWSTONE
+          min_amount: 4
+          max_amount: 128
+        - item: AMETHYST_BLOCK
+          min_amount: 4
+          max_amount: 128
+
+    terracotta:
+      weight: 2
+      min_amount: 16
+      max_amount: 512
+      items:
+        - item: WHITE_TERRACOTTA
+        - item: ORANGE_TERRACOTTA
+        - item: MAGENTA_TERRACOTTA
+        - item: LIGHT_BLUE_TERRACOTTA
+        - item: YELLOW_TERRACOTTA
+        - item: LIME_TERRACOTTA
+        - item: PINK_TERRACOTTA
+        - item: GRAY_TERRACOTTA
+        - item: LIGHT_GRAY_TERRACOTTA
+        - item: CYAN_TERRACOTTA
+        - item: PURPLE_TERRACOTTA
+        - item: BLUE_TERRACOTTA
+        - item: BROWN_TERRACOTTA
+        - item: GREEN_TERRACOTTA
+        - item: RED_TERRACOTTA
+        - item: BLACK_TERRACOTTA
+
+    concrete:
+      weight: 2
+      min_amount: 16
+      max_amount: 512
+      items:
+        - item: WHITE_CONCRETE
+        - item: ORANGE_CONCRETE
+        - item: MAGENTA_CONCRETE
+        - item: LIGHT_BLUE_CONCRETE
+        - item: YELLOW_CONCRETE
+        - item: LIME_CONCRETE
+        - item: PINK_CONCRETE
+        - item: GRAY_CONCRETE
+        - item: LIGHT_GRAY_CONCRETE
+        - item: CYAN_CONCRETE
+        - item: PURPLE_CONCRETE
+        - item: BLUE_CONCRETE
+        - item: BROWN_CONCRETE
+        - item: GREEN_CONCRETE
+        - item: RED_CONCRETE
+        - item: BLACK_CONCRETE
+
+    xp:
+      weight: 4
+      items:
+        - item: EXPERIENCE_BOTTLE
+          min_amount: 4
+          max_amount: 128
+
+    coins:
+      weight: 4
+      max_amount: 128
+      items:
+        - item: sol_coin
+          weight: 4
+        - item: lun_coin
+          weight: 4
+
+  requirement_pool: &requirement_pool_template
+    valuables:
+      weight: 8
+      items:
+        - item: COAL
+          min_amount: 8
+          max_amount: 256
+        - item: LAPIS_LAZULI
+          min_amount: 8
+          max_amount: 256
+        - item: REDSTONE
+          min_amount: 8
+          max_amount: 128
+        - item: COPPER_INGOT
+          min_amount: 8
+          max_amount: 192
+        - item: IRON_INGOT
+          min_amount: 4
+          max_amount: 128
+        - item: GOLD_INGOT
+          min_amount: 2
+          max_amount: 128
+        - item: EMERALD
+          min_amount: 1
+          max_amount: 64
+        - item: DIAMOND
+          min_amount: 1
+          max_amount: 32
+
+    wood:
+      weight: 4
+      min_amount: 16
+      max_amount: 512
+      items:
+        - item: OAK_LOG
+        - item: SPRUCE_LOG
+        - item: BIRCH_LOG
+        - item: ACACIA_LOG
+        - item: DARK_OAK_LOG
+        - item: CHERRY_LOG
+        - item: MANGROVE_LOG
+
+    mob_drops:
+      weight: 8
+      max_amount: 128
+      items:
+        - item: EGG
+        - item: BONE
+        - item: STRING
+        - item: GUNPOWDER
+        - item: FEATHER
+        - item: SPIDER_EYE
+
+    building_materials:
+      weight: 4
+      min_amount: 16
+      max_amount: 512
+      items:
+        - item: COBBLESTONE
+          min_amount: 128
+          max_amount: 1024
+        - item: SAND
+          min_amount: 128
+          max_amount: 1024
+        - item: STONE
+        - item: SANDSTONE
+        - item: GLASS
+
+    terracotta:
+      weight: 4
+      min_amount: 16
+      max_amount: 512
+      items:
+        - item: WHITE_TERRACOTTA
+        - item: ORANGE_TERRACOTTA
+        - item: MAGENTA_TERRACOTTA
+        - item: LIGHT_BLUE_TERRACOTTA
+        - item: YELLOW_TERRACOTTA
+        - item: LIME_TERRACOTTA
+        - item: PINK_TERRACOTTA
+        - item: GRAY_TERRACOTTA
+        - item: LIGHT_GRAY_TERRACOTTA
+        - item: CYAN_TERRACOTTA
+        - item: PURPLE_TERRACOTTA
+        - item: BLUE_TERRACOTTA
+        - item: BROWN_TERRACOTTA
+        - item: GREEN_TERRACOTTA
+        - item: RED_TERRACOTTA
+        - item: BLACK_TERRACOTTA
+
+    fish:
+      weight: 2
+      max_amount: 32
+      items:
+        - item: salmon
+        - item: cod
+
+    misc:
+      weight: 4
+      items:
+        - item: PAPER
+          min_amount: 4
+          max_amount: 128
+        - item: MAP
+          max_amount: 32
+        - item: COMPASS
+          max_amount: 32
+        - item: SLIME_BALL
+          min_amount: 2
+          max_amount: 128
+
+    music_discs:
+      weight: 1
+      items:
+        - item: MUSIC_DISC_13
+        - item: MUSIC_DISC_CAT
+        - item: MUSIC_DISC_BLOCKS
+        - item: MUSIC_DISC_CHIRP
+        - item: MUSIC_DISC_CREATOR
+        - item: MUSIC_DISC_CREATOR_MUSIC_BOX
+        - item: MUSIC_DISC_FAR
+        - item: MUSIC_DISC_MALL
+        - item: MUSIC_DISC_MELLOHI
+        - item: MUSIC_DISC_STAL
+        - item: MUSIC_DISC_STRAD
+        - item: MUSIC_DISC_WARD
+        - item: MUSIC_DISC_11
+        - item: MUSIC_DISC_WAIT
+        - item: MUSIC_DISC_OTHERSIDE
+        - item: MUSIC_DISC_RELIC
+        - item: MUSIC_DISC_5
+        - item: MUSIC_DISC_PIGSTEP
+        - item: MUSIC_DISC_PRECIPICE
+    coins:
+      weight: 8
+      max_amount: 32
+      items:
+        - item: sol_coin
+        - item: lun_coin
+        - item: astral_coin
 
 combat:
   reward_multiplier: 1.5
+
 artifact_hunt:
-  reward_multiplier: 2
+  reward_multiplier: 1
+
+  # Minimum and maximum unique number of items in the required and reward lists
+  min_reward_unique_items: 1
+  max_reward_unique_items: 3
+
+  reward_pool:
+    unique:
+      weight: 1
+      items:
+        - item: SPONGE
+          weight: 2
+          max_amount: 32
+        - item: NAUTILUS_SHELL
+          weight: 3
+          max_amount: 4
+        - item: HEART_OF_THE_SEA
+
+    valuables:
+      weight: 4
+      items:
+        - item: QUARTZ
+          min_amount: 8
+          max_amount: 256
+        - item: COAL
+          min_amount: 8
+          max_amount: 256
+        - item: LAPIS_LAZULI
+          min_amount: 8
+          max_amount: 256
+        - item: REDSTONE
+          min_amount: 8
+          max_amount: 128
+        - item: COPPER_INGOT
+          min_amount: 8
+          max_amount: 192
+        - item: IRON_INGOT
+          min_amount: 4
+          max_amount: 128
+        - item: GOLD_INGOT
+          min_amount: 2
+          max_amount: 128
+        - item: EMERALD
+          max_amount: 64
+        - item: DIAMOND
+          max_amount: 32
+
+    tnt:
+      weight: 2
+      items:
+        - item: TNT
+          max_amount: 64
+
+    xp:
+      weight: 4
+      items:
+        - item: EXPERIENCE_BOTTLE
+          min_amount: 4
+          max_amount: 128
+
+    spawn_eggs:
+      weight: 1
+      max_amount: 4
+      items:
+        - item: CHICKEN_SPAWN_EGG
+        - item: PIG_SPAWN_EGG
+        - item: AXOLOTL_SPAWN_EGG
+        - item: BEE_SPAWN_EGG
+        - item: CAT_SPAWN_EGG
+        - item: CAMEL_SPAWN_EGG
+        - item: DOLPHIN_SPAWN_EGG
+        - item: FOX_SPAWN_EGG
+        - item: GOAT_SPAWN_EGG
+        - item: OCELOT_SPAWN_EGG
+        - item: PARROT_SPAWN_EGG
+        - item: HORSE_SPAWN_EGG
+          max_amount: 2
+        - item: CREEPER_SPAWN_EGG
+          max_amount: 2
+        - item: VILLAGER_SPAWN_EGG
+          max_amount: 2
+        - item: WANDERING_TRADER_SPAWN_EGG
+          max_amount: 1
+        - item: WITHER_SPAWN_EGG
+          max_amount: 1
+
+    coins:
+      weight: 4
+      max_amount: 128
+      items:
+        - item: sol_coin
+          weight: 4
+        - item: lun_coin
+          weight: 4
+        - item: astral_coin
+          weight: 3
+
+    rare:
+      weight: 1
+      max_amount: 1
+      items:
+        - item: forge_dust
+          weight: 1
+        - item: silver_ingot
+          weight: 5
+          max_amount: 4
+        - item: sulphur_ingot
+          weight: 4
+          max_amount: 4
+
+
 
 # Quest reward items. Item values will be stored in a different file
+## THIS IS NOT USED ANYMORE, JUST KEPT HERE AS A REFERENCE
 reward_pool:
   unique:
     weight: 1
     items:
-      - item: forge_dust
       - item: SPONGE
         weight: 2
         max_amount: 32
@@ -57,7 +459,7 @@ reward_pool:
       - item: HEART_OF_THE_SEA
 
   valuables:
-    weight: 5
+    weight: 4
     items:
       - item: QUARTZ
         min_amount: 8
@@ -85,139 +487,159 @@ reward_pool:
       - item: DIAMOND
         max_amount: 32
 
-    tnt:
-      weight: 2
-      items:
-        - item: TNT
-          max_amount: 64
+  tnt:
+    weight: 2
+    items:
+      - item: TNT
+        max_amount: 64
 
-    wood:
-      weight: 3
-      min_amount: 8
-      max_amount: 512
-      items:
-        - item: OAK_LOG
-          weight: 4
-        - item: SPRUCE_LOG
-          weight: 2
-        - item: BIRCH_LOG
-        - item: ACACIA_LOG
-        - item: DARK_OAK_LOG
-          weight: 3
-        - item: CHERRY_LOG
-          weight: 2
-        - item: MANGROVE_LOG
-
-      building_materials:
-        weight: 2
-        min_amount: 64
-        max_amount: 512
-        items:
-          - item: COBBLESTONE
-            max_amount: 1024
-          - item: SAND
-            max_amount: 1024
-          - item: STONE
-          - item: SANDSTONE
-          - item: GLASS
-          - item: ICE
-            min_amount: 8
-            max_amount: 128
-          - item: PRISMARINE
-            max_amount: 256
-          - item: GLOWSTONE
-            min_amount: 4
-            max_amount: 128
-          - item: AMETHYST_BLOCK
-            min_amount: 4
-            max_amount: 128
-
-      terracotta:
-        weight: 2
-        min_amount: 16
-        max_amount: 512
-        items:
-          - item: WHITE_TERRACOTTA
-          - item: ORANGE_TERRACOTTA
-          - item: MAGENTA_TERRACOTTA
-          - item: LIGHT_BLUE_TERRACOTTA
-          - item: YELLOW_TERRACOTTA
-          - item: LIME_TERRACOTTA
-          - item: PINK_TERRACOTTA
-          - item: GRAY_TERRACOTTA
-          - item: LIGHT_GRAY_TERRACOTTA
-          - item: CYAN_TERRACOTTA
-          - item: PURPLE_TERRACOTTA
-          - item: BLUE_TERRACOTTA
-          - item: BROWN_TERRACOTTA
-          - item: GREEN_TERRACOTTA
-          - item: RED_TERRACOTTA
-          - item: BLACK_TERRACOTTA
-
-      concrete:
-        weight: 2
-        min_amount: 16
-        max_amount: 512
-        items:
-          - item: WHITE_CONCRETE
-          - item: ORANGE_CONCRETE
-          - item: MAGENTA_CONCRETE
-          - item: LIGHT_BLUE_CONCRETE
-          - item: YELLOW_CONCRETE
-          - item: LIME_CONCRETE
-          - item: PINK_CONCRETE
-          - item: GRAY_CONCRETE
-          - item: LIGHT_GRAY_CONCRETE
-          - item: CYAN_CONCRETE
-          - item: PURPLE_CONCRETE
-          - item: BLUE_CONCRETE
-          - item: BROWN_CONCRETE
-          - item: GREEN_CONCRETE
-          - item: RED_CONCRETE
-          - item: BLACK_CONCRETE
-
-      xp:
+  wood:
+    weight: 3
+    min_amount: 8
+    max_amount: 512
+    items:
+      - item: OAK_LOG
         weight: 4
-        items:
-          - item: EXPERIENCE_BOTTLE
-            min_amount: 4
-            max_amount: 128
+      - item: SPRUCE_LOG
+        weight: 2
+      - item: BIRCH_LOG
+      - item: ACACIA_LOG
+      - item: DARK_OAK_LOG
+        weight: 3
+      - item: CHERRY_LOG
+        weight: 2
+      - item: MANGROVE_LOG
 
-      spawn_eggs:
+  building_materials:
+    weight: 2
+    min_amount: 64
+    max_amount: 512
+    items:
+      - item: COBBLESTONE
+        max_amount: 1024
+      - item: SAND
+        max_amount: 1024
+      - item: STONE
+      - item: SANDSTONE
+      - item: GLASS
+      - item: ICE
+        min_amount: 8
+        max_amount: 128
+      - item: PRISMARINE
+        max_amount: 256
+      - item: DARK_PRISMARINE
+        max_amount: 256
+      - item: GLOWSTONE
+        min_amount: 4
+        max_amount: 128
+      - item: AMETHYST_BLOCK
+        min_amount: 4
+        max_amount: 128
+
+  terracotta:
+    weight: 2
+    min_amount: 16
+    max_amount: 512
+    items:
+      - item: WHITE_TERRACOTTA
+      - item: ORANGE_TERRACOTTA
+      - item: MAGENTA_TERRACOTTA
+      - item: LIGHT_BLUE_TERRACOTTA
+      - item: YELLOW_TERRACOTTA
+      - item: LIME_TERRACOTTA
+      - item: PINK_TERRACOTTA
+      - item: GRAY_TERRACOTTA
+      - item: LIGHT_GRAY_TERRACOTTA
+      - item: CYAN_TERRACOTTA
+      - item: PURPLE_TERRACOTTA
+      - item: BLUE_TERRACOTTA
+      - item: BROWN_TERRACOTTA
+      - item: GREEN_TERRACOTTA
+      - item: RED_TERRACOTTA
+      - item: BLACK_TERRACOTTA
+
+  concrete:
+    weight: 2
+    min_amount: 16
+    max_amount: 512
+    items:
+      - item: WHITE_CONCRETE
+      - item: ORANGE_CONCRETE
+      - item: MAGENTA_CONCRETE
+      - item: LIGHT_BLUE_CONCRETE
+      - item: YELLOW_CONCRETE
+      - item: LIME_CONCRETE
+      - item: PINK_CONCRETE
+      - item: GRAY_CONCRETE
+      - item: LIGHT_GRAY_CONCRETE
+      - item: CYAN_CONCRETE
+      - item: PURPLE_CONCRETE
+      - item: BLUE_CONCRETE
+      - item: BROWN_CONCRETE
+      - item: GREEN_CONCRETE
+      - item: RED_CONCRETE
+      - item: BLACK_CONCRETE
+
+  xp:
+    weight: 4
+    items:
+      - item: EXPERIENCE_BOTTLE
+        min_amount: 4
+        max_amount: 128
+
+  spawn_eggs:
+    weight: 1
+    max_amount: 4
+    items:
+      - item: CHICKEN_SPAWN_EGG
+      - item: PIG_SPAWN_EGG
+      - item: AXOLOTL_SPAWN_EGG
+      - item: BEE_SPAWN_EGG
+      - item: CAT_SPAWN_EGG
+      - item: CAMEL_SPAWN_EGG
+      - item: DOLPHIN_SPAWN_EGG
+      - item: FOX_SPAWN_EGG
+      - item: GOAT_SPAWN_EGG
+      - item: OCELOT_SPAWN_EGG
+      - item: PARROT_SPAWN_EGG
+      - item: HORSE_SPAWN_EGG
+        max_amount: 2
+      - item: CREEPER_SPAWN_EGG
+        max_amount: 2
+      - item: VILLAGER_SPAWN_EGG
+        max_amount: 2
+      - item: WANDERING_TRADER_SPAWN_EGG
+        max_amount: 1
+      - item: WITHER_SPAWN_EGG
+        max_amount: 1
+  coins:
+    weight: 4
+    max_amount: 128
+    items:
+      - item: sol_coin
+        weight: 4
+      - item: lun_coin
+        weight: 4
+      - item: astral_coin
+        weight: 3
+
+  rare:
+    weight: 1
+    max_amount: 1
+    items:
+      - item: forge_dust
         weight: 1
+      - item: silver_ingot
+        weight: 5
         max_amount: 4
-        items:
-          - item: CHICKEN_SPAWN_EGG
-          - item: PIG_SPAWN_EGG
-          - item: AXOLOTL_SPAWN_EGG
-          - item: BEE_SPAWN_EGG
-          - item: CAT_SPAWN_EGG
-          - item: CAMEL_SPAWN_EGG
-          - item: DOLPHIN_SPAWN_EGG
-          - item: FOX_SPAWN_EGG
-          - item: GOAT_SPAWN_EGG
-          - item: OCELOT_SPAWN_EGG
-          - item: PARROT_SPAWN_EGG
-          - item: HORSE_SPAWN_EGG
-            max_amount: 2
-          - item: BLAZE_SPAWN_EGG
-            max_amount: 2
-          - item: CREEPER_SPAWN_EGG
-            max_amount: 2
-          - item: VILLAGER_SPAWN_EGG
-            max_amount: 2
-          - item: WANDERING_TRADER_SPAWN_EGG
-            max_amount: 1
-          - item: WITHER_SPAWN_EGG
-            max_amount: 1
+      - item: sulphur_ingot
+        weight: 4
+        max_amount: 4
 
 requirement_pool: &requirement_pool_template
   valuables:
     weight: 8
     items:
-      - item: QUARTZ
-        min_amount: 8
-        max_amount: 256
       - item: COAL
         min_amount: 8
         max_amount: 256
@@ -266,8 +688,6 @@ requirement_pool: &requirement_pool_template
       - item: GUNPOWDER
       - item: FEATHER
       - item: SPIDER_EYE
-      - item: BLAZE_ROD
-        max_amount: 32
 
   building_materials:
     weight: 4
@@ -344,12 +764,6 @@ requirement_pool: &requirement_pool_template
         max_amount: 32
       - item: COMPASS
         max_amount: 32
-      - item: FURNACE
-        min_amount: 4
-        max_amount: 64
-      - item: CRAFTING_TABLE
-        min_amount: 4
-        max_amount: 64
       - item: SLIME_BALL
         min_amount: 2
         max_amount: 128
@@ -376,3 +790,10 @@ requirement_pool: &requirement_pool_template
       - item: MUSIC_DISC_5
       - item: MUSIC_DISC_PIGSTEP
       - item: MUSIC_DISC_PRECIPICE
+  coins:
+    weight: 8
+    max_amount: 32
+    items:
+      - item: sol_coin
+      - item: lun_coin
+      - item: astral_coin

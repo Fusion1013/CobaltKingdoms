@@ -83,7 +83,7 @@ public class ArtifactHuntEntity implements IQuestData {
         float minRewardValue = baseRewardValue * (1 - rewardFluctuation);
         float maxRewardValue = baseRewardValue * (1 + rewardFluctuation);
 
-        Map<QuestItem, Double> rewardPool = questConfig.getRewardPool();
+        Map<QuestItem, Double> rewardPool = artifactHuntConfig.getRewardPool();
 
         List<ItemStack> rewards = QuestUtil.generateTradeItems(minRewardValue, maxRewardValue, minRewardItems, maxRewardItems, rewardPool, List.of());
         if (rewards.isEmpty()) return null;
@@ -125,8 +125,8 @@ public class ArtifactHuntEntity implements IQuestData {
         // Broadcast message
         LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.gather.finish", StringPlaceholders.builder()
                 .addPlaceholder("player", player.getName())
-                .addPlaceholder("start_town", quest.getStartTown().getName())
-                .addPlaceholder("end_town", quest.getEndTown().getName())
+                .addPlaceholder("start_town", quest.getStartTown().getDisplayName())
+                .addPlaceholder("end_town", quest.getEndTown().getDisplayName())
                 .build());
 
         Location endLocation = quest.getEndTown().getLocation();

@@ -38,7 +38,7 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
 
     // ##%%##%%## TOWN ##%%##%%## //
 
-    public Response createTown(String townName, Player player, Location location) {
+    public Response createTown(String townName, String displayName, Player player, Location location) {
         KingdomInfo playerKingdomInfo = KingdomManager.getInstance().getPlayerKingdomInfo(player.getUniqueId());
         if (playerKingdomInfo == null) return Response.error("You are not part of a kingdom");
 
@@ -56,6 +56,7 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
             return Response.error("Invalid town placement, " + canPlaceHere.message());
 
         TownEntity newTown = new TownEntity(townName, kingdomData.getId(), player.getUniqueId(), location);
+        newTown.setDisplayName(displayName);
         DataManager.getInstance().getDao(ITownRepository.class).createTown(player, newTown);
 
         return Response.ok("Created new town");
@@ -113,7 +114,7 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
     }
 
     public Response removeTownPlayer(Player player, Player kickPlayer) {
-        TownEntity playerTown = TownManager.getInstance().getPlayerTown(player);
+        TownEntity playerTown = TownManager.getInstance().getPlayerOwnedTown(player);
         if (playerTown == null) return Response.error("You are not part of a town");
 
         if (playerTown.getOwnerId().equals(kickPlayer.getUniqueId()))
@@ -130,7 +131,7 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
     // ##%%##%%## JAIL ##%%##%%## //
 
     public Response createJail(Player player, String jailName, Location location) {
-        TownEntity town = getPlayerTown(player);
+        TownEntity town = getPlayerOwnedTown(player);
         if (town == null) return Response.error("You are not a member of a town");
 
         Response hasEditPermissions = hasTownEditPermissions(player, town);
@@ -146,7 +147,7 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
     }
 
     public Response deleteJail(Player player, String jailName) {
-        TownEntity town = getPlayerTown(player);
+        TownEntity town = getPlayerOwnedTown(player);
         if (town == null) return Response.error("You are not a member of a town");
 
         Response hasEditPermissions = hasTownEditPermissions(player, town);
@@ -283,7 +284,7 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
                 mannequin.setProfile(ResolvableProfile.resolvableProfile().addProperty(new ProfileProperty("textures", texture)).build());
             }
 
-            mannequin.customName(Component.text(town.getName()));
+            mannequin.customName(Component.text(town.getDisplayName()));
             mannequin.setImmovable(true);
             mannequin.setDescription(Component.text("Town"));
         });
@@ -399,8 +400,12 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
         return townRepository.getTowns();
     }
 
-    public TownEntity getPlayerTown(Player player) {
+    public TownEntity getPlayerOwnedTown(Player player) {
         return townRepository.getTownByOwner(player.getUniqueId());
+    }
+
+    public List<TownEntity> getPlayerTowns(Player player) {
+        return townRepository.getTownMember(player.getUniqueId()).stream().map(TownMemberEntity::getTown).toList();
     }
 
     public TownEntity getTown(String townName) {
@@ -411,12 +416,16 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
         return getTowns().stream().map(TownEntity::getName).toArray(String[]::new);
     }
 
+    public String[] getTownDisplayNames() {
+        return getTowns().stream().map(TownEntity::getDisplayName).toArray(String[]::new);
+    }
+
     public String[] getJailNames(Player player) {
         return getJails(player).stream().map(TownJailEntity::getName).toArray(String[]::new);
     }
 
     public List<TownJailEntity> getJails(Player player) {
-        TownEntity playerTown = getPlayerTown(player);
+        TownEntity playerTown = getPlayerOwnedTown(player);
         return townRepository.getJails(playerTown.getId());
     }
 
@@ -425,7 +434,7 @@ public class TownManager extends Manager<CobaltKingdoms> implements Listener {
     }
 
     public TownJailEntity getJail(Player player, String jailName) {
-        TownEntity playerTown = getPlayerTown(player);
+        TownEntity playerTown = getPlayerOwnedTown(player);
         return townRepository.getJailByName(playerTown.getId(), jailName).orElse(null);
     }
 

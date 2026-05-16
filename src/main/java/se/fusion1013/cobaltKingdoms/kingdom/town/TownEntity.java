@@ -27,6 +27,9 @@ public class TownEntity {
     @DatabaseField(columnName = "name", canBeNull = false)
     private String name;
 
+    @DatabaseField(columnName = "display_name")
+    private String displayName;
+
     @DatabaseField(columnName = "kingdom_id", canBeNull = false)
     private String kingdomId;
 
@@ -171,5 +174,18 @@ public class TownEntity {
 
     public void setAppearance(TownAppearanceEntity appearance) {
         this.appearance = appearance;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getDisplayName() {
+        if (displayName == null || displayName.isEmpty()) return name;
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 }
