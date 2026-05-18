@@ -18,7 +18,7 @@ public class ArtifactHuntQuestManager extends Manager<CobaltKingdoms> {
     private static final IQuestArtifactHuntRepository artifactHuntQuestRepository = dataManager.getDao(IQuestArtifactHuntRepository.class);
 
     public Response createQuestGoal(String name, int difficulty, Location location, String itemName, String description) {
-        ArtifactHuntQuestGoalEntity goal = new ArtifactHuntQuestGoalEntity();
+        ArtifactHuntGoal goal = new ArtifactHuntGoal();
         goal.setName(name);
         goal.setDifficulty(difficulty);
         goal.setLocation(location);
@@ -53,17 +53,17 @@ public class ArtifactHuntQuestManager extends Manager<CobaltKingdoms> {
 
 
     // ##%%##%%## GETTERS / SETTERS ##%%##%%## //
-    public List<ArtifactHuntQuestGoalEntity> getGoals() {
+    public List<ArtifactHuntGoal> getGoals() {
         return artifactHuntQuestRepository.getGoals();
     }
 
-    public ArtifactHuntQuestGoalEntity getRandomGoal(int difficulty) {
-        List<ArtifactHuntQuestGoalEntity> goals = artifactHuntQuestRepository.getGoals(difficulty);
+    public ArtifactHuntGoal getRandomGoal(int difficulty) {
+        List<ArtifactHuntGoal> goals = artifactHuntQuestRepository.getGoals(difficulty);
         if (goals.isEmpty()) return null;
         return goals.get(random.nextInt(goals.size()));
     }
 
-    public ArtifactHuntQuestGoalEntity getRandomGoal() {
+    public ArtifactHuntGoal getRandomGoal() {
         int highestDifficulty = artifactHuntQuestRepository.getHighestDifficulty();
         if (highestDifficulty < 0) return null;
 

@@ -3,9 +3,9 @@ package se.fusion1013.cobaltKingdoms.database.kingdom.town;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import se.fusion1013.cobaltCore.database.system.IDao;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownJailEntity;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownMemberEntity;
+import se.fusion1013.cobaltKingdoms.kingdom.town.Town;
+import se.fusion1013.cobaltKingdoms.kingdom.town.TownJail;
+import se.fusion1013.cobaltKingdoms.kingdom.town.TownMember;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,11 +13,11 @@ import java.util.UUID;
 
 public interface ITownRepository extends IDao {
 
-    void updateTown(TownEntity townData);
+    void updateTown(Town townData);
 
-    void createTown(Player owner, TownEntity townEntity);
+    void createTown(Player owner, Town town);
 
-    List<TownEntity> getTowns();
+    List<Town> getTowns();
 
     void deleteTown(Long id);
 
@@ -26,25 +26,29 @@ public interface ITownRepository extends IDao {
         return "town";
     }
 
-    TownEntity getTownByOwner(UUID ownerUuid);
+    Town getTownByOwner(UUID ownerUuid);
 
-    TownEntity getTownByName(String townName);
+    Town getTownByName(String townName);
+
+    Town getTown(Long id);
 
     void increaseTownXp(Long townId, int xpValue);
 
-    List<TownMemberEntity> getTownMember(@NotNull UUID playerId);
+    List<Town> getTownsWithMember(@NotNull UUID playerId);
+
+    List<TownMember> getTownMember(@NotNull UUID playerId);
 
     void addTownMember(Long uuid, Player invitePlayer);
 
     void removePlayerMember(Player kickPlayer);
 
-    List<TownMemberEntity> getTownMembersByTownId(Long townId);
+    List<TownMember> getTownMembersByTownId(Long townId);
 
-    void createJail(TownJailEntity jail);
+    void createJail(TownJail jail);
 
     boolean deleteJail(Long townId, String jailName);
 
-    List<TownJailEntity> getJails(Long townId);
+    List<TownJail> getJails(Long townId);
 
-    Optional<TownJailEntity> getJailByName(Long townId, String jailName);
+    Optional<TownJail> getJailByName(Long townId, String jailName);
 }

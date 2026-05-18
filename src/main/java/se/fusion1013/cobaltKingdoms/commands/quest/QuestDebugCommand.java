@@ -29,9 +29,9 @@ public class QuestDebugCommand {
     }
 
     private static void despawnAllQuests(Player player, CommandArguments args) {
-        List<QuestEntity> list = QuestManager.getInstance().getAllQuests().stream().filter(q -> q.getStatus() == QuestStatus.NEW || q.getStatus() == QuestStatus.ACTIVE).toList();
-        for (QuestEntity quest : list) {
-            QuestManager.getInstance().setQuestStatus(quest.getId(), QuestStatus.DESPAWNED);
+        List<AbstractQuest> list = QuestManager.getInstance().getAllQuests().stream().filter(q -> q.getQuestStatus() == QuestStatus.NEW || q.getQuestStatus() == QuestStatus.ACTIVE).toList();
+        for (AbstractQuest quest : list) {
+            QuestManager.getInstance().setQuestStatus(quest.getQuestId(), QuestStatus.DESPAWNED);
         }
     }
 

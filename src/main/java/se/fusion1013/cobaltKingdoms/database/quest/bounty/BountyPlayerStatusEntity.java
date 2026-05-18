@@ -1,4 +1,4 @@
-package se.fusion1013.cobaltKingdoms.quest.bounty;
+package se.fusion1013.cobaltKingdoms.database.quest.bounty;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
@@ -51,6 +51,10 @@ public class BountyPlayerStatusEntity {
         return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public UUID getPlayerId() {
         return playerId;
     }
@@ -73,7 +77,6 @@ public class BountyPlayerStatusEntity {
 
     public void setCompleted(int completed) {
         this.completed = completed;
-        calculateRating();
     }
 
     public int getFailed() {
@@ -82,7 +85,6 @@ public class BountyPlayerStatusEntity {
 
     public void setFailed(int failed) {
         this.failed = failed;
-        calculateRating();
     }
 
     public int getEvaded() {
@@ -91,7 +93,14 @@ public class BountyPlayerStatusEntity {
 
     public void setEvaded(int evaded) {
         this.evaded = evaded;
-        calculateRating();
+    }
+
+    public int getKilled() {
+        return killed;
+    }
+
+    public void setKilled(int killed) {
+        this.killed = killed;
     }
 
     public boolean isBountiesEnabled() {
@@ -102,51 +111,19 @@ public class BountyPlayerStatusEntity {
         this.bountiesEnabled = bountiesEnabled;
     }
 
+    public double getRating() {
+        return rating;
+    }
+
+    public void setRating(double rating) {
+        this.rating = rating;
+    }
+
     public Date getUpdateTimestamp() {
         return updateTimestamp;
     }
 
     public void setUpdateTimestamp(Date updateTimestamp) {
         this.updateTimestamp = updateTimestamp;
-    }
-
-    public int getKilled() {
-        return killed;
-    }
-
-    public void setKilled(int killed) {
-        this.killed = killed;
-        calculateRating();
-    }
-
-    public void incrementFailed() {
-        failed++;
-        calculateRating();
-    }
-
-    public void incrementEvaded() {
-        evaded++;
-        calculateRating();
-    }
-
-    public void incrementCompleted() {
-        completed++;
-        calculateRating();
-    }
-
-    public void incrementKilled() {
-        killed++;
-        calculateRating();
-    }
-
-    private void calculateRating() {
-        this.rating = CompletedWeight * completed
-                - FailedWeight * failed
-                + EvadedWeight * evaded
-                - KilledWeight * killed;
-    }
-
-    public double getRating() {
-        return rating;
     }
 }

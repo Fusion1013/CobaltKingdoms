@@ -1,4 +1,4 @@
-package se.fusion1013.cobaltKingdoms.kingdom.town;
+package se.fusion1013.cobaltKingdoms.database.kingdom.town;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
@@ -21,6 +21,10 @@ public class TownJailEntity {
     private Location location;
 
     public TownJailEntity() {
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Long getId() {

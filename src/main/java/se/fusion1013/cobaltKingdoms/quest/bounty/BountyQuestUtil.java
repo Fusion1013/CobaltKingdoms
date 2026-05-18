@@ -31,7 +31,7 @@ public class BountyQuestUtil {
     }
 
     public static int getBountyRewardMultiplier(UUID uuid, String playerName) {
-        BountyPlayerStatusEntity playerBountyStatus = bountyRepository.getPlayerBountyStatus(uuid, playerName);
+        BountyPlayerStatus playerBountyStatus = bountyRepository.getPlayerBountyStatus(uuid, playerName);
         double rating = playerBountyStatus.getRating();
         return rating < 0 ? 1 : (int) (rating / 25.0) + 1;
     }

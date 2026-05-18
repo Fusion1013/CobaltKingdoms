@@ -13,7 +13,7 @@ import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import se.fusion1013.cobaltCore.util.HexUtils;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
+import se.fusion1013.cobaltKingdoms.database.kingdom.town.TownEntity;
 import se.fusion1013.cobaltKingdoms.util.LargeItemStack;
 
 import java.util.*;

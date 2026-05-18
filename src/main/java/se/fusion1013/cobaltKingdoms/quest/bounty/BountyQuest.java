@@ -1,8 +1,6 @@
 package se.fusion1013.cobaltKingdoms.quest.bounty;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
-import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.table.DatabaseTable;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -16,47 +14,37 @@ import se.fusion1013.cobaltCore.util.HexUtils;
 import se.fusion1013.cobaltCore.util.StringPlaceholders;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.Response;
-import se.fusion1013.cobaltKingdoms.database.ItemStackPersister;
 import se.fusion1013.cobaltKingdoms.database.quest.IQuestRepository;
 import se.fusion1013.cobaltKingdoms.database.quest.bounty.IBountyRepository;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
+import se.fusion1013.cobaltKingdoms.kingdom.town.Town;
 import se.fusion1013.cobaltKingdoms.quest.*;
 
 import java.util.*;
 
 import static se.fusion1013.cobaltKingdoms.quest.QuestUtil.formatMaterialName;
 
-@DatabaseTable(tableName = "quest_bounty")
-public class BountyQuestEntity implements IQuestData {
+public class BountyQuest extends AbstractQuest {
 
     private static final IBountyRepository bountyRepository = DataManager.getInstance().getDao(IBountyRepository.class);
 
-    @DatabaseField(generatedId = true, columnName = "id")
     private Long id;
-
-    @DatabaseField(columnName = "owner_player_id")
     private UUID ownerPlayerId;
-
-    @DatabaseField(columnName = "owner_player_name")
     private String ownerPlayerName;
-
-    @DatabaseField(columnName = "target_player_id")
     private UUID targetPlayerId;
-
-    @DatabaseField(columnName = "target_player_name")
     private String targetPlayerName;
-
-    @DatabaseField(foreign = true, foreignAutoCreate = true, foreignAutoRefresh = true, columnName = "quest")
-    private QuestEntity quest;
-
-    @DatabaseField(columnName = "reason")
     private String reason;
-
-    @DatabaseField(columnName = "reward", persisterClass = ItemStackPersister.class)
     private ItemStack reward;
 
+    public BountyQuest() {
+        super(QuestType.BOUNTY);
+    }
+
+    public BountyQuest(Long questId) {
+        super(questId, QuestType.BOUNTY);
+    }
+
     @Override
-    public boolean tryComplete(Player player, @NotNull Location location, TownEntity clickedTown) {
+    public boolean tryComplete(@NotNull Player player, @NotNull Location location, Town clickedTown) {
         return false;
     }
 
@@ -69,29 +57,35 @@ public class BountyQuestEntity implements IQuestData {
     }
 
     @Override
-    public ItemStack getInstructionsItem() {
-        return new ItemStack(Material.WRITTEN_BOOK);
-    }
+    public void fail(Player player, QuestFailReason reason) {
+        LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.bounty.fail", StringPlaceholders.builder()
+                .addPlaceholder("player", player.getDisplayName())
+                .addPlaceholder("target", targetPlayerName)
+                .build());
 
-    @Override
-    public boolean validateQuest(Player player) {
-        return player.getUniqueId() != targetPlayerId;
-    }
+        BountyPlayerStatus killerBountyStatus = bountyRepository.getPlayerBountyStatus(player);
+        killerBountyStatus.incrementFailed();
+        bountyRepository.insertPlayerBountyStatus(killerBountyStatus);
 
-    @Override
-    public String getTitle() {
-        if (!quest.isValid()) return "Something went wrong";
-        return QuestUtil.formatTitle("Bounty for " + targetPlayerName, quest.getQuestType().symbol);
-    }
+        BountyPlayerStatus targetBountyStatus = bountyRepository.getPlayerBountyStatus(targetPlayerId, targetPlayerName);
+        targetBountyStatus.incrementEvaded();
+        bountyRepository.insertPlayerBountyStatus(targetBountyStatus);
 
-    @Override
-    public String getSymbol() {
-        return quest.getQuestType().symbol;
+        if (reason != QuestFailReason.DEATH) return;
+
+        // Give the target a bounty coin
+        ItemStack bountyCoin = BountyQuestUtil.getBountyItem(player);
+        if (bountyCoin == null) return;
+
+        Player targetPlayer = Bukkit.getPlayer(targetPlayerId);
+        if (targetPlayer == null || !targetPlayer.isOnline()) return;
+
+        targetPlayer.give(bountyCoin);
     }
 
     @Override
     public ItemStack getButtonItem() {
-        if (!quest.isValid()) return new ItemStack(Material.BARRIER);
+        if (!isValid()) return new ItemStack(Material.BARRIER);
 
         ItemStack item = new ItemStack(Material.PLAYER_HEAD);
 
@@ -134,25 +128,34 @@ public class BountyQuestEntity implements IQuestData {
     }
 
     @Override
-    public int getXpValue() {
-        return 0;
+    public String getTitle() {
+        if (!isValid()) return "Something went wrong";
+        return QuestUtil.formatTitle("Bounty for " + targetPlayerName, getQuestType().symbol);
     }
 
     @Override
-    public boolean shouldShowInMenu(TownEntity town, Player player) {
-        if (quest.getStatus() == QuestStatus.FAILED || quest.getStatus() == QuestStatus.DESPAWNED || quest.getStatus() == QuestStatus.COMPLETED)
-            return false;
-        if (player == null) return true;
+    public Response canClaim(Player player) {
+        if (player.getUniqueId().equals(targetPlayerId))
+            return Response.error("Cannot claim a bounty with you as the target");
+        if (player.getUniqueId().equals(ownerPlayerId)) return Response.error("Cannot claim a bounty you created");
+        if (getQuestStatus() != QuestStatus.NEW && getQuestStatus() != QuestStatus.ACTIVE)
+            return Response.error("Quest is not active");
+        return Response.ok("Claimed bounty");
+    }
 
-        // Check if player already has this quest active
-        Optional<List<ActivePlayerQuestEntity>> activePlayerQuestsByPlayer = DataManager.getInstance().getDao(IQuestRepository.class).getActivePlayerQuestsByPlayer(player);
-        if (activePlayerQuestsByPlayer.isPresent()) {
-            for (ActivePlayerQuestEntity playerQuest : activePlayerQuestsByPlayer.get()) {
-                if (Objects.equals(playerQuest.getId(), quest.getId())) return false;
-            }
-        }
+    @Override
+    public ItemStack getInstructionsItem() {
+        return new ItemStack(Material.WRITTEN_BOOK);
+    }
 
-        return !player.getUniqueId().equals(targetPlayerId);
+    @Override
+    public int getDuration() {
+        return 1000 * 60 * 60 * 8;
+    }
+
+    @Override
+    public int getXpValue() {
+        return 0;
     }
 
     @Override
@@ -161,49 +164,25 @@ public class BountyQuestEntity implements IQuestData {
     }
 
     @Override
-    public void fail(Player player, QuestFailReason reason) {
-        LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.bounty.fail", StringPlaceholders.builder()
-                .addPlaceholder("player", player.getDisplayName())
-                .addPlaceholder("target", targetPlayerName)
-                .build());
-
-        BountyPlayerStatusEntity killerBountyStatus = bountyRepository.getPlayerBountyStatus(player);
-        killerBountyStatus.incrementFailed();
-        bountyRepository.insertPlayerBountyStatus(killerBountyStatus);
-
-        BountyPlayerStatusEntity targetBountyStatus = bountyRepository.getPlayerBountyStatus(targetPlayerId, targetPlayerName);
-        targetBountyStatus.incrementEvaded();
-        bountyRepository.insertPlayerBountyStatus(targetBountyStatus);
-
-        if (reason != QuestFailReason.DEATH) return;
-
-        // Give the target a bounty coin
-        ItemStack bountyCoin = BountyQuestUtil.getBountyItem(player);
-        if (bountyCoin == null) return;
-
-        Player targetPlayer = Bukkit.getPlayer(targetPlayerId);
-        if (targetPlayer == null || !targetPlayer.isOnline()) return;
-
-        targetPlayer.give(bountyCoin);
+    public boolean validateQuest(Player player) {
+        return player.getUniqueId() != targetPlayerId;
     }
 
     @Override
-    public Response canClaim(Player player) {
-        if (player.getUniqueId().equals(targetPlayerId))
-            return Response.error("Cannot claim a bounty with you as the target");
-        if (player.getUniqueId().equals(ownerPlayerId)) return Response.error("Cannot claim a bounty you created");
-        if (quest.getStatus() != QuestStatus.NEW && quest.getStatus() != QuestStatus.ACTIVE)
-            return Response.error("Quest is not active");
-        return Response.ok("Claimed bounty");
-    }
+    public boolean shouldShowInMenu(Town town, Player player) {
+        if (getQuestStatus() == QuestStatus.FAILED || getQuestStatus() == QuestStatus.DESPAWNED || getQuestStatus() == QuestStatus.COMPLETED)
+            return false;
+        if (player == null) return true;
 
-    @Override
-    public int getDuration() {
-        return 1000 * 60 * 60 * 8;
-    }
+        // Check if player already has this quest active
+        Optional<List<PlayerQuest>> playerQuestsByPlayer = DataManager.getInstance().getDao(IQuestRepository.class).getPlayerQuestsByPlayer(player);
+        if (playerQuestsByPlayer.isPresent()) {
+            for (PlayerQuest playerQuest : playerQuestsByPlayer.get()) {
+                if (Objects.equals(playerQuest.getId(), getQuestId())) return false;
+            }
+        }
 
-    public Long getId() {
-        return id;
+        return !player.getUniqueId().equals(targetPlayerId);
     }
 
     public void setTarget(PlayerProfile player) {
@@ -216,20 +195,12 @@ public class BountyQuestEntity implements IQuestData {
         this.ownerPlayerId = player.getUniqueId();
     }
 
-    public UUID getTargetPlayerId() {
-        return targetPlayerId;
+    public Long getId() {
+        return id;
     }
 
-    public void setTargetPlayerId(UUID targetPlayerId) {
-        this.targetPlayerId = targetPlayerId;
-    }
-
-    public QuestEntity getQuest() {
-        return quest;
-    }
-
-    public void setQuest(QuestEntity quest) {
-        this.quest = quest;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public UUID getOwnerPlayerId() {
@@ -246,6 +217,14 @@ public class BountyQuestEntity implements IQuestData {
 
     public void setOwnerPlayerName(String ownerPlayerName) {
         this.ownerPlayerName = ownerPlayerName;
+    }
+
+    public UUID getTargetPlayerId() {
+        return targetPlayerId;
+    }
+
+    public void setTargetPlayerId(UUID targetPlayerId) {
+        this.targetPlayerId = targetPlayerId;
     }
 
     public String getTargetPlayerName() {

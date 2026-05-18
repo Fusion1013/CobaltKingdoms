@@ -1,7 +1,8 @@
-package se.fusion1013.cobaltKingdoms.kingdom.town;
+package se.fusion1013.cobaltKingdoms.database.kingdom.town;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
+import se.fusion1013.cobaltKingdoms.kingdom.town.TownMemberRole;
 
 import java.util.UUID;
 
@@ -11,8 +12,8 @@ public class TownMemberEntity {
     @DatabaseField(generatedId = true, columnName = "id")
     private Long id;
 
-    @DatabaseField(columnName = "player_uuid")
-    private UUID playerUuid;
+    @DatabaseField(columnName = "player_id")
+    private UUID playerId;
 
     @DatabaseField(columnName = "player_name")
     private String playerName;
@@ -26,16 +27,20 @@ public class TownMemberEntity {
     public TownMemberEntity() {
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public Long getId() {
         return id;
     }
 
-    public UUID getPlayerUuid() {
-        return playerUuid;
+    public UUID getPlayerId() {
+        return playerId;
     }
 
-    public void setPlayerUuid(UUID playerUuid) {
-        this.playerUuid = playerUuid;
+    public void setPlayerId(UUID playerUuid) {
+        this.playerId = playerUuid;
     }
 
     public String getPlayerName() {

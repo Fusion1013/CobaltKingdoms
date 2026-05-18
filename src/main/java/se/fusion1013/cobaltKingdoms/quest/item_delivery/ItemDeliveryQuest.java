@@ -1,7 +1,5 @@
 package se.fusion1013.cobaltKingdoms.quest.item_delivery;
 
-import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.table.DatabaseTable;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -30,7 +28,7 @@ import se.fusion1013.cobaltKingdoms.config.quest.QuestConfig;
 import se.fusion1013.cobaltKingdoms.config.quest.QuestItemDeliveryConfig;
 import se.fusion1013.cobaltKingdoms.config.town.TownConfig;
 import se.fusion1013.cobaltKingdoms.config.town.TownLevelConfig;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
+import se.fusion1013.cobaltKingdoms.kingdom.town.Town;
 import se.fusion1013.cobaltKingdoms.quest.*;
 import se.fusion1013.cobaltKingdoms.util.ItemSerializationUtils;
 import se.fusion1013.cobaltKingdoms.util.LargeItemStack;
@@ -41,47 +39,24 @@ import java.util.*;
 
 import static se.fusion1013.cobaltKingdoms.quest.QuestUtil.*;
 
-@DatabaseTable(tableName = "quests_item_delivery")
-public class ItemDeliveryQuestEntity implements IQuestData {
+public class ItemDeliveryQuest extends AbstractQuest {
 
     public static final NamespacedKey DROPS_KEY = new NamespacedKey(CobaltKingdoms.getInstance(), "quest_death_items");
     public static final NamespacedKey QUEST_KEY = new NamespacedKey(CobaltKingdoms.getInstance(), "quest");
 
-    @DatabaseField(generatedId = true, columnName = "uuid")
     private Long id;
+    private List<ItemStack> requiredItems;
+    private List<ItemStack> rewards;
 
-    @DatabaseField(columnName = "required_items_serialized")
-    private String requiredItemsSerialized;
-
-    @DatabaseField(columnName = "rewards_serialized")
-    private String rewardsSerialized;
-
-    @DatabaseField(foreign = true, foreignAutoCreate = true, foreignAutoRefresh = true, columnName = "quest")
-    private QuestEntity quest;
-
-    @DatabaseField(foreign = true, foreignAutoCreate = true, foreignAutoRefresh = true, columnName = "end_town")
-    private TownEntity endTown;
-
-    private transient List<ItemStack> requiredItems;
-    private transient List<ItemStack> rewardItems;
-
-    public ItemDeliveryQuestEntity() {
+    public ItemDeliveryQuest() {
+        super(QuestType.DELIVER);
     }
 
-    private ItemDeliveryQuestEntity(List<ItemStack> requiredItems,
-                                    List<ItemStack> rewardItems,
-                                    QuestEntity quest,
-                                    TownEntity endTown) {
-        this.requiredItemsSerialized = ItemSerializationUtils.serializeItemStacks(requiredItems);
-        this.rewardsSerialized = ItemSerializationUtils.serializeItemStacks(rewardItems);
-        this.quest = quest;
-        this.endTown = endTown;
-
-        this.requiredItems = new ArrayList<>(requiredItems);
-        this.rewardItems = new ArrayList<>(rewardItems);
+    public ItemDeliveryQuest(Long questId) {
+        super(questId, QuestType.DELIVER);
     }
 
-    public static ItemDeliveryQuestEntity createRandom(TownEntity startTown, TownEntity endTown) {
+    public static ItemDeliveryQuest createRandom(Town startTown, Town endTown) {
         QuestConfig questConfig = KingdomsConfig.getQuestConfig();
 
         // Base values
@@ -148,25 +123,36 @@ public class ItemDeliveryQuestEntity implements IQuestData {
 
         if (rewards.isEmpty() || requiredItems.isEmpty()) return null;
 
-        QuestEntity questEntity = new QuestEntity(QuestType.DELIVER, new Date(), minReqValue, maxReqValue, minRewardValue, maxRewardValue, QuestStatus.NEW, startTown, endTown);
-        questEntity.setCanDespawn(true);
+        ItemDeliveryQuest quest = new ItemDeliveryQuest();
 
-        return new ItemDeliveryQuestEntity(requiredItems, rewards, questEntity, endTown);
+        quest.setCreatedTimestamp(new Date());
+        quest.setMinRequirementValue(minReqValue);
+        quest.setMaxRequirementValue(maxReqValue);
+        quest.setMinRewardValue(minRewardValue);
+        quest.setMaxRewardValue(maxRewardValue);
+        quest.setQuestStatus(QuestStatus.NEW);
+        quest.setStartTown(startTown);
+        quest.setEndTown(endTown);
+        quest.setCanDespawn(true);
+
+        quest.setRequiredItems(requiredItems);
+        quest.setRewards(rewards);
+
+        return quest;
     }
 
-
     @Override
-    public boolean tryComplete(Player player, @NotNull Location location, TownEntity clickedTown) {
-        if (!clickedTown.getId().equals(quest.getEndTown().getId())) {
+    public boolean tryComplete(@NotNull Player player, @NotNull Location location, Town clickedTown) {
+        if (!clickedTown.getId().equals(getEndTown().getId())) {
             CobaltKingdoms.getInstance().getLogger().info("Wrong end town:");
             CobaltKingdoms.getInstance().getLogger().info(" - " + clickedTown.getDisplayName());
-            CobaltKingdoms.getInstance().getLogger().info(" - " + quest.getEndTown().getDisplayName());
+            CobaltKingdoms.getInstance().getLogger().info(" - " + getEndTown().getDisplayName());
             return false;
         }
 
         Collection<Camel> nearbyEntitiesByType = location.getNearbyEntitiesByType(Camel.class, 12, camel -> {
             Long questId = camel.getPersistentDataContainer().get(QUEST_KEY, PersistentDataType.LONG);
-            return Objects.equals(questId, quest.getId());
+            return Objects.equals(questId, getQuestId());
         });
 
         if (nearbyEntitiesByType.isEmpty()) {
@@ -178,23 +164,21 @@ public class ItemDeliveryQuestEntity implements IQuestData {
             camel.remove();
         }
 
-        if (player != null) {
-            QuestUtil.clearQuestItems(player, quest.getId());
+        QuestUtil.clearQuestItems(player, getQuestId());
 
-            // Give rewards to the player
-            for (ItemStack reward : getRewards()) {
-                HashMap<Integer, ItemStack> leftover = player.getInventory().addItem(reward);
-                if (!leftover.isEmpty()) {
-                    player.getWorld().dropItem(player.getLocation(), leftover.get(0));
-                }
+        // Give rewards to the player
+        for (ItemStack reward : getRewards()) {
+            HashMap<Integer, ItemStack> leftover = player.getInventory().addItem(reward);
+            if (!leftover.isEmpty()) {
+                player.getWorld().dropItem(player.getLocation(), leftover.get(0));
             }
-            // Broadcast message
-            LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.finish", StringPlaceholders.builder()
-                    .addPlaceholder("player", player.getName())
-                    .addPlaceholder("start_town", quest.getStartTown().getDisplayName())
-                    .addPlaceholder("end_town", quest.getEndTown().getDisplayName())
-                    .build());
         }
+        // Broadcast message
+        LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.finish", StringPlaceholders.builder()
+                .addPlaceholder("player", player.getName())
+                .addPlaceholder("start_town", getStartTown().getDisplayName())
+                .addPlaceholder("end_town", getEndTown().getDisplayName())
+                .build());
 
         Location endLocation = endTown.getLocation();
         for (int i = 0; i < 5; i++) {
@@ -220,7 +204,7 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         // Spawn and setup camel
         Location spawnLocation = player.getLocation();
         Camel camel = (Camel) player.getWorld().spawnEntity(spawnLocation, EntityType.CAMEL);
-        camel.customName(Component.text("Trade Caravan to " + quest.getEndTown().getDisplayName()));
+        camel.customName(Component.text("Trade Caravan to " + getEndTown().getDisplayName()));
         float caravan_health = 40;
         Objects.requireNonNull(camel.getAttribute(Attribute.MAX_HEALTH)).setBaseValue(caravan_health);
         camel.setHealth(caravan_health);
@@ -231,19 +215,92 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         camel.addPotionEffect(glowEffect);
         camel.setLeashHolder(player);
 
-        QuestUtil.giveQuestCompass(player, endTown.getLocation(), endTown.getDisplayName(), quest.getId());
+        QuestUtil.giveQuestCompass(player, endTown.getLocation(), endTown.getDisplayName(), getQuestId());
 
         // Store required items in persistent data container
         PersistentDataContainer container = camel.getPersistentDataContainer();
         container.set(DROPS_KEY, PersistentDataType.STRING, ItemSerializationUtils.serializeItemStacks(getRequiredItems()));
-        container.set(QUEST_KEY, PersistentDataType.LONG, quest.getId());
+        container.set(QUEST_KEY, PersistentDataType.LONG, getQuestId());
 
         // Broadcast message
         LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.start", StringPlaceholders.builder()
                 .addPlaceholder("player", player.getName())
-                .addPlaceholder("start_town", quest.getStartTown().getDisplayName())
-                .addPlaceholder("end_town", quest.getEndTown().getDisplayName())
+                .addPlaceholder("start_town", getStartTown().getDisplayName())
+                .addPlaceholder("end_town", getEndTown().getDisplayName())
                 .build());
+    }
+
+    @Override
+    public void fail(@NotNull Player player, QuestFailReason reason) {
+        LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.delivery.fail", StringPlaceholders.builder()
+                .addPlaceholder("player", player.getDisplayName())
+                .build());
+    }
+
+    @Override
+    public ItemStack getButtonItem() {
+        if (endTown == null || getStartTown() == null) return new ItemStack(Material.BARRIER);
+
+        String coordinates = String.format("[%d, %d, %d]",
+                endTown.getLocation().getBlockX(),
+                endTown.getLocation().getBlockY(),
+                endTown.getLocation().getBlockZ());
+
+        int distance = (int) getStartTown().getLocation().distance(getEndTown().getLocation());
+
+        final ItemStack item = new ItemStack(Material.FILLED_MAP);
+        final ItemMeta meta = item.getItemMeta();
+
+        meta.setDisplayName(getTitle());
+
+        List<String> lore = new ArrayList<>();
+        lore.add("&zCoords: &7" + coordinates);
+        lore.add("&zDistance: &7" + distance);
+        lore.add("&zTime Limit: &7" + QuestUtil.formatDuration(getDuration()));
+        lore.add("");
+
+        TownConfig townConfig = KingdomsConfig.getTownConfig();
+        int startTownXp = getStartTown().getExperience();
+        TownLevelConfig townLevelConfig = townConfig.getTownLevelConfig(startTownXp);
+
+        // Add requested items
+        lore.add("&z[x" + townLevelConfig.getQuestRequirementsMultiplier() + "] Requested Items:");
+        List<LargeItemStack> requiredItems = LargeItemStack.toLargeItemStacks(getRequiredItems());
+        for (LargeItemStack requestedItem : requiredItems) {
+            String name = requestedItem.item().getItemMeta().hasDisplayName() ? requestedItem.item().getItemMeta().getDisplayName() : formatMaterialName(requestedItem.item().getType().name());
+            lore.add("&7- " + HexUtils.stripColorCodes(name) + " &7[&z" + requestedItem.amount() + "&7]");
+        }
+        // Add rewards
+        lore.add("");
+        lore.add("&z[x" + townLevelConfig.getQuestRewardMultiplier() + "] Rewards:");
+        List<LargeItemStack> rewardItems = LargeItemStack.toLargeItemStacks(getRewards());
+        for (LargeItemStack rewardItem : rewardItems) {
+            String name = rewardItem.item().getItemMeta().hasDisplayName() ? rewardItem.item().getItemMeta().getDisplayName() : formatMaterialName(rewardItem.item().getType().name());
+            lore.add("&7- " + HexUtils.stripColorCodes(name) + " &7[&z" + rewardItem.amount() + "&7]");
+        }
+
+        lore.add("");
+        Instant expiresAt = getCreatedTimestamp().toInstant().plus(Duration.ofMinutes(60));
+        Duration durationToExpires = Duration.between(Instant.now(), expiresAt);
+        lore.add("&7Expires in " + durationToExpires.toMinutes() + " minutes");
+
+        lore.replaceAll(HexUtils::colorify);
+
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    @Override
+    public String getTitle() {
+        if (getEndTown() == null || getStartTown() == null) return "Something went wrong";
+        return HexUtils.colorify(QuestUtil.formatTitle("Delivery to " + endTown.getDisplayName(), getQuestType().symbol));
+    }
+
+    @Override
+    public Response canClaim(@NotNull Player player) {
+        if (getQuestStatus() == QuestStatus.NEW) return Response.ok("Claim quest");
+        return Response.error("Quest is not new");
     }
 
     @Override
@@ -255,14 +312,30 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         meta.setDisplayName(getTitle());
         meta.setAuthor("Quest");
 
-        meta.getPersistentDataContainer().set(QuestManager.QUEST_ID_KEY, PersistentDataType.LONG, quest.getId());
+        meta.getPersistentDataContainer().set(QuestManager.QUEST_ID_KEY, PersistentDataType.LONG, getQuestId());
 
         itemStack.setItemMeta(meta);
         return itemStack;
     }
 
     @Override
-    public boolean validateQuest(Player player) {
+    public int getDuration() {
+        return 1000 * 60 * 60 * 2;
+    }
+
+    @Override
+    public int getXpValue() {
+        double averageQuestRewardValue = (getMinRewardValue() + getMaxRewardValue()) / 2.0;
+        return (int) averageQuestRewardValue / 100;
+    }
+
+    @Override
+    public boolean isValid() {
+        return getStartTown() != null && getEndTown() != null;
+    }
+
+    @Override
+    public boolean validateQuest(@NotNull Player player) {
         List<ItemStack> missingItems = new ArrayList<>();
         for (ItemStack requiredItem : getRequiredItems()) {
             if (!player.getInventory().containsAtLeast(requiredItem, requiredItem.getAmount())) {
@@ -285,108 +358,40 @@ public class ItemDeliveryQuestEntity implements IQuestData {
     }
 
     @Override
-    public String getTitle() {
-        if (quest.getEndTown() == null || quest.getStartTown() == null) return "Something went wrong";
-        return HexUtils.colorify(QuestUtil.formatTitle("Delivery to " + endTown.getDisplayName(), quest.getQuestType().symbol));
+    public boolean shouldShowInMenu(Town startTown, Player player) {
+        if (startTown == null) return false;
+        if (getStartTown() == null) return false;
+        if (getEndTown() == null) return false;
+
+        return startTown.getId().equals(getStartTown().getId()) &&
+                getQuestStatus() == QuestStatus.NEW;
     }
 
-    @Override
-    public String getSymbol() {
-        return quest.getQuestType().symbol;
+
+    public Long getId() {
+        return id;
     }
 
-    @Override
-    public ItemStack getButtonItem() {
-        if (endTown == null || quest.getStartTown() == null) return new ItemStack(Material.BARRIER);
-
-        String coordinates = String.format("[%d, %d, %d]",
-                endTown.getLocation().getBlockX(),
-                endTown.getLocation().getBlockY(),
-                endTown.getLocation().getBlockZ());
-
-        int distance = (int) quest.getStartTown().getLocation().distance(quest.getEndTown().getLocation());
-
-        final ItemStack item = new ItemStack(Material.FILLED_MAP);
-        final ItemMeta meta = item.getItemMeta();
-
-        meta.setDisplayName(getTitle());
-
-        List<String> lore = new ArrayList<>();
-        lore.add("&zCoords: &7" + coordinates);
-        lore.add("&zDistance: &7" + distance);
-        lore.add("&zTime Limit: &7" + QuestUtil.formatDuration(getDuration()));
-        lore.add("");
-
-        TownConfig townConfig = KingdomsConfig.getTownConfig();
-        int startTownXp = quest.getStartTown().getExperience();
-        TownLevelConfig townLevelConfig = townConfig.getTownLevelConfig(startTownXp);
-
-        // Add requested items
-        lore.add("&z[x" + townLevelConfig.getQuestRequirementsMultiplier() + "] Requested Items:");
-        List<LargeItemStack> requiredItems = LargeItemStack.toLargeItemStacks(getRequiredItems());
-        for (LargeItemStack requestedItem : requiredItems) {
-            String name = requestedItem.item().getItemMeta().hasDisplayName() ? requestedItem.item().getItemMeta().getDisplayName() : formatMaterialName(requestedItem.item().getType().name());
-            lore.add("&7- " + HexUtils.stripColorCodes(name) + " &7[&z" + requestedItem.amount() + "&7]");
-        }
-        // Add rewards
-        lore.add("");
-        lore.add("&z[x" + townLevelConfig.getQuestRewardMultiplier() + "] Rewards:");
-        List<LargeItemStack> rewardItems = LargeItemStack.toLargeItemStacks(getRewards());
-        for (LargeItemStack rewardItem : rewardItems) {
-            String name = rewardItem.item().getItemMeta().hasDisplayName() ? rewardItem.item().getItemMeta().getDisplayName() : formatMaterialName(rewardItem.item().getType().name());
-            lore.add("&7- " + HexUtils.stripColorCodes(name) + " &7[&z" + rewardItem.amount() + "&7]");
-        }
-
-        lore.add("");
-        Instant expiresAt = quest.getCreatedTimestamp().toInstant().plus(Duration.ofMinutes(60));
-        Duration durationToExpires = Duration.between(Instant.now(), expiresAt);
-        lore.add("&7Expires in " + durationToExpires.toMinutes() + " minutes");
-
-        lore.replaceAll(HexUtils::colorify);
-
-        meta.setLore(lore);
-        item.setItemMeta(meta);
-        return item;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    @Override
-    public int getXpValue() {
-        double averageQuestRewardValue = (quest.getMinRewardValue() + quest.getMaxRewardValue()) / 2.0;
-        return (int) averageQuestRewardValue / 100;
+    public List<ItemStack> getRequiredItems() {
+        return requiredItems;
     }
 
-    @Override
-    public boolean shouldShowInMenu(TownEntity town, Player player) {
-        if (town == null) return false;
-        if (quest.getStartTown() == null) return false;
-        if (quest.getEndTown() == null) return false;
-
-        return town.getId().equals(quest.getStartTown().getId()) &&
-                quest.getStatus() == QuestStatus.NEW;
+    public void setRequiredItems(List<ItemStack> requiredItems) {
+        this.requiredItems = requiredItems;
     }
 
-    @Override
-    public boolean isValid() {
-        return quest.getStartTown() != null && quest.getEndTown() != null;
+    public List<ItemStack> getRewards() {
+        return rewards;
     }
 
-    @Override
-    public void fail(Player player, QuestFailReason reason) {
-        LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.delivery.fail", StringPlaceholders.builder()
-                .addPlaceholder("player", player.getDisplayName())
-                .build());
+    public void setRewards(List<ItemStack> rewards) {
+        this.rewards = rewards;
     }
 
-    @Override
-    public Response canClaim(Player player) {
-        if (quest.getStatus() == QuestStatus.NEW) return Response.ok("Claim quest");
-        return Response.error("Quest is not new");
-    }
-
-    @Override
-    public int getDuration() {
-        return 1000 * 60 * 60 * 2;
-    }
 
     private String getTimeUntil(Instant expirationTime) {
         Duration duration = Duration.between(Instant.now(), expirationTime);
@@ -403,29 +408,5 @@ public class ItemDeliveryQuestEntity implements IQuestData {
         } else {
             return "<1 minute";
         }
-    }
-
-    public List<ItemStack> getRequiredItems() {
-        if (requiredItems == null) {
-            requiredItems = ItemSerializationUtils.deserializeItemStacks(requiredItemsSerialized);
-        }
-        return requiredItems;
-    }
-
-    public void setRequiredItems(List<ItemStack> requiredItems) {
-        this.requiredItemsSerialized = ItemSerializationUtils.serializeItemStacks(requiredItems);
-        this.requiredItems = new ArrayList<>(requiredItems);
-    }
-
-    public List<ItemStack> getRewards() {
-        if (rewardItems == null) {
-            rewardItems = ItemSerializationUtils.deserializeItemStacks(rewardsSerialized);
-        }
-        return rewardItems;
-    }
-
-    public void setRewards(List<ItemStack> rewards) {
-        this.rewardsSerialized = ItemSerializationUtils.serializeItemStacks(rewards);
-        this.rewardItems = new ArrayList<>(rewards);
     }
 }

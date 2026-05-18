@@ -11,20 +11,32 @@ import se.fusion1013.cobaltCore.database.system.implementations.SQLiteImplementa
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.database.quest.artifact_hunt.IQuestArtifactHuntRepository;
 import se.fusion1013.cobaltKingdoms.database.quest.bounty.IBountyRepository;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
-import se.fusion1013.cobaltKingdoms.quest.*;
-import se.fusion1013.cobaltKingdoms.quest.item_delivery.ItemDeliveryQuestEntity;
+import se.fusion1013.cobaltKingdoms.database.quest.item_delivery.IQuestItemDeliveryRepository;
+import se.fusion1013.cobaltKingdoms.database.quest.mapper.PlayerQuestMapper;
+import se.fusion1013.cobaltKingdoms.database.quest.mapper.QuestMapper;
+import se.fusion1013.cobaltKingdoms.kingdom.town.Town;
+import se.fusion1013.cobaltKingdoms.quest.AbstractQuest;
+import se.fusion1013.cobaltKingdoms.quest.PlayerQuest;
+import se.fusion1013.cobaltKingdoms.quest.QuestStatus;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Logger;
 
-// TODO: Split into different repositories
 public class QuestRepositoryImpl implements IQuestRepository {
 
+    private static final Logger logger = CobaltKingdoms.getInstance().getLogger();
+
+    private static final DataManager dataManager = DataManager.getInstance();
+    private static final IQuestArtifactHuntRepository artifactHuntRepository = dataManager.getDao(IQuestArtifactHuntRepository.class);
+    private static final IQuestItemDeliveryRepository itemDeliveryRepository = dataManager.getDao(IQuestItemDeliveryRepository.class);
+    private static final IBountyRepository bountyRepository = dataManager.getDao(IBountyRepository.class);
+
     private Dao<QuestEntity, Long> questDao;
-    private Dao<ItemDeliveryQuestEntity, Long> itemDeliveryQuestDao;
-    private Dao<ActivePlayerQuestEntity, Long> activePlayerQuestDao;
+    private Dao<PlayerQuestEntity, Long> activePlayerQuestDao;
 
     @Override
     public void init() {
@@ -32,137 +44,134 @@ public class QuestRepositoryImpl implements IQuestRepository {
             ConnectionSource connectionSource = SQLiteImplementation.getConnectionSource();
 
             questDao = DaoManager.createDao(connectionSource, QuestEntity.class);
-            itemDeliveryQuestDao = DaoManager.createDao(connectionSource, ItemDeliveryQuestEntity.class);
-            activePlayerQuestDao = DaoManager.createDao(connectionSource, ActivePlayerQuestEntity.class);
+            activePlayerQuestDao = DaoManager.createDao(connectionSource, PlayerQuestEntity.class);
 
             TableUtils.createTableIfNotExists(connectionSource, QuestEntity.class);
-            TableUtils.createTableIfNotExists(connectionSource, ItemDeliveryQuestEntity.class);
-            TableUtils.createTableIfNotExists(connectionSource, ActivePlayerQuestEntity.class);
+            TableUtils.createTableIfNotExists(connectionSource, PlayerQuestEntity.class);
 
         } catch (SQLException e) {
-            CobaltKingdoms.getInstance().getLogger().severe("Error initializing Quest DAO: " + e.getMessage());
+            logger.severe("Error initializing Quest DAO: " + e.getMessage());
         }
     }
 
+    // ##%%##%%## GENERAL QUESTS ##%%##%%## //
+
     @Override
-    public List<QuestEntity> getQuests() {
-        try {
-            return questDao.queryForAll();
-        } catch (SQLException ex) {
-            CobaltKingdoms.getInstance().getLogger().severe("Error getting quests: " + ex.getMessage());
-        }
-        return List.of();
+    public List<AbstractQuest> getQuests() {
+        List<AbstractQuest> quests = new ArrayList<>();
+        quests.addAll(artifactHuntRepository.getQuests());
+        quests.addAll(itemDeliveryRepository.getQuests());
+        quests.addAll(bountyRepository.getQuests());
+        return quests;
     }
 
     @Override
-    public List<QuestEntity> getQuests(TownEntity town) {
-        try {
-            return questDao.queryForEq("start_town", town);
-        } catch (SQLException ex) {
-            CobaltKingdoms.getInstance().getLogger().severe("Error fetching quest: " + ex.getMessage());
-            return null;
-        }
+    public List<AbstractQuest> getQuests(Town town) {
+        List<AbstractQuest> quests = getQuests();
+        if (quests.isEmpty()) return List.of();
+
+        return quests.stream()
+                .filter(Objects::nonNull)
+                .filter(quest -> quest.getStartTown() != null)
+                .filter(quest -> quest.getStartTown().getId().equals(town.getId()))
+                .toList();
     }
 
     @Override
-    public void insertQuest(ItemDeliveryQuestEntity quest) {
-        try {
-            itemDeliveryQuestDao.create(quest);
-        } catch (SQLException e) {
-            CobaltKingdoms.getInstance().getLogger().severe("Error inserting quest: " + e.getMessage());
-        }
-    }
-
-    @Override
-    public QuestEntity getQuest(Long questId) {
-        try {
-            return questDao.queryForId(questId);
-        } catch (SQLException e) {
-            CobaltKingdoms.getInstance().getLogger().severe("Error getting quest: " + e.getMessage());
-            return null;
-        }
+    public Optional<AbstractQuest> getQuest(Long questId) {
+        return getQuests().stream()
+                .filter(quest -> quest.getQuestId().equals(questId))
+                .findFirst();
     }
 
     @Override
     public void updateStatus(Long id, QuestStatus questStatus) {
         try {
             QuestEntity questEntity = questDao.queryForId(id);
+            if (questEntity == null) return;
+
             questEntity.setStatus(questStatus);
             questDao.update(questEntity);
         } catch (SQLException e) {
-            CobaltKingdoms.getInstance().getLogger().severe("Error getting quest: " + e.getMessage());
+            logger.severe("Error getting quest: " + e.getMessage());
         }
     }
 
-    @Override
-    public IQuestData getQuestData(Long questId, QuestType questType) {
-        try {
-            switch (questType) {
-                case COMBAT -> {
-                }
-                case DELIVER -> {
-                    return itemDeliveryQuestDao.queryForEq("quest", questId).getFirst();
-                }
-                case ARTIFACT_HUNT -> {
-                    return DataManager.getInstance().getDao(IQuestArtifactHuntRepository.class).getQuest(questId);
-                }
-                case BOUNTY -> {
-                    return DataManager.getInstance().getDao(IBountyRepository.class).getBountyByQuest(questId);
-                }
-            }
-        } catch (SQLException ex) {
-            CobaltKingdoms.getInstance().getLogger().severe("Error getting quest data: " + ex.getMessage());
-        }
-        return null;
-    }
+    // ##%%##%%## PLAYER QUESTS ##%%##%%## //
 
     @Override
-    public void insertActiveQuest(ActivePlayerQuestEntity activeQuest) {
+    public void createPlayerQuest(PlayerQuest playerQuest) {
         try {
-            activePlayerQuestDao.create(activeQuest);
+            PlayerQuestEntity playerQuestEntity = PlayerQuestMapper.toEntity(playerQuest);
+            playerQuestEntity.setQuest(getQuestEntity(playerQuest.getQuest().getQuestId()));
+            activePlayerQuestDao.create(playerQuestEntity);
         } catch (SQLException e) {
-            CobaltKingdoms.getInstance().getLogger().severe("Error inserting active quest: " + e.getMessage());
+            logger.severe("Error inserting active quest: " + e.getMessage());
         }
     }
 
     @Override
-    public Optional<ActivePlayerQuestEntity> getActivePlayerQuestByQuestId(Long questId) {
+    public Optional<PlayerQuest> getPlayerQuestByQuestId(Long questId) {
         try {
-            return Optional.of(activePlayerQuestDao.queryForEq("quest_id", questId).getFirst());
+            PlayerQuestEntity playerQuestEntity = activePlayerQuestDao.queryForEq("quest_id", questId).getFirst();
+            return Optional.of(PlayerQuestMapper.toModel(playerQuestEntity));
         } catch (SQLException e) {
-            CobaltKingdoms.getInstance().getLogger().severe("Error getting active player quest: " + e.getMessage());
+            logger.severe("Error getting active player quest: " + e.getMessage());
             return Optional.empty();
         }
     }
 
     @Override
-    public void removeActivePlayerQuestById(Long id) {
+    public void removePlayerQuestById(Long id) {
         try {
             activePlayerQuestDao.deleteById(id);
         } catch (SQLException e) {
-            CobaltKingdoms.getInstance().getLogger().severe("Error deleting active player quest: " + e.getMessage());
+            logger.severe("Error deleting active player quest: " + e.getMessage());
         }
     }
 
     @Override
-    public Optional<List<ActivePlayerQuestEntity>> getActivePlayerQuestsByPlayer(Player player) {
+    public Optional<List<PlayerQuest>> getPlayerQuestsByPlayer(Player player) {
         try {
-            return Optional.of(activePlayerQuestDao.queryForEq("playerUUID", player.getUniqueId()));
+            List<PlayerQuestEntity> playerQuests = activePlayerQuestDao.queryForEq("playerUUID", player.getUniqueId());
+            return Optional.of(PlayerQuestMapper.toModels(playerQuests));
         } catch (SQLException e) {
-            CobaltKingdoms.getInstance().getLogger().severe("Error getting active player quest: " + e.getMessage());
+            logger.severe("Error getting active player quest: " + e.getMessage());
             return Optional.empty();
         }
     }
 
     @Override
-    public List<ActivePlayerQuestEntity> getActiveQuests() {
+    public List<PlayerQuest> getPlayerQuests() {
         try {
-            return activePlayerQuestDao.queryForAll();
+            return PlayerQuestMapper.toModels(activePlayerQuestDao.queryForAll());
         } catch (SQLException e) {
-            CobaltKingdoms.getInstance().getLogger().severe("Error getting active player quests: " + e.getMessage());
+            logger.severe("Error getting active player quests: " + e.getMessage());
             return List.of();
         }
     }
+
+    @Override
+    public QuestEntity getQuestEntity(Long id) {
+        try {
+            return questDao.queryForId(id);
+        } catch (SQLException e) {
+            logger.severe("Error getting quest entity: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public void createQuest(AbstractQuest quest) {
+        QuestEntity entity = QuestMapper.toEntity(quest);
+        try {
+            questDao.createOrUpdate(entity);
+        } catch (SQLException e) {
+            logger.severe("Failed to create quest: " + e.getMessage());
+        }
+    }
+
+    // ##%%##%%## ITEM DELIVERY QUESTS ##%%##%%## //
 
     @Override
     public DataStorageType getDataStorageType() {

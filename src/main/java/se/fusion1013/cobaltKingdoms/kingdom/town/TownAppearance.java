@@ -1,27 +1,18 @@
 package se.fusion1013.cobaltKingdoms.kingdom.town;
 
-import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.table.DatabaseTable;
+public class TownAppearance {
 
-@DatabaseTable(tableName = "town_appearance")
-public class TownAppearanceEntity {
-
-    @DatabaseField(generatedId = true, columnName = "id")
     private Long id;
-
-    @DatabaseField(columnName = "skin")
     private String skin;
-
-    @DatabaseField(columnName = "texture")
     private String texture;
-
-    @DatabaseField(columnName = "title_greeting")
     private String titleGreeting;
-
-    @DatabaseField(columnName = "chat_greeting")
     private String chatGreeting;
 
-    public TownAppearanceEntity() {
+    public TownAppearance() {
+    }
+
+    public TownAppearance(Long id) {
+        this.id = id;
     }
 
     public Long getId() {

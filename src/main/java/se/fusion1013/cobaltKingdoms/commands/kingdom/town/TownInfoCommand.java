@@ -9,9 +9,9 @@ import se.fusion1013.cobaltCore.locale.LocaleManager;
 import se.fusion1013.cobaltCore.util.StringPlaceholders;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.Response;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
+import se.fusion1013.cobaltKingdoms.kingdom.town.Town;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownManager;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownMemberEntity;
+import se.fusion1013.cobaltKingdoms.kingdom.town.TownMember;
 
 import java.util.List;
 
@@ -35,10 +35,10 @@ public class TownInfoCommand {
     }
 
     private static Response tryShowTownInfo(Player player, String townName) {
-        TownEntity town = TownManager.getInstance().getTown(townName);
+        Town town = TownManager.getInstance().getTown(townName);
         if (town == null) return Response.error("Could not find town");
 
-        List<TownMemberEntity> townMembers = TownManager.getInstance().getTownMembers(town.getId());
+        List<TownMember> townMembers = TownManager.getInstance().getTownMembers(town.getId());
 
         LocaleManager.getInstance().sendMessage("", player, "kingdoms.commands.town.info.header", StringPlaceholders.builder()
                 .addPlaceholder("town", town.getDisplayName())
@@ -47,7 +47,7 @@ public class TownInfoCommand {
         sendItem(player, "Position", town.getLocation().toVector().toString());
         sendItem(player, "Experience", String.valueOf(town.getExperience()));
 
-        for (TownMemberEntity townMember : townMembers) {
+        for (TownMember townMember : townMembers) {
             sendItem(player, townMember.getPlayerName(), townMember.getRole().name());
         }
 

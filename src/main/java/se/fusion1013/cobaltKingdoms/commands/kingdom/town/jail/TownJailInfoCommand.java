@@ -5,7 +5,7 @@ import dev.jorel.commandapi.executors.CommandArguments;
 import org.bukkit.entity.Player;
 import se.fusion1013.cobaltCore.locale.LocaleManager;
 import se.fusion1013.cobaltCore.util.StringPlaceholders;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownJailEntity;
+import se.fusion1013.cobaltKingdoms.kingdom.town.TownJail;
 import se.fusion1013.cobaltKingdoms.kingdom.town.TownManager;
 
 public class TownJailInfoCommand {
@@ -18,7 +18,7 @@ public class TownJailInfoCommand {
 
     private static void info(Player player, CommandArguments args) {
         String jailName = (String) args.get("jail");
-        TownJailEntity jail = TownManager.getInstance().getJail(player, jailName);
+        TownJail jail = TownManager.getInstance().getJail(player, jailName);
         if (jail == null) {
             LocaleManager.getInstance().sendMessage("", player, "kingdoms.commands.town.jail.info_fail", StringPlaceholders.builder()
                     .addPlaceholder("jail", jailName)

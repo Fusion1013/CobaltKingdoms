@@ -1,36 +1,29 @@
 package se.fusion1013.cobaltKingdoms.quest.artifact_hunt;
 
-import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.table.DatabaseTable;
 import org.bukkit.Location;
-import se.fusion1013.cobaltKingdoms.database.LocationPersister;
 
-@DatabaseTable(tableName = "quest_artifact_hunt_goal")
-public class ArtifactHuntQuestGoalEntity {
+public class ArtifactHuntGoal {
 
-    @DatabaseField(generatedId = true)
     private Long id;
-
-    @DatabaseField(columnName = "name")
     private String name;
-
-    @DatabaseField(columnName = "difficulty")
     private int difficulty;
-
-    @DatabaseField(columnName = "location", persisterClass = LocationPersister.class)
     private Location location;
-
-    @DatabaseField(columnName = "item_name")
     private String itemName;
-
-    @DatabaseField(columnName = "description")
     private String description;
 
-    public ArtifactHuntQuestGoalEntity() {
+    public ArtifactHuntGoal() {
+    }
+
+    public ArtifactHuntGoal(Long id) {
+        this.id = id;
     }
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {

@@ -1,7 +1,5 @@
 package se.fusion1013.cobaltKingdoms.quest.artifact_hunt;
 
-import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.table.DatabaseTable;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -23,10 +21,8 @@ import se.fusion1013.cobaltKingdoms.config.quest.QuestArtifactHuntConfig;
 import se.fusion1013.cobaltKingdoms.config.quest.QuestConfig;
 import se.fusion1013.cobaltKingdoms.config.town.TownConfig;
 import se.fusion1013.cobaltKingdoms.config.town.TownLevelConfig;
-import se.fusion1013.cobaltKingdoms.database.ItemStackListPersister;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
+import se.fusion1013.cobaltKingdoms.kingdom.town.Town;
 import se.fusion1013.cobaltKingdoms.quest.*;
-import se.fusion1013.cobaltKingdoms.util.ItemStackList;
 import se.fusion1013.cobaltKingdoms.util.LargeItemStack;
 
 import java.time.Duration;
@@ -35,29 +31,26 @@ import java.util.*;
 
 import static se.fusion1013.cobaltKingdoms.quest.QuestUtil.*;
 
-@DatabaseTable(tableName = "quests_artifact_hunt")
-public class ArtifactHuntEntity implements IQuestData {
+public class ArtifactHuntQuest extends AbstractQuest {
 
-    @DatabaseField(generatedId = true, columnName = "id")
     private Long id;
+    private List<ItemStack> rewards;
+    private ArtifactHuntGoal goal;
 
-    @DatabaseField(columnName = "rewards", persisterClass = ItemStackListPersister.class)
-    private ItemStackList rewards;
-
-    @DatabaseField(foreign = true, foreignAutoCreate = true, foreignAutoRefresh = true)
-    private QuestEntity quest;
-
-    @DatabaseField(foreign = true, foreignAutoCreate = false, foreignAutoRefresh = true)
-    private ArtifactHuntQuestGoalEntity goal;
-
-    public ArtifactHuntEntity() {
+    public ArtifactHuntQuest() {
+        super(QuestType.ARTIFACT_HUNT);
     }
 
-    public static ArtifactHuntEntity createRandom(TownEntity startTown, TownEntity endTown) {
+    public ArtifactHuntQuest(Long id) {
+        this();
+        this.id = id;
+    }
+
+    public static ArtifactHuntQuest createRandom(Town startTown, Town endTown) {
         QuestConfig questConfig = KingdomsConfig.getQuestConfig();
         QuestArtifactHuntConfig artifactHuntConfig = questConfig.getArtifactHuntConfig();
 
-        ArtifactHuntQuestGoalEntity randomGoal = ArtifactHuntQuestManager.getInstance().getRandomGoal();
+        ArtifactHuntGoal randomGoal = ArtifactHuntQuestManager.getInstance().getRandomGoal();
         if (randomGoal == null) return null;
 
         // Base values
@@ -88,20 +81,25 @@ public class ArtifactHuntEntity implements IQuestData {
         List<ItemStack> rewards = QuestUtil.generateTradeItems(minRewardValue, maxRewardValue, minRewardItems, maxRewardItems, rewardPool, List.of());
         if (rewards.isEmpty()) return null;
 
-        QuestEntity questEntity = new QuestEntity(QuestType.ARTIFACT_HUNT, new Date(), -1, -1, minRewardValue, maxRewardValue, QuestStatus.NEW, startTown, endTown);
-        questEntity.setCanDespawn(true);
+        ArtifactHuntQuest quest = new ArtifactHuntQuest();
 
-        ArtifactHuntEntity artifactHuntQuest = new ArtifactHuntEntity();
-        artifactHuntQuest.setQuest(questEntity);
-        artifactHuntQuest.setGoal(randomGoal);
-        artifactHuntQuest.setRewards(rewards);
-        return artifactHuntQuest;
+        quest.setCreatedTimestamp(new Date());
+        quest.setMinRequirementValue(-1);
+        quest.setMaxRequirementValue(-1);
+        quest.setMinRewardValue(minRewardValue);
+        quest.setMaxRewardValue(maxRewardValue);
+        quest.setQuestStatus(QuestStatus.NEW);
+        quest.setStartTown(startTown);
+        quest.setEndTown(endTown);
+        quest.setCanDespawn(true);
+        quest.setGoal(randomGoal);
+        quest.setRewards(rewards);
+
+        return quest;
     }
 
     @Override
-    public boolean tryComplete(Player player, @NotNull Location location, TownEntity clickedTown) {
-        if (player == null) return false;
-
+    public boolean tryComplete(@NotNull Player player, @NotNull Location location, Town clickedTown) {
         ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
         if (itemInMainHand.isEmpty()) return false;
 
@@ -112,7 +110,7 @@ public class ArtifactHuntEntity implements IQuestData {
         if (!isSame) return false;
 
         boolean hasQuestKey = itemInMainHand.getItemMeta().getPersistentDataContainer().has(QuestManager.QUEST_ID_KEY) &&
-                itemInMainHand.getItemMeta().getPersistentDataContainer().get(QuestManager.QUEST_ID_KEY, PersistentDataType.LONG).equals(quest.getId());
+                itemInMainHand.getItemMeta().getPersistentDataContainer().get(QuestManager.QUEST_ID_KEY, PersistentDataType.LONG).equals(getQuestId());
         if (!hasQuestKey) return false;
 
         // Give rewards to the player
@@ -125,11 +123,11 @@ public class ArtifactHuntEntity implements IQuestData {
         // Broadcast message
         LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.gather.finish", StringPlaceholders.builder()
                 .addPlaceholder("player", player.getName())
-                .addPlaceholder("start_town", quest.getStartTown().getDisplayName())
-                .addPlaceholder("end_town", quest.getEndTown().getDisplayName())
+                .addPlaceholder("start_town", getStartTown().getDisplayName())
+                .addPlaceholder("end_town", getEndTown().getDisplayName())
                 .build());
 
-        Location endLocation = quest.getEndTown().getLocation();
+        Location endLocation = getEndTown().getLocation();
         for (int i = 0; i < 5; i++) {
             new BukkitRunnable() {
                 @Override
@@ -142,7 +140,7 @@ public class ArtifactHuntEntity implements IQuestData {
         endLocation.getWorld().playSound(endLocation, Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
 
         player.getInventory().setItemInMainHand(ItemStack.empty());
-        QuestUtil.clearQuestItems(player, quest.getId());
+        QuestUtil.clearQuestItems(player, getQuestId());
 
         return true;
     }
@@ -158,7 +156,7 @@ public class ArtifactHuntEntity implements IQuestData {
         if (itemStack == null) return;
 
         ItemMeta itemMeta = itemStack.getItemMeta();
-        itemMeta.getPersistentDataContainer().set(QuestManager.QUEST_ID_KEY, PersistentDataType.LONG, quest.getId());
+        itemMeta.getPersistentDataContainer().set(QuestManager.QUEST_ID_KEY, PersistentDataType.LONG, getQuestId());
         itemStack.setItemMeta(itemMeta);
 
         Location goalLocation = goal.getLocation();
@@ -170,13 +168,125 @@ public class ArtifactHuntEntity implements IQuestData {
             item.setVelocity(new Vector());
         });
 
-        giveQuestCompass(player, goalLocation, "Artifact Compass", quest.getId());
+        giveQuestCompass(player, goalLocation, "Artifact Compass", getQuestId());
 
         // Broadcast message
         LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.gather.start", StringPlaceholders.builder()
                 .addPlaceholder("player", player.getName())
                 .addPlaceholder("item", itemName)
                 .build());
+    }
+
+    @Override
+    public void fail(@NotNull Player player, QuestFailReason reason) {
+        LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.artifact_hunt.fail", StringPlaceholders.builder()
+                .addPlaceholder("player", player.getDisplayName())
+                .build());
+    }
+
+    @Override
+    public String getTitle() {
+        if (getEndTown() == null || getStartTown() == null) return "Something went wrong";
+        return HexUtils.colorify(QuestUtil.formatTitle("Artifact Hunt", getQuestType().symbol));
+    }
+
+    @Override
+    public Response canClaim(@NotNull Player player) {
+        if (getQuestStatus() == QuestStatus.NEW) return Response.ok("Can claim");
+        return Response.error("Quest is not new");
+    }
+
+    @Override
+    public int getDuration() {
+        return 1000 * 60 * 60 * 4;
+    }
+
+    @Override
+    public int getXpValue() {
+        return 0;
+    }
+
+    @Override
+    public boolean isValid() {
+        return true;
+    }
+
+    @Override
+    public boolean validateQuest(@NotNull Player player) {
+        return true;
+    }
+
+    @Override
+    public boolean shouldShowInMenu(Town town, Player player) {
+        if (town == null) return false;
+        if (getStartTown() == null) return false;
+        if (getEndTown() == null) return false;
+
+        return town.getId().equals(getStartTown().getId()) &&
+                getQuestStatus() == QuestStatus.NEW;
+    }
+
+    @Override
+    public ItemStack getButtonItem() {
+        if (getEndTown() == null || getStartTown() == null) return new ItemStack(Material.BARRIER);
+        if (goal == null) return new ItemStack(Material.BARRIER);
+
+        String coordinates = String.format("[%d, %d, %d]",
+                goal.getLocation().getBlockX(),
+                goal.getLocation().getBlockY(),
+                goal.getLocation().getBlockZ());
+
+        final ItemStack item = new ItemStack(Material.CLOCK);
+        final ItemMeta meta = item.getItemMeta();
+
+        meta.setItemModel(new NamespacedKey("thegreatwork", "quest/scroll_orange"));
+
+        meta.setDisplayName(getTitle());
+
+        List<String> lore = new ArrayList<>();
+        lore.add("&zCoords: &7" + coordinates);
+
+        ICustomItem targetItem = CustomItemManager.getCustomItem(goal.getItemName());
+        if (targetItem != null) {
+            String customItemDisplayName = targetItem.getItemStack().getItemMeta().getDisplayName();
+            customItemDisplayName = HexUtils.stripColorCodes(customItemDisplayName);
+            lore.add("&zArtifact: &7" + customItemDisplayName);
+        } else {
+            lore.add("Could not find target item, report as a bug");
+            lore.add("with the following information:");
+            lore.add("QuestID: " + getQuestId());
+        }
+
+        lore.add("&zTime Limit: &7" + QuestUtil.formatDuration(getDuration()));
+
+        if (goal.getDescription() != null && !goal.getDescription().isEmpty()) {
+            lore.add("");
+            lore.addAll(QuestUtil.wrapText(goal.getDescription(), 35).stream().map(s -> "&7" + s).toList());
+        }
+
+        TownConfig townConfig = KingdomsConfig.getTownConfig();
+        int startTownXp = getStartTown().getExperience();
+        TownLevelConfig townLevelConfig = townConfig.getTownLevelConfig(startTownXp);
+
+        // Add rewards
+        lore.add("");
+        lore.add("&z[x" + townLevelConfig.getQuestRewardMultiplier() + "] Rewards:");
+        List<LargeItemStack> rewardItems = LargeItemStack.toLargeItemStacks(getRewards());
+        for (LargeItemStack rewardItem : rewardItems) {
+            String name = rewardItem.item().getItemMeta().hasDisplayName() ? rewardItem.item().getItemMeta().getDisplayName() : formatMaterialName(rewardItem.item().getType().name());
+            lore.add("&7- " + HexUtils.stripColorCodes(name) + " &7[&z" + rewardItem.amount() + "&7]");
+        }
+
+        lore.add("");
+        Instant expiresAt = getCreatedTimestamp().toInstant().plus(Duration.ofMinutes(60));
+        Duration durationToExpires = Duration.between(Instant.now(), expiresAt);
+        lore.add("&7Expires in " + durationToExpires.toMinutes() + " minutes");
+
+        lore.replaceAll(HexUtils::colorify);
+
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        return item;
     }
 
     @Override
@@ -207,154 +317,35 @@ public class ArtifactHuntEntity implements IQuestData {
 
         meta.addPage(HexUtils.colorify(content));
 
-        meta.getPersistentDataContainer().set(QuestManager.QUEST_ID_KEY, PersistentDataType.LONG, quest.getId());
+        meta.getPersistentDataContainer().set(QuestManager.QUEST_ID_KEY, PersistentDataType.LONG, getQuestId());
 
         itemStack.setItemMeta(meta);
         return itemStack;
     }
 
-    @Override
-    public boolean validateQuest(Player player) {
-        return true;
-    }
-
-    @Override
-    public String getTitle() {
-        if (quest.getEndTown() == null || quest.getStartTown() == null) return "Something went wrong";
-        return HexUtils.colorify(QuestUtil.formatTitle("Artifact Hunt", quest.getQuestType().symbol));
-    }
-
-    @Override
-    public String getSymbol() {
-        return quest.getQuestType().symbol;
-    }
-
-    @Override
-    public ItemStack getButtonItem() {
-        if (quest.getEndTown() == null || quest.getStartTown() == null) return new ItemStack(Material.BARRIER);
-        if (goal == null) return new ItemStack(Material.BARRIER);
-
-        String coordinates = String.format("[%d, %d, %d]",
-                goal.getLocation().getBlockX(),
-                goal.getLocation().getBlockY(),
-                goal.getLocation().getBlockZ());
-
-        final ItemStack item = new ItemStack(Material.CLOCK);
-        final ItemMeta meta = item.getItemMeta();
-
-        meta.setItemModel(new NamespacedKey("thegreatwork", "quest/scroll_orange"));
-
-        meta.setDisplayName(getTitle());
-
-        List<String> lore = new ArrayList<>();
-        lore.add("&zCoords: &7" + coordinates);
-
-        ICustomItem targetItem = CustomItemManager.getCustomItem(goal.getItemName());
-        if (targetItem != null) {
-            String customItemDisplayName = targetItem.getItemStack().getItemMeta().getDisplayName();
-            customItemDisplayName = HexUtils.stripColorCodes(customItemDisplayName);
-            lore.add("&zArtifact: &7" + customItemDisplayName);
-        } else {
-            lore.add("Could not find target item, report as a bug");
-            lore.add("with the following information:");
-            lore.add("QuestID: " + quest.getId());
-        }
-
-        lore.add("&zTime Limit: &7" + QuestUtil.formatDuration(getDuration()));
-
-        if (goal.getDescription() != null && !goal.getDescription().isEmpty()) {
-            lore.add("");
-            lore.addAll(QuestUtil.wrapText(goal.getDescription(), 35).stream().map(s -> "&7" + s).toList());
-        }
-
-        TownConfig townConfig = KingdomsConfig.getTownConfig();
-        int startTownXp = quest.getStartTown().getExperience();
-        TownLevelConfig townLevelConfig = townConfig.getTownLevelConfig(startTownXp);
-
-        // Add rewards
-        lore.add("");
-        lore.add("&z[x" + townLevelConfig.getQuestRewardMultiplier() + "] Rewards:");
-        List<LargeItemStack> rewardItems = LargeItemStack.toLargeItemStacks(getRewards());
-        for (LargeItemStack rewardItem : rewardItems) {
-            String name = rewardItem.item().getItemMeta().hasDisplayName() ? rewardItem.item().getItemMeta().getDisplayName() : formatMaterialName(rewardItem.item().getType().name());
-            lore.add("&7- " + HexUtils.stripColorCodes(name) + " &7[&z" + rewardItem.amount() + "&7]");
-        }
-
-        lore.add("");
-        Instant expiresAt = quest.getCreatedTimestamp().toInstant().plus(Duration.ofMinutes(60));
-        Duration durationToExpires = Duration.between(Instant.now(), expiresAt);
-        lore.add("&7Expires in " + durationToExpires.toMinutes() + " minutes");
-
-        lore.replaceAll(HexUtils::colorify);
-
-        meta.setLore(lore);
-        item.setItemMeta(meta);
-        return item;
-    }
-
-    @Override
-    public int getXpValue() {
-        return 0;
-    }
-
-    @Override
-    public boolean shouldShowInMenu(TownEntity town, Player player) {
-        if (town == null) return false;
-        if (quest.getStartTown() == null) return false;
-        if (quest.getEndTown() == null) return false;
-
-        return town.getId().equals(quest.getStartTown().getId()) &&
-                quest.getStatus() == QuestStatus.NEW;
-    }
-
-    @Override
-    public boolean isValid() {
-        return true;
-    }
-
-    @Override
-    public void fail(Player player, QuestFailReason reason) {
-        LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.artifact_hunt.fail", StringPlaceholders.builder()
-                .addPlaceholder("player", player.getDisplayName())
-                .build());
-    }
-
-    @Override
-    public Response canClaim(Player player) {
-        if (quest.getStatus() == QuestStatus.NEW) return Response.ok("Can claim");
-        return Response.error("Quest is not new");
-    }
-
-    @Override
-    public int getDuration() {
-        return 1000 * 60 * 60 * 4;
-    }
+    // ##%%##%%## GETTERS / SETTERS ##%%##%%## //
 
     public Long getId() {
         return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public List<ItemStack> getRewards() {
-        return rewards.list();
+        return rewards;
     }
 
     public void setRewards(List<ItemStack> rewards) {
-        this.rewards = new ItemStackList(rewards);
+        this.rewards = rewards;
     }
 
-    public QuestEntity getQuest() {
-        return quest;
-    }
-
-    public void setQuest(QuestEntity quest) {
-        this.quest = quest;
-    }
-
-    public ArtifactHuntQuestGoalEntity getGoal() {
+    public ArtifactHuntGoal getGoal() {
         return goal;
     }
 
-    public void setGoal(ArtifactHuntQuestGoalEntity goal) {
+    public void setGoal(ArtifactHuntGoal goal) {
         this.goal = goal;
     }
 }

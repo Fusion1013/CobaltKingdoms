@@ -1,7 +1,5 @@
 package se.fusion1013.cobaltKingdoms.quest.item_delivery;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -12,11 +10,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import se.fusion1013.cobaltCore.util.HexUtils;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownManager;
 
-import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static se.fusion1013.cobaltKingdoms.quest.QuestManager.QUEST_ID_KEY;
@@ -136,14 +133,6 @@ public class QuestItemDeliveryUtil {
         }
     }
 
-    public static Component createCostRewardComponent(List<ItemStack> cost, List<ItemStack> reward) {
-        String costText = toComponent(cost);
-        String rewardText = toComponent(reward);
-
-        return Component.text(costText + " -> " + rewardText)
-                .color(NamedTextColor.GRAY);
-    }
-
     public static @NotNull String toComponent(List<ItemStack> cost) {
         return cost.stream()
                 .map(QuestItemDeliveryUtil::formatItem)
@@ -178,60 +167,6 @@ public class QuestItemDeliveryUtil {
         }
 
         return result.toString().trim();
-    }
-
-    public static TownEntity getRandomTown(TownEntity startLocation, int difficulty) {
-        List<TownEntity> allTowns = new ArrayList<>(TownManager.getInstance().getTowns());
-
-        Location start = startLocation.getLocation();
-
-        // Remove starting town
-        List<TownEntity> validTowns = allTowns.stream()
-                .filter(town -> !town.equals(startLocation))
-                .filter(town -> town.getLocation().getWorld().equals(start.getWorld()))
-                .collect(Collectors.toList());
-
-        if (validTowns.isEmpty()) return null;
-
-        // Sort by distance (closest -> furthest)
-        validTowns.sort(Comparator.comparingDouble(
-                town -> town.getLocation().distance(start)
-        ));
-
-        int size = validTowns.size();
-
-        // Divide into 3 tiers
-        int tierSize = Math.max(1, size / 3);
-
-        int minIndex;
-        int maxIndex;
-
-        switch (difficulty) {
-            case 0: // closest
-                minIndex = 0;
-                maxIndex = tierSize;
-                break;
-            case 1: // middle
-                minIndex = tierSize;
-                maxIndex = tierSize * 2;
-                break;
-            case 2: // furthest
-            default:
-                minIndex = tierSize * 2;
-                maxIndex = size;
-                break;
-        }
-
-        // Clamp just in case
-        minIndex = Math.min(minIndex, size - 1);
-        maxIndex = Math.min(maxIndex, size);
-
-        if (minIndex >= maxIndex) {
-            return validTowns.get(size - 1);
-        }
-
-        int randomIndex = ThreadLocalRandom.current().nextInt(minIndex, maxIndex);
-        return validTowns.get(randomIndex);
     }
 
 }

@@ -4,12 +4,14 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
-import org.slf4j.LoggerFactory;
 import se.fusion1013.cobaltCore.database.system.DataStorageType;
 import se.fusion1013.cobaltCore.database.system.implementations.SQLiteImplementation;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
-import se.fusion1013.cobaltKingdoms.quest.artifact_hunt.ArtifactHuntEntity;
-import se.fusion1013.cobaltKingdoms.quest.artifact_hunt.ArtifactHuntQuestGoalEntity;
+import se.fusion1013.cobaltKingdoms.database.quest.artifact_hunt.mapper.ArtifactHuntGoalMapper;
+import se.fusion1013.cobaltKingdoms.database.quest.artifact_hunt.mapper.ArtifactHuntQuestMapper;
+import se.fusion1013.cobaltKingdoms.database.quest.mapper.QuestMapper;
+import se.fusion1013.cobaltKingdoms.quest.artifact_hunt.ArtifactHuntGoal;
+import se.fusion1013.cobaltKingdoms.quest.artifact_hunt.ArtifactHuntQuest;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -18,7 +20,6 @@ import java.util.logging.Logger;
 public class QuestArtifactHuntRepository implements IQuestArtifactHuntRepository {
 
     private static final Logger logger = CobaltKingdoms.getInstance().getLogger();
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(QuestArtifactHuntRepository.class);
 
     private Dao<ArtifactHuntQuestGoalEntity, Long> artifactHuntGoalDao;
     private Dao<ArtifactHuntEntity, Long> artifactHuntQuestDao;
@@ -45,18 +46,18 @@ public class QuestArtifactHuntRepository implements IQuestArtifactHuntRepository
     }
 
     @Override
-    public void createGoal(ArtifactHuntQuestGoalEntity goal) {
+    public void createGoal(ArtifactHuntGoal goal) {
         try {
-            artifactHuntGoalDao.create(goal);
+            artifactHuntGoalDao.create(ArtifactHuntGoalMapper.toEntity(goal));
         } catch (SQLException e) {
             logger.severe("Failed to create new goal: " + e.getMessage());
         }
     }
 
     @Override
-    public List<ArtifactHuntQuestGoalEntity> getGoals() {
+    public List<ArtifactHuntGoal> getGoals() {
         try {
-            return artifactHuntGoalDao.queryForAll();
+            return ArtifactHuntGoalMapper.toModels(artifactHuntGoalDao.queryForAll());
         } catch (SQLException e) {
             logger.severe("Failed to get goals: " + e.getMessage());
             return List.of();
@@ -64,9 +65,9 @@ public class QuestArtifactHuntRepository implements IQuestArtifactHuntRepository
     }
 
     @Override
-    public List<ArtifactHuntQuestGoalEntity> getGoals(int difficulty) {
+    public List<ArtifactHuntGoal> getGoals(int difficulty) {
         try {
-            return artifactHuntGoalDao.queryForEq("difficulty", difficulty);
+            return ArtifactHuntGoalMapper.toModels(artifactHuntGoalDao.queryForEq("difficulty", difficulty));
         } catch (SQLException e) {
             logger.severe("Failed to get goals: " + e.getMessage());
             return List.of();
@@ -74,30 +75,11 @@ public class QuestArtifactHuntRepository implements IQuestArtifactHuntRepository
     }
 
     @Override
-    public ArtifactHuntQuestGoalEntity getGoal(Long id) {
+    public ArtifactHuntGoal getGoal(Long id) {
         try {
-            return artifactHuntGoalDao.queryForId(id);
+            return ArtifactHuntGoalMapper.toModel(artifactHuntGoalDao.queryForId(id));
         } catch (SQLException e) {
             logger.severe("Failed to get goal: " + e.getMessage());
-            return null;
-        }
-    }
-
-    @Override
-    public void insertQuest(ArtifactHuntEntity quest) {
-        try {
-            artifactHuntQuestDao.create(quest);
-        } catch (SQLException e) {
-            logger.severe("Failed to create gather quest: " + e.getMessage());
-        }
-    }
-
-    @Override
-    public ArtifactHuntEntity getQuest(Long questId) {
-        try {
-            return artifactHuntQuestDao.queryForEq("quest_id", questId).getFirst();
-        } catch (SQLException e) {
-            logger.severe("Failed to get quest: " + e.getMessage());
             return null;
         }
     }
@@ -118,5 +100,37 @@ public class QuestArtifactHuntRepository implements IQuestArtifactHuntRepository
             return highest.getDifficulty();
         }
         return -1;
+    }
+
+    @Override
+    public void createQuest(ArtifactHuntQuest quest) {
+        ArtifactHuntEntity entity = ArtifactHuntQuestMapper.toEntity(quest);
+        try {
+            entity.setQuest(QuestMapper.toEntity(quest));
+            entity.setGoal(artifactHuntGoalDao.queryForId(quest.getGoal().getId()));
+            artifactHuntQuestDao.createOrUpdate(entity);
+        } catch (SQLException e) {
+            logger.severe("Failed to create gather quest: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public ArtifactHuntQuest getQuest(Long questId) {
+        try {
+            return ArtifactHuntQuestMapper.toModel(artifactHuntQuestDao.queryForEq("quest_id", questId).getFirst());
+        } catch (SQLException e) {
+            logger.severe("Failed to get artifact hunt quests: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public List<ArtifactHuntQuest> getQuests() {
+        try {
+            return ArtifactHuntQuestMapper.toModels(artifactHuntQuestDao.queryForAll());
+        } catch (SQLException e) {
+            logger.severe("Failed to get artifact hunt quests: " + e.getMessage());
+            return List.of();
+        }
     }
 }

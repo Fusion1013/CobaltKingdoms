@@ -1,15 +1,12 @@
-package se.fusion1013.cobaltKingdoms.quest;
+package se.fusion1013.cobaltKingdoms.database.quest;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
-import org.bukkit.entity.Player;
-import se.fusion1013.cobaltCore.database.system.DataManager;
-import se.fusion1013.cobaltKingdoms.Response;
-import se.fusion1013.cobaltKingdoms.database.quest.IQuestRepository;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
+import se.fusion1013.cobaltKingdoms.database.kingdom.town.TownEntity;
+import se.fusion1013.cobaltKingdoms.quest.QuestStatus;
+import se.fusion1013.cobaltKingdoms.quest.QuestType;
 
 import java.util.Date;
-import java.util.concurrent.locks.ReentrantLock;
 
 @DatabaseTable(tableName = "quests")
 public class QuestEntity {
@@ -47,81 +44,91 @@ public class QuestEntity {
     @DatabaseField(columnName = "can_despawn")
     private boolean canDespawn;
 
-    private final ReentrantLock lock = new ReentrantLock();
-
     public QuestEntity() {
     }
 
-    public QuestEntity(QuestType questType, Date createdTimestamp, float minRequirementValue, float maxRequirementValue, float minRewardValue, float maxRewardValue, QuestStatus status, TownEntity startTown, TownEntity endTown) {
-        this.questType = questType;
-        this.createdTimestamp = createdTimestamp;
-        this.minRequirementValue = minRequirementValue;
-        this.maxRequirementValue = maxRequirementValue;
-        this.minRewardValue = minRewardValue;
-        this.maxRewardValue = maxRewardValue;
-        this.status = status;
-        this.startTown = startTown;
-        this.endTown = endTown;
+    public QuestEntity(Long id) {
+        this.id = id;
     }
 
     public Long getId() {
         return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public QuestType getQuestType() {
         return questType;
+    }
+
+    public void setQuestType(QuestType questType) {
+        this.questType = questType;
     }
 
     public Date getCreatedTimestamp() {
         return createdTimestamp;
     }
 
+    public void setCreatedTimestamp(Date createdTimestamp) {
+        this.createdTimestamp = createdTimestamp;
+    }
+
     public float getMinRequirementValue() {
         return minRequirementValue;
+    }
+
+    public void setMinRequirementValue(float minRequirementValue) {
+        this.minRequirementValue = minRequirementValue;
     }
 
     public float getMaxRequirementValue() {
         return maxRequirementValue;
     }
 
+    public void setMaxRequirementValue(float maxRequirementValue) {
+        this.maxRequirementValue = maxRequirementValue;
+    }
+
     public float getMinRewardValue() {
         return minRewardValue;
+    }
+
+    public void setMinRewardValue(float minRewardValue) {
+        this.minRewardValue = minRewardValue;
     }
 
     public float getMaxRewardValue() {
         return maxRewardValue;
     }
 
+    public void setMaxRewardValue(float maxRewardValue) {
+        this.maxRewardValue = maxRewardValue;
+    }
+
     public QuestStatus getStatus() {
         return status;
-    }
-
-    public TownEntity getStartTown() {
-        return startTown;
-    }
-
-    public TownEntity getEndTown() {
-        return endTown;
     }
 
     public void setStatus(QuestStatus status) {
         this.status = status;
     }
 
-    public void acquireLock() {
-        lock.lock();
+    public TownEntity getStartTown() {
+        return startTown;
     }
 
-    public void releaseLock() {
-        lock.unlock();
+    public void setStartTown(TownEntity startTown) {
+        this.startTown = startTown;
     }
 
-    public boolean isValid() {
-        return getQuestData().isValid();
+    public TownEntity getEndTown() {
+        return endTown;
     }
 
-    public IQuestData getQuestData() {
-        return DataManager.getInstance().getDao(IQuestRepository.class).getQuestData(id, questType);
+    public void setEndTown(TownEntity endTown) {
+        this.endTown = endTown;
     }
 
     public boolean canDespawn() {
@@ -130,9 +137,5 @@ public class QuestEntity {
 
     public void setCanDespawn(boolean canDespawn) {
         this.canDespawn = canDespawn;
-    }
-
-    public Response canClaim(Player player) {
-        return getQuestData().canClaim(player);
     }
 }

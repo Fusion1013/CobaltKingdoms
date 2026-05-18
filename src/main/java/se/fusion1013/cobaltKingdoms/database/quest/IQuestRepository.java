@@ -2,9 +2,10 @@ package se.fusion1013.cobaltKingdoms.database.quest;
 
 import org.bukkit.entity.Player;
 import se.fusion1013.cobaltCore.database.system.IDao;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
-import se.fusion1013.cobaltKingdoms.quest.*;
-import se.fusion1013.cobaltKingdoms.quest.item_delivery.ItemDeliveryQuestEntity;
+import se.fusion1013.cobaltKingdoms.kingdom.town.Town;
+import se.fusion1013.cobaltKingdoms.quest.AbstractQuest;
+import se.fusion1013.cobaltKingdoms.quest.PlayerQuest;
+import se.fusion1013.cobaltKingdoms.quest.QuestStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,26 +17,27 @@ public interface IQuestRepository extends IDao {
         return "quest";
     }
 
-    List<QuestEntity> getQuests();
+    List<AbstractQuest> getQuests();
 
-    List<QuestEntity> getQuests(TownEntity town);
+    List<AbstractQuest> getQuests(Town town);
 
-    void insertQuest(ItemDeliveryQuestEntity quest);
-
-    QuestEntity getQuest(Long questId);
+    Optional<AbstractQuest> getQuest(Long questId);
 
     void updateStatus(Long id, QuestStatus questStatus);
 
-    IQuestData getQuestData(Long questId, QuestType questType);
 
-    void insertActiveQuest(ActivePlayerQuestEntity activeQuest);
+    void createPlayerQuest(PlayerQuest activeQuest);
 
-    Optional<ActivePlayerQuestEntity> getActivePlayerQuestByQuestId(Long questId);
+    Optional<PlayerQuest> getPlayerQuestByQuestId(Long questId);
 
     @Deprecated
-    void removeActivePlayerQuestById(Long id);
+    void removePlayerQuestById(Long id);
 
-    Optional<List<ActivePlayerQuestEntity>> getActivePlayerQuestsByPlayer(Player player);
+    Optional<List<PlayerQuest>> getPlayerQuestsByPlayer(Player player);
 
-    List<ActivePlayerQuestEntity> getActiveQuests();
+    List<PlayerQuest> getPlayerQuests();
+
+    QuestEntity getQuestEntity(Long id);
+
+    void createQuest(AbstractQuest quest);
 }

@@ -1,8 +1,8 @@
 package se.fusion1013.cobaltKingdoms.database.quest.artifact_hunt;
 
 import se.fusion1013.cobaltCore.database.system.IDao;
-import se.fusion1013.cobaltKingdoms.quest.artifact_hunt.ArtifactHuntEntity;
-import se.fusion1013.cobaltKingdoms.quest.artifact_hunt.ArtifactHuntQuestGoalEntity;
+import se.fusion1013.cobaltKingdoms.quest.artifact_hunt.ArtifactHuntGoal;
+import se.fusion1013.cobaltKingdoms.quest.artifact_hunt.ArtifactHuntQuest;
 
 import java.util.List;
 
@@ -13,17 +13,19 @@ public interface IQuestArtifactHuntRepository extends IDao {
         return "quest_gather";
     }
 
-    void createGoal(ArtifactHuntQuestGoalEntity goal);
+    void createGoal(ArtifactHuntGoal goal);
 
-    List<ArtifactHuntQuestGoalEntity> getGoals();
+    List<ArtifactHuntGoal> getGoals();
 
-    List<ArtifactHuntQuestGoalEntity> getGoals(int difficulty);
+    List<ArtifactHuntGoal> getGoals(int difficulty);
 
-    ArtifactHuntQuestGoalEntity getGoal(Long id);
+    ArtifactHuntGoal getGoal(Long id);
 
-    void insertQuest(ArtifactHuntEntity quest);
+    void createQuest(ArtifactHuntQuest quest);
 
-    ArtifactHuntEntity getQuest(Long questId);
+    ArtifactHuntQuest getQuest(Long questId);
+
+    List<ArtifactHuntQuest> getQuests();
 
     int getHighestDifficulty();
 

@@ -17,6 +17,8 @@ import se.fusion1013.cobaltKingdoms.database.quest.artifact_hunt.IQuestArtifactH
 import se.fusion1013.cobaltKingdoms.database.quest.artifact_hunt.QuestArtifactHuntRepository;
 import se.fusion1013.cobaltKingdoms.database.quest.bounty.BountyRepositoryImpl;
 import se.fusion1013.cobaltKingdoms.database.quest.bounty.IBountyRepository;
+import se.fusion1013.cobaltKingdoms.database.quest.item_delivery.IQuestItemDeliveryRepository;
+import se.fusion1013.cobaltKingdoms.database.quest.item_delivery.QuestItemDeliveryRepositoryImpl;
 
 public class KingdomDataManager extends Manager<CobaltKingdoms> {
 
@@ -31,9 +33,12 @@ public class KingdomDataManager extends Manager<CobaltKingdoms> {
         dataManager.registerDao(new CharacterProfileDaoSQLite(), ICharacterProfileDao.class);
         dataManager.registerDao(new LetterDaoSQLite(), ILetterDao.class);
         dataManager.registerDao(new TownRepositoryImpl(), ITownRepository.class);
-        dataManager.registerDao(new QuestRepositoryImpl(), IQuestRepository.class);
         dataManager.registerDao(new QuestArtifactHuntRepository(), IQuestArtifactHuntRepository.class);
         dataManager.registerDao(new BountyRepositoryImpl(), IBountyRepository.class);
+        dataManager.registerDao(new QuestItemDeliveryRepositoryImpl(), IQuestItemDeliveryRepository.class);
+
+        // This is kinda stupid but this has to be last
+        dataManager.registerDao(new QuestRepositoryImpl(), IQuestRepository.class);
     }
 
     @Override

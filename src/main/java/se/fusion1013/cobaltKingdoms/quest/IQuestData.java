@@ -5,11 +5,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import se.fusion1013.cobaltKingdoms.Response;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownEntity;
+import se.fusion1013.cobaltKingdoms.kingdom.town.Town;
 
 public interface IQuestData {
 
-    boolean tryComplete(Player player, @NotNull Location location, TownEntity clickedTown);
+    boolean tryComplete(Player player, @NotNull Location location, Town clickedTown);
 
     void start(@NotNull Player player, @NotNull Location location);
 
@@ -25,7 +25,7 @@ public interface IQuestData {
 
     int getXpValue();
 
-    boolean shouldShowInMenu(TownEntity town, Player player);
+    boolean shouldShowInMenu(Town town, Player player);
 
     boolean isValid();
 

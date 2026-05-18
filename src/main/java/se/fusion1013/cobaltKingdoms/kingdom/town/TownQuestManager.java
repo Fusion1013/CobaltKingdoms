@@ -9,7 +9,7 @@ import se.fusion1013.cobaltKingdoms.config.KingdomsConfig;
 import se.fusion1013.cobaltKingdoms.config.town.TownConfig;
 import se.fusion1013.cobaltKingdoms.database.kingdom.town.ITownRepository;
 import se.fusion1013.cobaltKingdoms.database.quest.IQuestRepository;
-import se.fusion1013.cobaltKingdoms.quest.QuestEntity;
+import se.fusion1013.cobaltKingdoms.quest.AbstractQuest;
 import se.fusion1013.cobaltKingdoms.quest.QuestManager;
 
 import java.util.List;
@@ -46,28 +46,24 @@ public class TownQuestManager extends Manager<CobaltKingdoms> {
     }
 
     private void createNewQuests() {
-        for (TownEntity town : TownManager.getInstance().getTowns()) {
+        for (Town town : TownManager.getInstance().getTowns()) {
             createNewQuest(town);
         }
     }
 
-    private void createNewQuest(TownEntity town) { // TODO: Quests should be created from the QuestManager
+    private void createNewQuest(Town town) { // TODO: Quests should be created from the QuestManager
         QuestManager.getInstance().createRandomQuest(town);
     }
 
-    private void trySpawnQuestEntities(TownEntity town) {
-        CobaltKingdoms.getInstance().getLogger().info("Trying to spawn quest entities");
+    private void trySpawnQuestEntities(Town town) {
         Location townCenter = town.getLocation();
-        if (!townCenter.isChunkLoaded()) {
-            CobaltKingdoms.getInstance().getLogger().info("Not chunk loaded");
-            return;
-        }
+        if (!townCenter.isChunkLoaded()) return;
+        if (true) return;
 
-        List<QuestEntity> townQuests = questRepository.getQuests().stream()
-                .filter(q -> q.getQuestData().shouldShowInMenu(town, null))
+        List<AbstractQuest> townQuests = questRepository.getQuests().stream()
+                .filter(q -> q.shouldShowInMenu(town, null))
                 .toList();
-        CobaltKingdoms.getInstance().getLogger().info("Found quests: " + townQuests.size());
-        for (QuestEntity quest : townQuests) {// Summon new quest giver entity
+        for (AbstractQuest quest : townQuests) {// Summon new quest giver entity
             int xPos = random.nextInt(-6, 6);
             int yPos = random.nextInt(-6, 6);
 
