@@ -5,7 +5,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import se.fusion1013.cobaltCore.manager.Manager;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.config.quest.QuestConfig;
-import se.fusion1013.cobaltKingdoms.config.town.TownConfig;
+import se.fusion1013.cobaltKingdoms.town.config.TownConfig;
 
 import java.io.File;
 import java.io.IOException;

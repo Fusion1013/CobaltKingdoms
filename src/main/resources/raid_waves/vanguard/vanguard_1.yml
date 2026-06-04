@@ -1,0 +1,19 @@
+internal_name: vanguard_1
+
+completion_type: ALL_MOBS_DEAD
+
+spawn_groups:
+  - entity: vanguard_swordsman
+    amount:
+      min: 4
+      max: 7
+    weight: 70
+  - entity: vanguard_archer
+    amount:
+      min: 2
+      max: 4
+    weight: 30
+
+spawn:
+  radius: 20
+  method: RANDOM_AROUND_TARGET

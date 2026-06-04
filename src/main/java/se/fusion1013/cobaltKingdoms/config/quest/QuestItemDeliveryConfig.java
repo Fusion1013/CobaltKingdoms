@@ -2,7 +2,7 @@ package se.fusion1013.cobaltKingdoms.config.quest;
 
 import org.bukkit.configuration.ConfigurationSection;
 import se.fusion1013.cobaltKingdoms.config.AbstractConfig;
-import se.fusion1013.cobaltKingdoms.quest.QuestItem;
+import se.fusion1013.cobaltKingdoms.quest.model.QuestItem;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -4,3 +4,4 @@
 1:astral_coin,,1:{random_book_rare}
 1:astral_coin,,1:{random_book_rare}
 1:astral_coin,,1:{random_hat_rare}
+2:astral_coin,,1:bounty_letter

@@ -7,14 +7,41 @@ Upcoming features:
 **FEATURE:** Player abilities
 **FEATURE:** Capped xp cost at 1 level when renaming an item
 
-**CobaltKingdoms Version 1.2.5**
+**CobaltKingdoms Version 1.3.0**
 
-**FEATURE:** Right-clicking an armor stand while sneaking will switch all the slots with yours
+- **FEATURE:** Added towns. Create a new town using the '/town create' command. In order to create a town, you must
+  be a member of a kingdom.
+- **FEATURE:** Added town levels. Complete quests to level up your town and increase rewards from quests, and unlock
+  more quest types.
+- **FEATURE:** Added jails. Create a new jail using the '/town jail create' command. In order to create a jail, you have
+  to be an elevated member of a town.
+- **FEATURE:** Added quests. There are currently three different types of quests. Each quest type has a different loot
+  pool.
+- **FEATURE:** Added Bounty Quests
+- **FEATURE:** Added Delivery Quests
+- **FEATURE:** Added Artifact Hunt Quests
+- **FEATURE:** Right-clicking an armor stand while sneaking will switch all the slots with yours
+- **UPDATE:** The Wandering Trader now sells a Bounty Letter
+- **COMMAND:** New command: '/town create'
+- **COMMAND:** New command: '/town delete'
+- **COMMAND:** New command: '/town info'
+- **COMMAND:** New command: '/town invite'
+- **COMMAND:** New command: '/town kick'
+- **COMMAND:** New command: '/town leave'
+- **COMMAND:** New command: '/town list'
+- **COMMAND:** New command: '/town modify'
+- **COMMAND:** New command: '/town move'
+- **COMMAND:** New command: '/town jail create'
+- **COMMAND:** New command: '/town jail delete'
+- **COMMAND:** New command: '/town jail info'
+- **COMMAND:** New command: '/town jail list'
+- **COMMAND:** New command: '/bounty enable'
+- **COMMAND:** New command: '/bounty disable'
 
 **CobaltKingdoms Version 1.2.3**
 
-**FEATURE:** The discord bot now displays the status for vanished players
-**UPDATE:** Player leave and join messages now appear for vanished players
+- **FEATURE:** The discord bot now displays the status for vanished players
+- **UPDATE:** Player leave and join messages now appear for vanished players
 
 **CobaltKingdoms Version 1.2.2**
 

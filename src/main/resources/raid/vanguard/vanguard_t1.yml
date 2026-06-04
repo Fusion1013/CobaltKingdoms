@@ -1,0 +1,9 @@
+internal_name: vanguard_t1
+display_name: Vanguard Raid
+
+settings:
+  max_player_scaling: true
+  time_between_waves: 15
+
+waves:
+  - vanguard_1

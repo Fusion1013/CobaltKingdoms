@@ -2,8 +2,8 @@ package se.fusion1013.cobaltKingdoms.player;
 
 import org.bukkit.entity.Player;
 import se.fusion1013.cobaltCore.util.HexUtils;
-import se.fusion1013.cobaltKingdoms.kingdom.KingdomInfo;
-import se.fusion1013.cobaltKingdoms.kingdom.KingdomManager;
+import se.fusion1013.cobaltKingdoms.kingdom.model.KingdomInfo;
+import se.fusion1013.cobaltKingdoms.kingdom.service.KingdomManager;
 import se.fusion1013.cobaltKingdoms.player.status.PlayerStatus;
 
 public class PlayerData {

@@ -10,10 +10,6 @@ import se.fusion1013.cobaltCore.CobaltPlugin;
 import se.fusion1013.cobaltKingdoms.chair.ChairManager;
 import se.fusion1013.cobaltKingdoms.commands.*;
 import se.fusion1013.cobaltKingdoms.commands.armorstand.ArmorStandCommand;
-import se.fusion1013.cobaltKingdoms.commands.kingdom.KingdomCommand;
-import se.fusion1013.cobaltKingdoms.commands.kingdom.town.TownCommand;
-import se.fusion1013.cobaltKingdoms.commands.quest.QuestCommand;
-import se.fusion1013.cobaltKingdoms.commands.quest.bounty.BountyCommand;
 import se.fusion1013.cobaltKingdoms.config.ItemValueConfig;
 import se.fusion1013.cobaltKingdoms.config.KingdomsConfig;
 import se.fusion1013.cobaltKingdoms.database.KingdomDataManager;
@@ -23,18 +19,28 @@ import se.fusion1013.cobaltKingdoms.events.*;
 import se.fusion1013.cobaltKingdoms.items.CompassManager;
 import se.fusion1013.cobaltKingdoms.items.KingdomItems;
 import se.fusion1013.cobaltKingdoms.items.kit.KitManager;
-import se.fusion1013.cobaltKingdoms.kingdom.KingdomManager;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownManager;
-import se.fusion1013.cobaltKingdoms.kingdom.town.TownQuestManager;
+import se.fusion1013.cobaltKingdoms.kingdom.command.KingdomCommand;
+import se.fusion1013.cobaltKingdoms.kingdom.service.KingdomManager;
 import se.fusion1013.cobaltKingdoms.loot.LootManager;
 import se.fusion1013.cobaltKingdoms.pigeon.LetterManager;
 import se.fusion1013.cobaltKingdoms.pigeon.PigeonEvents;
 import se.fusion1013.cobaltKingdoms.player.PlayerManager;
 import se.fusion1013.cobaltKingdoms.player.character.CharacterProfileManager;
-import se.fusion1013.cobaltKingdoms.quest.QuestManager;
-import se.fusion1013.cobaltKingdoms.quest.QuestMenuListener;
-import se.fusion1013.cobaltKingdoms.quest.artifact_hunt.ArtifactHuntQuestManager;
-import se.fusion1013.cobaltKingdoms.quest.bounty.BountyManager;
+import se.fusion1013.cobaltKingdoms.quest.command.QuestCommand;
+import se.fusion1013.cobaltKingdoms.quest.command.bounty.BountyCommand;
+import se.fusion1013.cobaltKingdoms.quest.listener.ArtifactPickupListener;
+import se.fusion1013.cobaltKingdoms.quest.listener.QuestMenuListener;
+import se.fusion1013.cobaltKingdoms.quest.service.ArtifactHuntQuestManager;
+import se.fusion1013.cobaltKingdoms.quest.service.BountyManager;
+import se.fusion1013.cobaltKingdoms.quest.service.QuestManager;
+import se.fusion1013.cobaltKingdoms.raid.command.RaidCommand;
+import se.fusion1013.cobaltKingdoms.raid.listener.RaidDeathListener;
+import se.fusion1013.cobaltKingdoms.raid.service.RaidService;
+import se.fusion1013.cobaltKingdoms.raid.service.RaidWaveService;
+import se.fusion1013.cobaltKingdoms.town.command.TownCommand;
+import se.fusion1013.cobaltKingdoms.town.listener.TownEntityEvents;
+import se.fusion1013.cobaltKingdoms.town.service.TownManager;
+import se.fusion1013.cobaltKingdoms.town.service.TownQuestManager;
 import se.fusion1013.cobaltKingdoms.villager.VillagerEvents;
 import se.fusion1013.cobaltKingdoms.villager.VillagerManager;
 
@@ -69,6 +75,11 @@ public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin, Voicecha
         Bukkit.getPluginManager().registerEvents(new FishingEvents(), this);
         Bukkit.getPluginManager().registerEvents(new ItemEvents(), this);
         Bukkit.getPluginManager().registerEvents(new ChatEvents(), this);
+
+        Bukkit.getPluginManager().registerEvents(new TownEntityEvents(), this);
+        Bukkit.getPluginManager().registerEvents(new ArtifactPickupListener(), this);
+
+        Bukkit.getPluginManager().registerEvents(new RaidDeathListener(), this);
     }
 
     @Override
@@ -93,6 +104,8 @@ public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin, Voicecha
         CobaltCore.getInstance().getManager(this, QuestMenuListener.class);
         CobaltCore.getInstance().getManager(this, BountyManager.class);
         CobaltCore.getInstance().getManager(this, ArtifactHuntQuestManager.class);
+        CobaltCore.getInstance().getManager(this, RaidWaveService.class);
+        CobaltCore.getInstance().getManager(this, RaidService.class);
     }
 
     @Override
@@ -114,6 +127,7 @@ public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin, Voicecha
         TownCommand.register();
         BountyCommand.register();
         QuestCommand.register();
+        RaidCommand.register();
     }
 
     public static CobaltKingdoms getInstance() {

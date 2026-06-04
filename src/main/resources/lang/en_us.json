@@ -131,6 +131,8 @@
   "kingdoms.commands.quest.artifact_hunt.goal.create_fail": "&7Failed to create new goal: %reason%",
   "kingdoms.commands.quest.artifact_hunt.goal.list.header": "&7---- [ &zGoals&7 ] ----",
   "kingdoms.commands.quest.artifact_hunt.goal.list.item": "&7 - &z%goal% &7[&z%location%&7] - &z%difficulty%",
+  "kingdoms.commands.raid.spawn": "&7Spawned new raid",
+  "kingdoms.commands.raid.spawn_fail": "&7Failed to spawn raid: %reason%",
   "kingdoms.quests.bounty.change_status": "&7Changed bounties to &z%status%",
   "kingdoms.quests.bounty.change_status_fail": "&7Could not update bounty status: %reason%",
   "kingdoms.quests.bounty.create": "&7Created new bounty for &z%player%",
@@ -151,5 +153,6 @@
   "kingdoms.quests.delivery.fail": "&z%player% &7failed a delivery",
   "kingdoms.quests.artifact_hunt.start": "&z%player% &7started an artifact hunt for &z%item%",
   "kingdoms.quests.artifact_hunt.finish": "&z%player% &7finished an Artifact Hunt to &z%end_town%",
-  "kingdoms.quests.artifact_hunt.fail": "&z%player% &7failed an artifact hunt"
+  "kingdoms.quests.artifact_hunt.fail": "&z%player% &7failed an artifact hunt",
+  "kingdoms.quests.artifact_hunt.pickup": "&z%entity% &7picked up artifact &z%artifact%"
 }
