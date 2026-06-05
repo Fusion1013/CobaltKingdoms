@@ -7,6 +7,10 @@ Upcoming features:
 **FEATURE:** Player abilities
 **FEATURE:** Capped xp cost at 1 level when renaming an item
 
+**CobaltKingdoms Version 1.3.1**
+
+- **BUGFIX:** Fixed missing locale messages
+
 **CobaltKingdoms Version 1.3.0**
 
 - **FEATURE:** Added towns. Create a new town using the '/town create' command. In order to create a town, you must

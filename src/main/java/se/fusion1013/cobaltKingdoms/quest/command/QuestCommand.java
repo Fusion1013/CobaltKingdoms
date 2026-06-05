@@ -12,6 +12,7 @@ public class QuestCommand {
                 .withPermission(CommandUtil.getPermissionString(CobaltKingdoms.getInstance(), "quest"))
                 .withSubcommand(QuestArtifactHuntCommand.register())
                 .withSubcommand(QuestDebugCommand.register())
+                .withSubcommand(QuestHistoryCommand.register())
                 .register();
     }
 

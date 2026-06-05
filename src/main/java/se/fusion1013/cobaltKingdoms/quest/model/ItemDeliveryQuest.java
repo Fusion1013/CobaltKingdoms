@@ -226,8 +226,8 @@ public class ItemDeliveryQuest extends AbstractQuest {
         // Broadcast message
         LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.start.item_delivery", StringPlaceholders.builder()
                 .addPlaceholder("player", player.getName())
-                .addPlaceholder("start_town", getStartTown().getDisplayName())
-                .addPlaceholder("end_town", getEndTown().getDisplayName())
+                .addPlaceholder("start", getStartTown().getDisplayName())
+                .addPlaceholder("end", getEndTown().getDisplayName())
                 .build());
     }
 

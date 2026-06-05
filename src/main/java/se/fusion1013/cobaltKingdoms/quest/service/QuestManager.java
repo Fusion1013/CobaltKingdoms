@@ -263,6 +263,10 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
         return questRepository.getQuests();
     }
 
+    public List<PlayerQuest> getPlayerQuests(Player player) {
+        return questRepository.getPlayerQuestsByPlayer(player);
+    }
+
     public void setQuestStatus(Long questId, QuestStatus status) {
         questRepository.updateStatus(questId, status);
     }
