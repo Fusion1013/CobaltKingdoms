@@ -2,6 +2,7 @@ package se.fusion1013.cobaltKingdoms.quest.repository;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
+import com.j256.ormlite.stmt.DeleteBuilder;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 import se.fusion1013.cobaltCore.database.system.DataStorageType;
@@ -102,6 +103,18 @@ public class QuestArtifactHuntRepository implements IQuestArtifactHuntRepository
             return highest.getDifficulty();
         }
         return -1;
+    }
+
+    @Override
+    public void deleteQuestsWithIds(List<Long> ids) {
+        try {
+            DeleteBuilder<ArtifactHuntEntity, Long> deleteStatement =
+                    artifactHuntQuestDao.deleteBuilder();
+            deleteStatement.where().in("quest_id", ids);
+            deleteStatement.delete();
+        } catch (SQLException e) {
+            logger.severe("Error deleting item delivery quests with quest ids: " + e.getMessage());
+        }
     }
 
     @Override

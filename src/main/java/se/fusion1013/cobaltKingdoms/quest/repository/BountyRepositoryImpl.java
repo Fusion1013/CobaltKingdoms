@@ -3,6 +3,7 @@ package se.fusion1013.cobaltKingdoms.quest.repository;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
+import com.j256.ormlite.stmt.DeleteBuilder;
 import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
@@ -129,6 +130,18 @@ public class BountyRepositoryImpl implements IBountyRepository {
         } catch (SQLException e) {
             logger.severe("Error getting bounties: " + e.getMessage());
             return List.of();
+        }
+    }
+
+    @Override
+    public void deleteQuestsWithIds(List<Long> ids) {
+        try {
+            DeleteBuilder<BountyQuestEntity, Long> deleteStatement =
+                    bountyQuestDao.deleteBuilder();
+            deleteStatement.where().in("quest", ids);
+            deleteStatement.delete();
+        } catch (SQLException e) {
+            logger.severe("Error deleting item delivery quests with quest ids: " + e.getMessage());
         }
     }
 

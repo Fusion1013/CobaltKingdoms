@@ -29,4 +29,5 @@ public interface IQuestArtifactHuntRepository extends IDao {
 
     int getHighestDifficulty();
 
+    void deleteQuestsWithIds(List<Long> ids);
 }

@@ -10,6 +10,8 @@ import se.fusion1013.cobaltCore.util.CommandUtil;
 import se.fusion1013.cobaltCore.util.StringPlaceholders;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.Response;
+import se.fusion1013.cobaltKingdoms.config.KingdomsConfig;
+import se.fusion1013.cobaltKingdoms.town.config.TownLevelConfig;
 import se.fusion1013.cobaltKingdoms.town.model.Town;
 import se.fusion1013.cobaltKingdoms.town.model.TownMember;
 import se.fusion1013.cobaltKingdoms.town.service.TownManager;
@@ -48,6 +50,8 @@ public class TownInfoCommand {
 
         sendItem(player, "Position", town.getLocation().toBlockLocation().toVector().toString());
         sendItem(player, "Experience", String.valueOf(town.getExperience()));
+        TownLevelConfig townLevelConfig = KingdomsConfig.getTownConfig().getTownLevelConfig(town.getExperience());
+        sendItem(player, "Level", String.valueOf(townLevelConfig.getLevel()));
 
         for (TownMember townMember : townMembers) {
             sendItem(player, townMember.getPlayerName(), townMember.getRole().name());

@@ -15,4 +15,6 @@ public interface IQuestItemDeliveryRepository extends IDao {
     void createQuest(ItemDeliveryQuest quest);
 
     List<ItemDeliveryQuest> getQuests();
+
+    void deleteQuestsWithIds(List<Long> ids);
 }

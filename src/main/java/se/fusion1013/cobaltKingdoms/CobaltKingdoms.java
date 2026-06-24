@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import se.fusion1013.cobaltCore.CobaltCore;
 import se.fusion1013.cobaltCore.CobaltPlugin;
+import se.fusion1013.cobaltKingdoms.audio.AmbientSoundManager;
 import se.fusion1013.cobaltKingdoms.chair.ChairManager;
 import se.fusion1013.cobaltKingdoms.commands.*;
 import se.fusion1013.cobaltKingdoms.commands.armorstand.ArmorStandCommand;
@@ -106,6 +107,7 @@ public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin, Voicecha
         CobaltCore.getInstance().getManager(this, ArtifactHuntQuestManager.class);
         CobaltCore.getInstance().getManager(this, RaidWaveService.class);
         CobaltCore.getInstance().getManager(this, RaidService.class);
+        CobaltCore.getInstance().getManager(this, AmbientSoundManager.class);
     }
 
     @Override
@@ -128,6 +130,7 @@ public class CobaltKingdoms extends JavaPlugin implements CobaltPlugin, Voicecha
         BountyCommand.register();
         QuestCommand.register();
         RaidCommand.register();
+        AudioRegionCommand.register();
     }
 
     public static CobaltKingdoms getInstance() {

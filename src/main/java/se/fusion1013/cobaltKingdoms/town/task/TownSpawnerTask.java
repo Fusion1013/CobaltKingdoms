@@ -98,7 +98,9 @@ public class TownSpawnerTask implements Runnable {
 
     private boolean isTownLoaded(Town town) {
         double closestPlayerDistance = Double.MAX_VALUE;
+        World world = town.getLocation().getWorld();
         for (Player p : Bukkit.getOnlinePlayers()) {
+            if (p.getWorld() != world) continue;
             double distance = p.getLocation().distanceSquared(town.getLocation());
             if (distance < closestPlayerDistance) closestPlayerDistance = distance;
         }

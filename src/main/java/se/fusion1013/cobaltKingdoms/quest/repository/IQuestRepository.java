@@ -50,4 +50,5 @@ public interface IQuestRepository extends IDao {
 
     List<QuestPlayerStatus> getPlayerQuestStatus(UUID playerId);
 
+    void deleteQuestsWithIds(List<Long> ids);
 }

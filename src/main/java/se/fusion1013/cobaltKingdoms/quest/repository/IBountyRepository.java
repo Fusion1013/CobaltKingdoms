@@ -31,4 +31,6 @@ public interface IBountyRepository extends IDao {
     BountyPlayerStatus getPlayerBountyStatus(UUID playerId, String playerName);
 
     List<BountyQuest> getQuests();
+
+    void deleteQuestsWithIds(List<Long> ids);
 }

@@ -172,7 +172,7 @@ public class ArtifactHuntQuest extends AbstractQuest {
             item.setVelocity(new Vector());
         });
 
-        giveQuestCompass(player, goalLocation, "Artifact Compass", getQuestId());
+//        giveQuestCompass(player, goalLocation, "Artifact Compass", getQuestId());
 
         // Broadcast message
         LocaleManager.getInstance().broadcastMessage(CobaltKingdoms.getInstance(), "kingdoms.quests.gather.start", StringPlaceholders.builder()
@@ -248,7 +248,7 @@ public class ArtifactHuntQuest extends AbstractQuest {
         meta.setDisplayName(getTitle());
 
         List<String> lore = new ArrayList<>();
-        lore.add("&zCoords: &7" + coordinates);
+//        lore.add("&zCoords: &7" + coordinates);
 
         ICustomItem targetItem = CustomItemManager.getCustomItem(goal.getItemName());
         if (targetItem != null) {

@@ -18,6 +18,7 @@ import se.fusion1013.cobaltCore.database.system.DataManager;
 import se.fusion1013.cobaltCore.manager.Manager;
 import se.fusion1013.cobaltKingdoms.CobaltKingdoms;
 import se.fusion1013.cobaltKingdoms.quest.model.*;
+import se.fusion1013.cobaltKingdoms.quest.repository.IBountyRepository;
 import se.fusion1013.cobaltKingdoms.quest.repository.IQuestArtifactHuntRepository;
 import se.fusion1013.cobaltKingdoms.quest.repository.IQuestItemDeliveryRepository;
 import se.fusion1013.cobaltKingdoms.quest.repository.IQuestRepository;
@@ -44,6 +45,7 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
 
     private static final IQuestRepository questRepository = DataManager.getInstance().getDao(IQuestRepository.class);
     private static final IQuestArtifactHuntRepository artifactHuntQuestRepository = DataManager.getInstance().getDao(IQuestArtifactHuntRepository.class);
+    private static final IBountyRepository bountyRepository = DataManager.getInstance().getDao(IBountyRepository.class);
     private static final ITownRepository townRepository = DataManager.getInstance().getDao(ITownRepository.class);
     private static final IQuestItemDeliveryRepository itemDeliveryRepository = DataManager.getInstance().getDao(IQuestItemDeliveryRepository.class);
 
@@ -61,7 +63,7 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
         }
 
         // Can only open quest menu for towns that you are a member of
-        if (!isInTown(player, townId)) return;
+        if (!isInTown(player, townId) && !player.isOp()) return;
 
         Town startTown = TownManager.getInstance().getTown(townId);
         QuestMenu questMenu = new QuestMenu(startTown, player);
@@ -171,6 +173,16 @@ public class QuestManager extends Manager<CobaltKingdoms> implements Listener {
             if (quest == null) return;
             artifactHuntQuestRepository.createQuest(quest);
         }
+    }
+
+    public int cleanupDespawnedQuests() {
+        List<AbstractQuest> questsWithStatus = questRepository.getQuestsWithStatus(QuestStatus.DESPAWNED);
+        List<Long> ids = questsWithStatus.stream().map(AbstractQuest::getQuestId).toList();
+        itemDeliveryRepository.deleteQuestsWithIds(ids);
+        artifactHuntQuestRepository.deleteQuestsWithIds(ids);
+        bountyRepository.deleteQuestsWithIds(ids);
+        questRepository.deleteQuestsWithIds(ids);
+        return ids.size();
     }
 
     public QuestManager(CobaltKingdoms plugin) {

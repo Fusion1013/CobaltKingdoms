@@ -2,6 +2,7 @@ package se.fusion1013.cobaltKingdoms.quest.repository;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
+import com.j256.ormlite.stmt.DeleteBuilder;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 import se.fusion1013.cobaltCore.database.system.DataStorageType;
@@ -54,6 +55,18 @@ public class QuestItemDeliveryRepositoryImpl implements IQuestItemDeliveryReposi
         } catch (SQLException e) {
             logger.severe("Error getting item delivery quests: " + e.getMessage());
             return List.of();
+        }
+    }
+
+    @Override
+    public void deleteQuestsWithIds(List<Long> ids) {
+        try {
+            DeleteBuilder<ItemDeliveryQuestEntity, Long> deleteStatement =
+                    itemDeliveryQuestDao.deleteBuilder();
+            deleteStatement.where().in("quest", ids);
+            deleteStatement.delete();
+        } catch (SQLException e) {
+            logger.severe("Error deleting item delivery quests with quest ids: " + e.getMessage());
         }
     }
 
